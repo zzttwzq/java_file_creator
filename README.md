@@ -1,5 +1,5 @@
 # java_file_creator
-## 快速生成controller,mapper,dao,respository等文件
+## 快速生成 Java pringboot 项目的 controller,mapper,dao,respository等文件
 
 ### 使用方法:
 
