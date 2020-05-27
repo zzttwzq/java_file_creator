@@ -9,6 +9,7 @@
   字段名1 : varchar(100)... . 用户名
   ...
   
+  例
   [user] ;用户
   name : varchar(100) . 用户名称
   age : int . 用户年龄
@@ -115,4 +116,4 @@
 	spring.datasource.minIdle=5
 
 	# mybatis 配置
-	mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
+	mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl #控制台显示sql语句
