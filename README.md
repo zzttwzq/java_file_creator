@@ -1,9 +1,9 @@
 # java_file_creator
-快速生成controller,mapper,dao,respository等文件
+## 快速生成controller,mapper,dao,respository等文件
 
-使用方法:
+### 使用方法:
 
-1. 在tableinfo.ini文件中定义表内容
+#### 1. 在tableinfo.ini文件中定义表内容
 
   [表名] ;注释
   字段名1 : varchar(100)... . 用户名
@@ -13,7 +13,8 @@
   name : varchar(100) . 用户名称
   age : int . 用户年龄
 
-2. 进入命令行
+#### 2. 进入命令行
+
       python3 _cmd.py all_file #生成所有文件(controller,pojo,mapper,provider,respository)
       
       python3 _cmd.py controller #生成 controller 文件
@@ -32,10 +33,7 @@
  
  文件在dist目录下
  
- 
-================
-
-pom.xml 依赖配置
+#### pom.xml 依赖配置
 
 		<!--mybatis提供的启动器-->
 		<dependency>
@@ -102,21 +100,19 @@ pom.xml 依赖配置
 			</exclusions>
 		</dependency>
 
-================
+#### application.properties 配置
 
-application.properties 配置
+	#配置数据源
+	server.port=7700
+	spring.datasource.url=jdbc:mysql://localhost:3306/runoob_db?characterEncoding=utf-8&userSSL=false&serverTimezone=GMT%2B8
+	spring.datasource.username=root
+	spring.datasource.password=1111
 
-#配置数据源
-server.port=7700
-spring.datasource.url=jdbc:mysql://localhost:3306/runoob_db?characterEncoding=utf-8&userSSL=false&serverTimezone=GMT%2B8
-spring.datasource.username=root
-spring.datasource.password=1111
+	spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+	spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+	spring.datasource.initialSize=10
+	spring.datasource.maxActive=20
+	spring.datasource.minIdle=5
 
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
-spring.datasource.initialSize=10
-spring.datasource.maxActive=20
-spring.datasource.minIdle=5
-
-# mybatis 配置
-mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
+	# mybatis 配置
+	mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
