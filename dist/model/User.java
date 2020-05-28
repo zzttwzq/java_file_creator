@@ -1,4 +1,4 @@
-package com.smartwc.qlzw.com.domain;
+package com.smartwc.qlzw.com.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

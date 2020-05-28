@@ -1,6 +1,6 @@
 package com.smartwc.qlzw.com.controller;
 
-import com.smartwc.qlzw.com.domain.User;
+import com.smartwc.qlzw.com.model.User;
 
 import com.smartwc.qlzw.com.mapper.UserMapper;
 import com.smartwc.qlzw.com.repository.UserRepository;

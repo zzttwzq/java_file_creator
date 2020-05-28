@@ -1,0 +1,83 @@
+[2020-05-28 14:01:17] [INFO] [controller] ============= 生成 java controller ================
+[2020-05-28 14:01:17] [INFO] [controller] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/controller/UserController.java
+[2020-05-28 14:01:17] [INFO] [repository] ============= 生成 java repositories ================
+[2020-05-28 14:01:17] [INFO] [repository] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/repository/UserRepository.java
+[2020-05-28 14:01:17] [INFO] [mapper] ============= 生成 java mappers ================
+[2020-05-28 14:01:17] [INFO] [mapper] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/mapper/UserMapper.java
+[2020-05-28 14:01:17] [INFO] [provider] ============= 生成 java providers ================
+[2020-05-28 14:01:17] [INFO] [provider] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/provider/UserProvider.java
+[2020-05-28 14:01:17] [ERROR] [System] 'cmds' object has no attribute 'create_dao' 
+    callpath: 
+        /Users/wuzhiqiang/Desktop/java_file_creator/_cmd.py(572) -> <module> 
+        /Users/wuzhiqiang/Desktop/java_file_creator/file_manager.py(49) -> error 
+
+[2020-05-28 14:01:37] [INFO] [controller] ============= 生成 java controller ================
+[2020-05-28 14:01:37] [INFO] [controller] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/controller/UserController.java
+[2020-05-28 14:01:37] [INFO] [repository] ============= 生成 java repositories ================
+[2020-05-28 14:01:37] [INFO] [repository] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/repository/UserRepository.java
+[2020-05-28 14:01:37] [INFO] [mapper] ============= 生成 java mappers ================
+[2020-05-28 14:01:37] [INFO] [mapper] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/mapper/UserMapper.java
+[2020-05-28 14:01:37] [INFO] [provider] ============= 生成 java providers ================
+[2020-05-28 14:01:37] [INFO] [provider] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/provider/UserProvider.java
+[2020-05-28 14:01:37] [INFO] [model] ============= 生成 java models ================
+[2020-05-28 14:01:37] [INFO] [model] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/model/User.java
+[2020-05-28 14:02:19] [INFO] [controller] 
+============= 生成 java controller ================
+[2020-05-28 14:02:19] [INFO] [controller] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/controller/UserController.java
+[2020-05-28 14:02:19] [INFO] [repository] 
+============= 生成 java repositories ================
+[2020-05-28 14:02:19] [INFO] [repository] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/repository/UserRepository.java
+[2020-05-28 14:02:19] [INFO] [mapper] 
+============= 生成 java mappers ================
+[2020-05-28 14:02:19] [INFO] [mapper] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/mapper/UserMapper.java
+[2020-05-28 14:02:19] [INFO] [provider] 
+============= 生成 java providers ================
+[2020-05-28 14:02:19] [INFO] [provider] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/provider/UserProvider.java
+[2020-05-28 14:02:19] [INFO] [model] 
+============= 生成 java models ================
+[2020-05-28 14:02:19] [INFO] [model] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/model/User.java
+[2020-05-28 14:03:14] [INFO] [INFO] 
+[2020-05-28 14:03:14] [INFO] [controller] ============= 生成 java controller ================
+[2020-05-28 14:03:14] [INFO] [controller] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/controller/UserController.java
+[2020-05-28 14:03:14] [INFO] [INFO] 
+[2020-05-28 14:03:14] [INFO] [repository] ============= 生成 java repositories ================
+[2020-05-28 14:03:14] [INFO] [repository] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/repository/UserRepository.java
+[2020-05-28 14:03:14] [INFO] [INFO] 
+[2020-05-28 14:03:14] [INFO] [mapper] ============= 生成 java mappers ================
+[2020-05-28 14:03:14] [INFO] [mapper] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/mapper/UserMapper.java
+[2020-05-28 14:03:14] [INFO] [INFO] 
+[2020-05-28 14:03:14] [INFO] [provider] ============= 生成 java providers ================
+[2020-05-28 14:03:14] [INFO] [provider] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/provider/UserProvider.java
+[2020-05-28 14:03:14] [INFO] [INFO] 
+[2020-05-28 14:03:14] [INFO] [model] ============= 生成 java models ================
+[2020-05-28 14:03:14] [INFO] [model] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/model/User.java
+[2020-05-28 14:04:18] [INFO] [INFO] 
+[2020-05-28 14:04:18] [INFO] [controller] ============= 生成 java controller ================
+[2020-05-28 14:04:18] [INFO] [controller] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/controller/UserController.java
+[2020-05-28 14:04:18] [INFO] [INFO] 
+[2020-05-28 14:04:18] [INFO] [repository] ============= 生成 java repositories ================
+[2020-05-28 14:04:18] [INFO] [repository] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/repository/UserRepository.java
+[2020-05-28 14:04:18] [INFO] [INFO] 
+[2020-05-28 14:04:18] [INFO] [  mapper  ] ============= 生成 java mappers ================
+[2020-05-28 14:04:18] [INFO] [mapper] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/mapper/UserMapper.java
+[2020-05-28 14:04:18] [INFO] [INFO] 
+[2020-05-28 14:04:18] [INFO] [ provider ] ============= 生成 java providers ================
+[2020-05-28 14:04:18] [INFO] [provider] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/provider/UserProvider.java
+[2020-05-28 14:04:18] [INFO] [INFO] 
+[2020-05-28 14:04:18] [INFO] [  model   ] ============= 生成 java models ================
+[2020-05-28 14:04:18] [INFO] [model] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/model/User.java
+[2020-05-28 14:05:16] [INFO] [INFO] 
+[2020-05-28 14:05:16] [INFO] [controller] ============= 生成 java controller ================
+[2020-05-28 14:05:16] [INFO] [controller] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/controller/UserController.java
+[2020-05-28 14:05:16] [INFO] [INFO] 
+[2020-05-28 14:05:16] [INFO] [repository] ============= 生成 java repositories ================
+[2020-05-28 14:05:16] [INFO] [repository] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/repository/UserRepository.java
+[2020-05-28 14:05:16] [INFO] [INFO] 
+[2020-05-28 14:05:16] [INFO] [  mapper  ] ============= 生成 java mappers ================
+[2020-05-28 14:05:16] [INFO] [  mapper  ] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/mapper/UserMapper.java
+[2020-05-28 14:05:16] [INFO] [INFO] 
+[2020-05-28 14:05:16] [INFO] [ provider ] ============= 生成 java providers ================
+[2020-05-28 14:05:16] [INFO] [ provider ] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/provider/UserProvider.java
+[2020-05-28 14:05:16] [INFO] [INFO] 
+[2020-05-28 14:05:16] [INFO] [  model   ] ============= 生成 java models ================
+[2020-05-28 14:05:16] [INFO] [  model   ] 开始生成：/Users/wuzhiqiang/Desktop/java_file_creator/dist/model/User.java

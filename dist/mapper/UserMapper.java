@@ -1,6 +1,6 @@
 package com.smartwc.qlzw.com.mapper;
 
-import com.smartwc.qlzw.com.domain.User;
+import com.smartwc.qlzw.com.model.User;
 import com.smartwc.qlzw.com.provider.UserProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;

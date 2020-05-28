@@ -86,6 +86,7 @@ class cmds:
         c = iniParser("tableinfo.ini")
         sections = c.getAllSections()
 
+        Log.info("","")
         Log.info("controller","============= 生成 java controller ================")
 
         for table_name in sections:
@@ -97,7 +98,7 @@ class cmds:
             f = open(filepath, mode='w+')
 
             string = "package " + path_name + ".controller;\r\n\r\n"
-            string += "import " + path_name + ".domain." + model_name + ";\r\n\r\n"
+            string += "import " + path_name + ".model." + model_name + ";\r\n\r\n"
             string += "import " + path_name + ".mapper." + model_name + "Mapper;\r\n"
             string += "import " + path_name + ".repository." + model_name + "Repository;\r\n"
 
@@ -184,6 +185,7 @@ class cmds:
         c = iniParser("tableinfo.ini")
         sections = c.getAllSections()
 
+        Log.info("","")
         Log.info("repository","============= 生成 java repositories ================")
 
         for table_name in sections:
@@ -195,7 +197,7 @@ class cmds:
             f = open(filepath, mode='w+')
 
             string = "package " + path_name + ".repository;\r\n\r\n"
-            string += "import " + path_name + ".domain." + model_name + ";\r\n"
+            string += "import " + path_name + ".model." + model_name + ";\r\n"
             string += "import org.springframework.data.jpa.repository.JpaRepository;\r\n"
             string += "import org.springframework.stereotype.Repository;\r\n\r\n"
             string += "@Repository\r\n"
@@ -209,18 +211,19 @@ class cmds:
         c = iniParser("tableinfo.ini")
         sections = c.getAllSections()
 
-        Log.info("mapper","============= 生成 java mappers ================")
+        Log.info("","")
+        Log.info("  mapper  ","============= 生成 java mappers ================")
 
         for table_name in sections:
 
             model_name = table_name.capitalize()
 
             filepath = os.getcwd()+"/dist/mapper/" + model_name + "Mapper.java"
-            Log.info("mapper","开始生成："+filepath)
+            Log.info("  mapper  ","开始生成："+filepath)
             f = open(filepath, mode='w+')
 
             string = "package " + path_name + ".mapper;\r\n\r\n"
-            string += "import " + path_name + ".domain." + model_name + ";\r\n"
+            string += "import " + path_name + ".model." + model_name + ";\r\n"
             string += "import " + path_name + ".provider." + model_name + "Provider;\r\n"
 
             string += "import org.apache.ibatis.annotations.*;\r\n"
@@ -250,7 +253,8 @@ class cmds:
         c = iniParser("tableinfo.ini")
         sections = c.getAllSections()
 
-        Log.info("provider","============= 生成 java providers ================")
+        Log.info("","")
+        Log.info(" provider ","============= 生成 java providers ================")
 
         for table_name in sections:
 
@@ -263,12 +267,12 @@ class cmds:
             model_name = table_name.capitalize()
 
             filepath = os.getcwd() + "/dist/provider/" + model_name + "Provider.java"
-            Log.info("provider","开始生成："+filepath)
+            Log.info(" provider ","开始生成："+filepath)
             f = open(filepath, mode='w+')
 
             string = "package " + path_name + ".provider;\r\n\r\n"
             string += "import com.smartwc.qlzw.com.utils.Pager;\r\n"
-            string += "import " + path_name + ".domain." + model_name + ";\r\n"
+            string += "import " + path_name + ".model." + model_name + ";\r\n"
             string += "import java.util.Map;\r\n\r\n"
             string += "public class " + model_name + "Provider {\r\n\r\n"
 
@@ -372,12 +376,13 @@ class cmds:
             f.write(string)
             f.close()
 
-    def create_dao(self, path_name):
+    def create_model(self, path_name):
 
         c = iniParser("tableinfo.ini")
         sections = c.getAllSections()
 
-        Log.info("dao","============= 生成 java daos ================")
+        Log.info("","")
+        Log.info("  model   ","============= 生成 java models ================")
 
         for table_name in sections:
 
@@ -389,11 +394,11 @@ class cmds:
 
             model_name = table_name.capitalize()
 
-            filepath = os.getcwd() + "/dist/domain/" + model_name + ".java"
-            Log.info("dao","开始生成："+filepath)
+            filepath = os.getcwd() + "/dist/model/" + model_name + ".java"
+            Log.info("  model   ","开始生成："+filepath)
             f = open(filepath, mode='w+')
 
-            string = "package " + path_name + ".domain;\r\n\r\n"
+            string = "package " + path_name + ".model;\r\n\r\n"
             string += "import javax.persistence.Entity;\r\n"
             string += "import javax.persistence.GeneratedValue;\r\n"
             string += "import javax.persistence.GenerationType;\r\n"
@@ -500,7 +505,7 @@ class cmds:
                     get_string += "    public Integer get" +  key.capitalize() +  " () { return this." + key + ";}\r\n\r\n"
                     set_string += "    public void set" + key.capitalize() + " (Integer " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
 
-                    tostring_string += "                \"" + key + " = \" + " + key + " + \" \" +\r\n"
+                    tostring_string += "                \"" + key + " = \" + " + key + " + \", \" +\r\n"
 
                 else:
                     print(item)
@@ -528,7 +533,6 @@ class cmds:
     def init_db(self):
         pass
 
-
 try:
     c = cmds()
     c.check_folder()
@@ -543,7 +547,7 @@ try:
         c.create_repositories(path)
         c.create_mappers(path)
         c.create_provider(path)
-        c.create_dao(path)
+        c.create_model(path)
 
     elif cmd == "controller" :
         c.create_controllers(path)
@@ -557,8 +561,8 @@ try:
     elif cmd == "provider" :
         c.create_provider(path)
 
-    elif cmd == "dao" :
-        c.create_dao(path)
+    elif cmd == "model" :
+        c.create_model(path)
 
     elif cmd == "table" :
         c.init_tables()

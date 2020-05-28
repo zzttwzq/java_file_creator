@@ -1,7 +1,7 @@
 package com.smartwc.qlzw.com.provider;
 
 import com.smartwc.qlzw.com.utils.Pager;
-import com.smartwc.qlzw.com.domain.User;
+import com.smartwc.qlzw.com.model.User;
 import java.util.Map;
 
 public class UserProvider {
