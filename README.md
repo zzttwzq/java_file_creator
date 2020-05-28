@@ -1,5 +1,5 @@
 # java_file_creator
-## 快速生成 Java pringboot 项目的 controller,mapper,dao,respository等文件
+## 快速生成 Java pringboot 项目的 controller,mapper,model,respository等文件
 
 ### 使用方法:
 
@@ -16,7 +16,7 @@
 
 #### 2. 进入命令行
 
-      python3 _cmd.py all_file #生成所有文件(controller,pojo,mapper,provider,respository)
+      python3 _cmd.py all_file #生成所有文件(controller,model,mapper,provider,respository)
       
       python3 _cmd.py controller #生成 controller 文件
       
@@ -26,7 +26,7 @@
       
       python3 _cmd.py provider #生成 provider 文件
       
-      python3 _cmd.py dao #生成 pojo 文件
+      python3 _cmd.py model #生成 model 文件
       
       python3 _cmd.py table #在数据库中快速生成表
       
