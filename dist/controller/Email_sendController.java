@@ -1,12 +1,12 @@
-package .controller;
+package com.qlzw.smartwc.controller;
 
-import .model.Email_send;
+import com.qlzw.smartwc.model.Email_send;
 
-import .mapper.Email_sendMapper;
-import .repository.Email_sendRepository;
-import com.smartwc.qlzw.com.utils.Pager;
-import com.smartwc.qlzw.com.utils.RESPONSE_STATUS;
-import com.smartwc.qlzw.com.utils.ResponseStatusGennerator;
+import com.qlzw.smartwc.mapper.Email_sendMapper;
+import com.qlzw.smartwc.repository.Email_sendRepository;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.utils.RESPONSE_STATUS;
+import com.qlzw.smartwc.utils.ResponseStatusGennerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

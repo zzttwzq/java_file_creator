@@ -1,12 +1,12 @@
-package .controller;
+package com.qlzw.smartwc.controller;
 
-import .model.Mp_link;
+import com.qlzw.smartwc.model.Mp_link;
 
-import .mapper.Mp_linkMapper;
-import .repository.Mp_linkRepository;
-import com.smartwc.qlzw.com.utils.Pager;
-import com.smartwc.qlzw.com.utils.RESPONSE_STATUS;
-import com.smartwc.qlzw.com.utils.ResponseStatusGennerator;
+import com.qlzw.smartwc.mapper.Mp_linkMapper;
+import com.qlzw.smartwc.repository.Mp_linkRepository;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.utils.RESPONSE_STATUS;
+import com.qlzw.smartwc.utils.ResponseStatusGennerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

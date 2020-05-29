@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Admin_user;
-import .provider.Admin_userProvider;
+import com.qlzw.smartwc.model.Admin_user;
+import com.qlzw.smartwc.provider.Admin_userProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

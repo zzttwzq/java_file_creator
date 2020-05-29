@@ -1,7 +1,7 @@
-package .provider;
+package com.qlzw.smartwc.provider;
 
-import com.smartwc.qlzw.com.utils.Pager;
-import .model.Rfid_change;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.model.Rfid_change;
 import java.util.Map;
 
 public class Rfid_changeProvider {

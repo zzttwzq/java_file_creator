@@ -1,12 +1,12 @@
-package .controller;
+package com.qlzw.smartwc.controller;
 
-import .model.Dev_repair;
+import com.qlzw.smartwc.model.Dev_repair;
 
-import .mapper.Dev_repairMapper;
-import .repository.Dev_repairRepository;
-import com.smartwc.qlzw.com.utils.Pager;
-import com.smartwc.qlzw.com.utils.RESPONSE_STATUS;
-import com.smartwc.qlzw.com.utils.ResponseStatusGennerator;
+import com.qlzw.smartwc.mapper.Dev_repairMapper;
+import com.qlzw.smartwc.repository.Dev_repairRepository;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.utils.RESPONSE_STATUS;
+import com.qlzw.smartwc.utils.ResponseStatusGennerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

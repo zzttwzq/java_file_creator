@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Msg_log;
-import .provider.Msg_logProvider;
+import com.qlzw.smartwc.model.Msg_log;
+import com.qlzw.smartwc.provider.Msg_logProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

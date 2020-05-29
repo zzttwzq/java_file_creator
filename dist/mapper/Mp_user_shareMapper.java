@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Mp_user_share;
-import .provider.Mp_user_shareProvider;
+import com.qlzw.smartwc.model.Mp_user_share;
+import com.qlzw.smartwc.provider.Mp_user_shareProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

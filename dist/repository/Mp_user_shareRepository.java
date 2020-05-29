@@ -1,6 +1,6 @@
-package .repository;
+package com.qlzw.smartwc.repository;
 
-import .model.Mp_user_share;
+import com.qlzw.smartwc.model.Mp_user_share;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

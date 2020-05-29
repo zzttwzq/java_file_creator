@@ -1,6 +1,6 @@
-package .repository;
+package com.qlzw.smartwc.repository;
 
-import .model.Dev_connect;
+import com.qlzw.smartwc.model.Dev_connect;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

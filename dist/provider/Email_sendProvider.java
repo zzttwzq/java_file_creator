@@ -1,7 +1,7 @@
-package .provider;
+package com.qlzw.smartwc.provider;
 
-import com.smartwc.qlzw.com.utils.Pager;
-import .model.Email_send;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.model.Email_send;
 import java.util.Map;
 
 public class Email_sendProvider {

@@ -1,12 +1,12 @@
-package .controller;
+package com.qlzw.smartwc.controller;
 
-import .model.Rfid_change;
+import com.qlzw.smartwc.model.Rfid_change;
 
-import .mapper.Rfid_changeMapper;
-import .repository.Rfid_changeRepository;
-import com.smartwc.qlzw.com.utils.Pager;
-import com.smartwc.qlzw.com.utils.RESPONSE_STATUS;
-import com.smartwc.qlzw.com.utils.ResponseStatusGennerator;
+import com.qlzw.smartwc.mapper.Rfid_changeMapper;
+import com.qlzw.smartwc.repository.Rfid_changeRepository;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.utils.RESPONSE_STATUS;
+import com.qlzw.smartwc.utils.ResponseStatusGennerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

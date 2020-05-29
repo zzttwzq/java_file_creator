@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Role;
-import .provider.RoleProvider;
+import com.qlzw.smartwc.model.Role;
+import com.qlzw.smartwc.provider.RoleProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

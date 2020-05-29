@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Rfid;
-import .provider.RfidProvider;
+import com.qlzw.smartwc.model.Rfid;
+import com.qlzw.smartwc.provider.RfidProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

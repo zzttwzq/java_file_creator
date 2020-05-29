@@ -1,6 +1,6 @@
-package .repository;
+package com.qlzw.smartwc.repository;
 
-import .model.Msg_log;
+import com.qlzw.smartwc.model.Msg_log;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

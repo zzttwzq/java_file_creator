@@ -1,6 +1,6 @@
-package .repository;
+package com.qlzw.smartwc.repository;
 
-import .model.Admin_user;
+import com.qlzw.smartwc.model.Admin_user;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

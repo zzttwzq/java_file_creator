@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Province;
-import .provider.ProvinceProvider;
+import com.qlzw.smartwc.model.Province;
+import com.qlzw.smartwc.provider.ProvinceProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
-package .provider;
+package com.qlzw.smartwc.provider;
 
-import com.smartwc.qlzw.com.utils.Pager;
-import .model.Admin_user;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.model.Admin_user;
 import java.util.Map;
 
 public class Admin_userProvider {

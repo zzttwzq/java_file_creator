@@ -1,7 +1,7 @@
-package .provider;
+package com.qlzw.smartwc.provider;
 
-import com.smartwc.qlzw.com.utils.Pager;
-import .model.Msg_log;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.model.Msg_log;
 import java.util.Map;
 
 public class Msg_logProvider {

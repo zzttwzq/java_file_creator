@@ -1,7 +1,7 @@
-package .mapper;
+package com.qlzw.smartwc.mapper;
 
-import .model.Email_send;
-import .provider.Email_sendProvider;
+import com.qlzw.smartwc.model.Email_send;
+import com.qlzw.smartwc.provider.Email_sendProvider;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
 import org.springframework.stereotype.Component;

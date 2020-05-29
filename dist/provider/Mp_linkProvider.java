@@ -1,7 +1,7 @@
-package .provider;
+package com.qlzw.smartwc.provider;
 
-import com.smartwc.qlzw.com.utils.Pager;
-import .model.Mp_link;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.model.Mp_link;
 import java.util.Map;
 
 public class Mp_linkProvider {

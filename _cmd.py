@@ -41,16 +41,11 @@ class cmds:
             for item in lists:
 
                 key = item[0]
-                if key == 'desc':
+                arr = item[1].split('.')
+                info = arr[0]
+                des = arr[1]
 
-                    desc = item[1]
-                else:
-
-                    arr = item[1].split('.')
-                    info = arr[0]
-                    des = arr[1]
-
-                    cloums = cloums + "`{0}` {1},".format(key, info)
+                cloums = cloums + "`{0}` {1} COMMENT '{2}',".format(key, info, des)
 
             cloums = cloums[0:len(cloums)-1]
             intsert1 = "CREATE TABLE {0} ({1}) ENGINE=InnoDB DEFAULT CHARSET='utf8';".format(
@@ -102,9 +97,9 @@ class cmds:
             string += "import " + path_name + ".mapper." + model_name + "Mapper;\r\n"
             string += "import " + path_name + ".repository." + model_name + "Repository;\r\n"
 
-            string += "import com.smartwc.qlzw.com.utils.Pager;\r\n"
-            string += "import com.smartwc.qlzw.com.utils.RESPONSE_STATUS;\r\n"
-            string += "import com.smartwc.qlzw.com.utils.ResponseStatusGennerator;\r\n"
+            string += "import " + path_name + ".utils.Pager;\r\n"
+            string += "import " + path_name + ".utils.RESPONSE_STATUS;\r\n"
+            string += "import " + path_name + ".utils.ResponseStatusGennerator;\r\n"
 
             string += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
             string += "import org.springframework.validation.annotation.Validated;\r\n"
@@ -271,7 +266,7 @@ class cmds:
             f = open(filepath, mode='w+')
 
             string = "package " + path_name + ".provider;\r\n\r\n"
-            string += "import com.smartwc.qlzw.com.utils.Pager;\r\n"
+            string += "import " + path_name + ".utils.Pager;\r\n"
             string += "import " + path_name + ".model." + model_name + ";\r\n"
             string += "import java.util.Map;\r\n\r\n"
             string += "public class " + model_name + "Provider {\r\n\r\n"

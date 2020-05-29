@@ -1,7 +1,7 @@
-package .provider;
+package com.qlzw.smartwc.provider;
 
-import com.smartwc.qlzw.com.utils.Pager;
-import .model.Dev_update_msg;
+import com.qlzw.smartwc.utils.Pager;
+import com.qlzw.smartwc.model.Dev_update_msg;
 import java.util.Map;
 
 public class Dev_update_msgProvider {
