@@ -1,0 +1,170 @@
+package .model;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.util.Date;
+
+@Entity
+public class Dev_action {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id; // 记录ID 
+    private String snno; // 设备snno 
+    private String method; // 上报方法 
+    private String proportion; // 液体配比 
+    private Float temperature; // 设备温度 
+    private Integer humidity; // 设备湿度 
+    private Float nh3; // 设备氨气值 
+    private Integer dayon; // 白天工作时间 
+    private Integer dayoff; // 白天停止时间 
+    private Integer nighton; // 晚上工作时间 
+    private Integer nightoff; // 晚上停止时间 
+    private Integer addwaternum; // 总加液次数 
+    private Integer addwatertime; // 单次加液时间 
+    private Integer atomizerpwm; // 雾化强度 
+    private Integer fanmin; // 风扇最小转速 
+    private Integer fanmax; // 风扇最大转速 
+    private Integer addtime; // 加液次数 
+    private Float totaladdwater; // 累计加水量 
+    private Integer create_at; // 创建于 
+    private Integer update_at; // 更新于 
+    private Integer delete_at; // 删除于 
+
+    public Dev_action(Long id,String snno,String method,String proportion,Float temperature,Integer humidity,Float nh3,Integer dayon,Integer dayoff,Integer nighton,Integer nightoff,Integer addwaternum,Integer addwatertime,Integer atomizerpwm,Integer fanmin,Integer fanmax,Integer addtime,Float totaladdwater,Integer create_at,Integer update_at,Integer delete_at) {
+        this.id=id;
+        this.snno=snno;
+        this.method=method;
+        this.proportion=proportion;
+        this.temperature=temperature;
+        this.humidity=humidity;
+        this.nh3=nh3;
+        this.dayon=dayon;
+        this.dayoff=dayoff;
+        this.nighton=nighton;
+        this.nightoff=nightoff;
+        this.addwaternum=addwaternum;
+        this.addwatertime=addwatertime;
+        this.atomizerpwm=atomizerpwm;
+        this.fanmin=fanmin;
+        this.fanmax=fanmax;
+        this.addtime=addtime;
+        this.totaladdwater=totaladdwater;
+        this.create_at=create_at;
+        this.update_at=update_at;
+        this.delete_at=delete_at;
+    }
+
+    public Dev_action() {}
+
+    public Long getId () { return this.id;}
+
+    public String getSnno () { return this.snno;}
+
+    public String getMethod () { return this.method;}
+
+    public String getProportion () { return this.proportion;}
+
+    public Float getTemperature () { return this.temperature;}
+
+    public Integer getHumidity () { return this.humidity;}
+
+    public Float getNh3 () { return this.nh3;}
+
+    public Integer getDayon () { return this.dayon;}
+
+    public Integer getDayoff () { return this.dayoff;}
+
+    public Integer getNighton () { return this.nighton;}
+
+    public Integer getNightoff () { return this.nightoff;}
+
+    public Integer getAddwaternum () { return this.addwaternum;}
+
+    public Integer getAddwatertime () { return this.addwatertime;}
+
+    public Integer getAtomizerpwm () { return this.atomizerpwm;}
+
+    public Integer getFanmin () { return this.fanmin;}
+
+    public Integer getFanmax () { return this.fanmax;}
+
+    public Integer getAddtime () { return this.addtime;}
+
+    public Float getTotaladdwater () { return this.totaladdwater;}
+
+    public Integer getCreate_at () { return this.create_at;}
+
+    public Integer getUpdate_at () { return this.update_at;}
+
+    public Integer getDelete_at () { return this.delete_at;}
+
+    public void setId (Long id) { this.id = id;}
+
+    public void setSnno (String snno) { this.snno = snno;}
+
+    public void setMethod (String method) { this.method = method;}
+
+    public void setProportion (String proportion) { this.proportion = proportion;}
+
+public void setTemperature (Float temperature) { this.temperature = temperature;}
+
+    public void setHumidity (Integer humidity) { this.humidity = humidity;}
+
+public void setNh3 (Float nh3) { this.nh3 = nh3;}
+
+    public void setDayon (Integer dayon) { this.dayon = dayon;}
+
+    public void setDayoff (Integer dayoff) { this.dayoff = dayoff;}
+
+    public void setNighton (Integer nighton) { this.nighton = nighton;}
+
+    public void setNightoff (Integer nightoff) { this.nightoff = nightoff;}
+
+    public void setAddwaternum (Integer addwaternum) { this.addwaternum = addwaternum;}
+
+    public void setAddwatertime (Integer addwatertime) { this.addwatertime = addwatertime;}
+
+    public void setAtomizerpwm (Integer atomizerpwm) { this.atomizerpwm = atomizerpwm;}
+
+    public void setFanmin (Integer fanmin) { this.fanmin = fanmin;}
+
+    public void setFanmax (Integer fanmax) { this.fanmax = fanmax;}
+
+    public void setAddtime (Integer addtime) { this.addtime = addtime;}
+
+public void setTotaladdwater (Float totaladdwater) { this.totaladdwater = totaladdwater;}
+
+    public void setCreate_at (Integer create_at) { this.create_at = create_at;}
+
+    public void setUpdate_at (Integer update_at) { this.update_at = update_at;}
+
+    public void setDelete_at (Integer delete_at) { this.delete_at = delete_at;}
+
+    public String toString() {
+
+        return " <Dev_action> {id = " + id + " " +
+                "snno = '" + snno + "' " +
+                "method = '" + method + "' " +
+                "proportion = '" + proportion + "' " +
+                "temperature = " + temperature + " " +
+                "humidity = " + humidity + " " +
+                "nh3 = " + nh3 + " " +
+                "dayon = " + dayon + " " +
+                "dayoff = " + dayoff + " " +
+                "nighton = " + nighton + " " +
+                "nightoff = " + nightoff + " " +
+                "addwaternum = " + addwaternum + " " +
+                "addwatertime = " + addwatertime + " " +
+                "atomizerpwm = " + atomizerpwm + " " +
+                "fanmin = " + fanmin + " " +
+                "fanmax = " + fanmax + " " +
+                "addtime = " + addtime + " " +
+                "totaladdwater = " + totaladdwater + " " +
+                "create_at = " + create_at + " " +
+                "update_at = " + update_at + " " +
+                "delete_at = " + delete_at + " " + "}";
+    }
+}

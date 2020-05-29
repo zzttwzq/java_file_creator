@@ -543,26 +543,45 @@ try:
         path = sys.argv[2]
 
     if cmd == "all_file" :
-        c.create_controllers(path)
-        c.create_repositories(path)
-        c.create_mappers(path)
-        c.create_provider(path)
-        c.create_model(path)
+
+        if len(path) > 0 :
+            c.create_controllers(path)
+            c.create_repositories(path)
+            c.create_mappers(path)
+            c.create_provider(path)
+            c.create_model(path)
+        else :
+            Log.error("错误","未指定路径！")
 
     elif cmd == "controller" :
-        c.create_controllers(path)
+        if len(path) > 0 :
+            c.create_controllers(path)
+        else :
+            Log.error("错误","未指定路径！")
 
     elif cmd == "repository" :
-        c.create_repositories(path)
+        if len(path) > 0 :
+            c.create_repositories(path)
+        else :
+            Log.error("错误","未指定路径！")
 
     elif cmd == "mapper" :
-        c.create_mappers(path)
+        if len(path) > 0 :
+            c.create_mappers(path)
+        else :
+            Log.error("错误","未指定路径！")
 
     elif cmd == "provider" :
-        c.create_provider(path)
+        if len(path) > 0 :
+            c.create_provider(path)
+        else :
+            Log.error("错误","未指定路径！")
 
     elif cmd == "model" :
-        c.create_model(path)
+        if len(path) > 0 :
+            c.create_model(path)
+        else :
+            Log.error("错误","未指定路径！")
 
     elif cmd == "table" :
         c.init_tables()
