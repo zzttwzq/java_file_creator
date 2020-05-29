@@ -4,4 +4,5 @@ dist/mapper/*
 dist/model/*
 dist/provider/*
 dist/repository/*
+dist/utils/*
 Core/__pycache__/*
