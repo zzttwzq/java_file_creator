@@ -15,28 +15,47 @@ from Core.mysql import MySqlConn
 #     'YEAR', 'GEOMETRY', 'POINT', 'LINESTRING', 'POLYGON',
 #     'MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON', 'GEOMETRYCOLLECTION']
 
+
 class cmds:
 
-    def check_folder(self) :
+    def check_folder(self):
 
         logPath = os.getcwd()+"/Log/"
         if not os.path.exists(logPath):
             os.makedirs(logPath)
 
-        dirs = ["controller","model","mapper","provider","repository"]
+        dirs = ["controller", "model", "mapper", "provider", "repository", "utils"]
         files = []
 
-        for name in dirs :
+        for name in dirs:
             filepath = os.getcwd()+"/dist/"+name+"/"
             if not os.path.exists(filepath):
                 os.makedirs(filepath)
+
+    def clear_dir(self):
+
+        dirs = ["controller", "model", "mapper", "provider", "repository", "utils"]
+        files = []
+
+        for name in dirs:
+            filepath = os.getcwd()+"/dist/"+name+"/"
+            fs = os.listdir(filepath)
+
+            for f in fs:
+                files.append(filepath+f)
+
+        for f in files:
+            if f.find(".DS_Store") < 0:
+                Log.info("删除文件："+f)
+                os.remove(f)
 
     def init_tables(self):
         c = iniParser("tableinfo.ini")
         sections = c.getAllSections()
         for name in sections:
             lists = c.getAllKeys(name)
-            lists.insert(0, ('id', 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY . 记录ID'))
+            lists.insert(
+                0, ('id', 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY . 记录ID'))
             lists.append(('create_at', 'DATETIME . 创建于'))
             lists.append(('update_at', 'DATETIME . 更新于'))
             lists.append(('delete_at', 'DATETIME. 删除于'))
@@ -50,7 +69,8 @@ class cmds:
                 info = arr[0]
                 des = arr[1]
 
-                cloums = cloums + "`{0}` {1} COMMENT '{2}',".format(key, info, des)
+                cloums = cloums + \
+                    "`{0}` {1} COMMENT '{2}',".format(key, info, des)
 
             cloums = cloums[0:len(cloums)-1]
             intsert1 = "CREATE TABLE {0} ({1}) ENGINE=InnoDB DEFAULT CHARSET='utf8';".format(
@@ -62,24 +82,122 @@ class cmds:
             mysql = MySqlConn()
             mysql.execSql(intsert1)
             mysql.dispose()
-    
-    def clear_dir(self) :
 
-        dirs = ["controller","model","mapper","provider","repository"]
-        files = []
 
-        for name in dirs :
-            filepath = os.getcwd()+"/dist/"+name+"/"
-            fs = os.listdir(filepath)
+    def create_utils(self, path_name):
+        
+        c = iniParser("tableinfo.ini")
+        sections = c.getAllSections()
 
-            for f in fs :
-                files.append(filepath+f)
+        Log.info("","")
+        Log.info("utils","============= 生成 utils 文件 ================")
 
-        for f in files :
-            if f.find(".DS_Store") < 0 :
-                Log.info("删除文件："+f)
-                os.remove(f)
+        files = [os.getcwd()+"/dist/utils/Pager.java",
+                os.getcwd()+"/dist/utils/RESPONSE_STATUS.java",
+                os.getcwd()+"/dist/utils/ResponseStatusGennerator.java"]
 
+        for file_path in files :
+
+            Log.info("utils","开始生成："+file_path)
+            f = open(file_path, mode='w+')
+                            
+            string = "package " + path_name + ";\r\n\r\n"
+            if file_path.find("Pager.java") :
+                string += "public class Pager {\r\n"
+                string += "\r\n"
+                string += "    private Integer page;\r\n"
+                string += "    private Integer size;\r\n"
+                string += "\r\n"
+                string += "    public Pager() {}\r\n"
+                string += "\r\n"
+                string += "    public Pager(Integer page, Integer size) {\r\n"
+                string += "        this.page = page;\r\n"
+                string += "        this.size = size;\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public String toString() {\r\n"
+                string += "\r\n"
+                string += "        Integer page_start = (page-1)*size;\r\n"
+                string += "        Integer page_end = page*size;\r\n"
+                string += "\r\n"
+                string += "        return \" <Pager> { page=\" + page + \" size=\" + size + \"}\";\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public Integer getPage() {\r\n"
+                string += "        return page;\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public void setPage(Integer page) {\r\n"
+                string += "        this.page = page;\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public Integer getSize() {\r\n"
+                string += "        return size;\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public void setSize(Integer size) {\r\n"
+                string += "        this.size = size;\r\n"
+                string += "    }\r\n"
+                string += "}\r\n"
+                string += "\r\n"
+
+            elif file_path.find("RESPONSE_STATUS.java") :
+                string += "public enum RESPONSE_STATUS {\r\n"
+                string += "    RESPONSE_STATUS_SUCCESS,\r\n"
+                string += "    RESPONSE_STATUS_ERROR,\r\n"
+                string += "}\r\n"
+
+            elif file_path.find("ResponseStatusGennerator.java") :
+                string += "import org.springframework.stereotype.Component;\r\n"
+                string += "\r\n"
+                string += "import java.util.HashMap;\r\n"
+                string += "\r\n"
+                string += "/**\r\n"
+                string += " * Created by wuzhiqiang on 2020/5/26.\r\n"
+                string += " */\r\n"
+                string += "\r\n"
+                string += "@Component\r\n"
+                string += "public class ResponseStatusGennerator {\r\n"
+                string += "\r\n"
+                string += "    private static HashMap<String,HashMap> statusMap;\r\n"
+                string += "\r\n"
+                string += "    public ResponseStatusGennerator() {\r\n"
+                string += "\r\n"
+                string += "//        this.statusMap = new HashMap<>();\r\n"
+                string += "//        this.statusMap.put(\"\",);\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public Integer getCode(RESPONSE_STATUS em) {\r\n"
+                string += "\r\n"
+                string += "        if (em == RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS) {\r\n"
+                string += "\r\n"
+                string += "            return 0;\r\n"
+                string += "        }\r\n"
+                string += "        else if (em == RESPONSE_STATUS.RESPONSE_STATUS_ERROR) {\r\n"
+                string += "\r\n"
+                string += "            return 1;\r\n"
+                string += "        }\r\n"
+                string += "\r\n"
+                string += "        return 404;\r\n"
+                string += "    }\r\n"
+                string += "\r\n"
+                string += "    public String getMsg(RESPONSE_STATUS em) {\r\n"
+                string += "\r\n"
+                string += "        if (em == RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS) {\r\n"
+                string += "\r\n"
+                string += "            return \"成功！\";\r\n"
+                string += "        }\r\n"
+                string += "        else if (em == RESPONSE_STATUS.RESPONSE_STATUS_ERROR) {\r\n"
+                string += "\r\n"
+                string += "            return \"错误\";\r\n"
+                string += "        }\r\n"
+                string += "\r\n"
+                string += "        return \"\";\r\n"
+                string += "    }\r\n"
+                string += "}\r\n"
+
+            f.write(string)
+            f.close()
 
     def create_controllers(self, path_name) :
 
@@ -102,9 +220,7 @@ class cmds:
             string += "import " + path_name + ".mapper." + model_name + "Mapper;\r\n"
             string += "import " + path_name + ".repository." + model_name + "Repository;\r\n"
 
-            string += "import " + path_name + ".utils.Pager;\r\n"
-            string += "import " + path_name + ".utils.RESPONSE_STATUS;\r\n"
-            string += "import " + path_name + ".utils.ResponseStatusGennerator;\r\n"
+            string += "import " + path_name + ".utils.*;\r\n"
 
             string += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
             string += "import org.springframework.validation.annotation.Validated;\r\n"
@@ -550,6 +666,7 @@ try:
             c.create_mappers(path)
             c.create_provider(path)
             c.create_model(path)
+            c.create_utils(path)
         else :
             Log.error("错误","未指定路径！")
 
@@ -580,6 +697,12 @@ try:
     elif cmd == "model" :
         if len(path) > 0 :
             c.create_model(path)
+        else :
+            Log.error("错误","未指定路径！")
+
+    elif cmd == "util" :
+        if len(path) > 0 :
+            c.create_utils(path)
         else :
             Log.error("错误","未指定路径！")
 

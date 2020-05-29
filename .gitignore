@@ -1,3 +1,7 @@
 Log/*
-dist/*
+dist/controller/*
+dist/mapper/*
+dist/model/*
+dist/provider/*
+dist/repository/*
 Core/__pycache__/*
