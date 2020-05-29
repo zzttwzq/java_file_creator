@@ -18,6 +18,11 @@ from Core.mysql import MySqlConn
 class cmds:
 
     def check_folder(self) :
+
+        logPath = os.getcwd()+"/Log/"
+        if not os.path.exists(logPath):
+            os.makedirs(logPath)
+
         dirs = ["controller","model","mapper","provider","repository"]
         files = []
 
