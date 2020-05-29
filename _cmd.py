@@ -18,7 +18,7 @@ from Core.mysql import MySqlConn
 class cmds:
 
     def check_folder(self) :
-        dirs = ["controller","domain","mapper","provider","repository"]
+        dirs = ["controller","model","mapper","provider","repository"]
         files = []
 
         for name in dirs :
@@ -65,7 +65,7 @@ class cmds:
     
     def clear_dir(self) :
 
-        dirs = ["controller","domain","mapper","provider","repository"]
+        dirs = ["controller","model","mapper","provider","repository"]
         files = []
 
         for name in dirs :
