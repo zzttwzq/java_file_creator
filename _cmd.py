@@ -100,9 +100,9 @@ class cmds:
 
             Log.info("utils","开始生成："+file_path)
             f = open(file_path, mode='w+')
-                            
-            string = "package " + path_name + ";\r\n\r\n"
-            if file_path.find("Pager.java") :
+
+            string = "package " + path_name + ".utils;\r\n\r\n"
+            if file_path.find("Pager.java") > 0 :
                 string += "public class Pager {\r\n"
                 string += "\r\n"
                 string += "    private Integer page;\r\n"
@@ -141,13 +141,13 @@ class cmds:
                 string += "}\r\n"
                 string += "\r\n"
 
-            elif file_path.find("RESPONSE_STATUS.java") :
+            elif file_path.find("RESPONSE_STATUS.java") > 0 :
                 string += "public enum RESPONSE_STATUS {\r\n"
                 string += "    RESPONSE_STATUS_SUCCESS,\r\n"
                 string += "    RESPONSE_STATUS_ERROR,\r\n"
                 string += "}\r\n"
 
-            elif file_path.find("ResponseStatusGennerator.java") :
+            elif file_path.find("ResponseStatusGennerator.java") > 0 :
                 string += "import org.springframework.stereotype.Component;\r\n"
                 string += "\r\n"
                 string += "import java.util.HashMap;\r\n"
