@@ -15,7 +15,6 @@ from Core.mysql import MySqlConn
 #     'YEAR', 'GEOMETRY', 'POINT', 'LINESTRING', 'POLYGON',
 #     'MULTIPOINT', 'MULTILINESTRING', 'MULTIPOLYGON', 'GEOMETRYCOLLECTION']
 
-
 class cmds:
 
     def check_folder(self):
@@ -34,7 +33,7 @@ class cmds:
 
     def clear_dir(self):
 
-        dirs = ["controller", "model", "mapper", "provider", "repository", "utils"]
+        dirs = ["controller", "model", "mapper", "provider", "repository", "utils", "service"]
         files = []
 
         for name in dirs:
@@ -94,7 +93,7 @@ class cmds:
 
         files = [os.getcwd()+"/dist/utils/Pager.java",
                 os.getcwd()+"/dist/utils/RESPONSE_STATUS.java",
-                os.getcwd()+"/dist/utils/ResponseStatusGennerator.java"]
+                os.getcwd()+"/dist/service/ResponseService.java"]
 
         for file_path in files :
 
@@ -147,49 +146,49 @@ class cmds:
                 string += "    RESPONSE_STATUS_ERROR,\r\n"
                 string += "}\r\n"
 
-            elif file_path.find("ResponseStatusGennerator.java") > 0 :
-                string += "import org.springframework.stereotype.Component;\r\n"
+            elif file_path.find("ResponseService.java") > 0 :
+                string = "package "+ path_name +".service;\r\n"
+                string += "\r\n"
+                string += "import com.qlzw.smartwc.utils.RESPONSE_STATUS;\r\n"
+                string += "import org.springframework.stereotype.Service;\r\n"
                 string += "\r\n"
                 string += "import java.util.HashMap;\r\n"
                 string += "\r\n"
-                string += "/**\r\n"
-                string += " * Created by wuzhiqiang on 2020/5/26.\r\n"
-                string += " */\r\n"
+                string += "@Service\r\n"
+                string += "public class ResponseService {\r\n"
                 string += "\r\n"
-                string += "@Component\r\n"
-                string += "public class ResponseStatusGennerator {\r\n"
+                string += "    public HashMap<String,Object> getReturnResponse(RESPONSE_STATUS status, Object data) {\r\n"
                 string += "\r\n"
-                string += "    private static HashMap<String,HashMap> statusMap;\r\n"
-                string += "\r\n"
-                string += "    public ResponseStatusGennerator() {\r\n"
-                string += "\r\n"
-                string += "//        this.statusMap = new HashMap<>();\r\n"
-                string += "//        this.statusMap.put(\"\",);\r\n"
+                string += "        HashMap<String, Object> map = new HashMap<>();\r\n"
+                string += "        map.put(\"code\", this.getCode(status));\r\n"
+                string += "        map.put(\"msg\", this.getMsg(status));\r\n"
+                string += "        map.put(\"data\", data);\r\n"
+                string += "        return map;\r\n"
                 string += "    }\r\n"
                 string += "\r\n"
-                string += "    public Integer getCode(RESPONSE_STATUS em) {\r\n"
+                string += "    public Integer getCode(RESPONSE_STATUS status) {\r\n"
                 string += "\r\n"
-                string += "        if (em == RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS) {\r\n"
+                string += "        if (status == RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS) {\r\n"
                 string += "\r\n"
-                string += "            return 0;\r\n"
+                string += "            return 200;\r\n"
                 string += "        }\r\n"
-                string += "        else if (em == RESPONSE_STATUS.RESPONSE_STATUS_ERROR) {\r\n"
+                string += "        else if (status == RESPONSE_STATUS.RESPONSE_STATUS_ERROR) {\r\n"
                 string += "\r\n"
-                string += "            return 1;\r\n"
+                string += "            return 500;\r\n"
                 string += "        }\r\n"
                 string += "\r\n"
-                string += "        return 404;\r\n"
+                string += "        return 0;\r\n"
                 string += "    }\r\n"
                 string += "\r\n"
-                string += "    public String getMsg(RESPONSE_STATUS em) {\r\n"
+                string += "    public String getMsg(RESPONSE_STATUS status) {\r\n"
                 string += "\r\n"
-                string += "        if (em == RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS) {\r\n"
+                string += "        if (status == RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS) {\r\n"
                 string += "\r\n"
                 string += "            return \"成功！\";\r\n"
                 string += "        }\r\n"
-                string += "        else if (em == RESPONSE_STATUS.RESPONSE_STATUS_ERROR) {\r\n"
+                string += "        else if (status == RESPONSE_STATUS.RESPONSE_STATUS_ERROR) {\r\n"
                 string += "\r\n"
-                string += "            return \"错误\";\r\n"
+                string += "            return \"失败！\";\r\n"
                 string += "        }\r\n"
                 string += "\r\n"
                 string += "        return \"\";\r\n"
@@ -216,81 +215,50 @@ class cmds:
             f = open(filepath, mode='w+')
 
             string = "package " + path_name + ".controller;\r\n\r\n"
-            string += "import " + path_name + ".model." + model_name + ";\r\n\r\n"
-            string += "import " + path_name + ".mapper." + model_name + "Mapper;\r\n"
-            string += "import " + path_name + ".repository." + model_name + "Repository;\r\n"
-
-            string += "import " + path_name + ".utils.*;\r\n"
-
+            string += "import " + path_name + ".model." + model_name + ";\r\n"
+            string += "import " + path_name + ".service." + model_name + "Service;\r\n"
+            string += "import " + path_name + ".utils.*;\r\n\r\n"
             string += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
             string += "import org.springframework.validation.annotation.Validated;\r\n"
             string += "import org.springframework.web.bind.annotation.*;\r\n\r\n"
-            string += "import java.util.*;\r\n"
-            string += "@RequestMapping(\"/" + table_name + "\")\r\n\r\n"
+            string += "import java.util.*;\r\n\r\n"
+            string += "@RequestMapping(\"/" + table_name + "\")\r\n"
             string += "@RestController\r\n"
             string += "public class " + model_name + "Controller {\r\n\r\n"
             string += "    @Autowired\r\n"
-            string += "    private " + model_name + "Mapper " + table_name + "Mapper; \r\n\r\n"
-            string += "    @Autowired\r\n"
-            string += "    private " + model_name + "Repository " + table_name + "Repository; \r\n\r\n"
-            string += "    @Autowired\r\n"
-            string += "    private ResponseStatusGennerator responseStatus; \r\n\r\n"
+            string += "    private " + model_name + "Service " + table_name + "Service; \r\n\r\n"
             string += "    // 获取列表\r\n"
             string += "    @GetMapping\r\n"
-            string += "    public HashMap<String, Object> list(Pager page,@Validated " + model_name + " " + table_name + ") {\r\n"
+            string += "    public HashMap<String, Object> list(Pager page," + model_name + " " + table_name + ") {\r\n"
             string += "        \r\n"
-            string += "        List<" + model_name + "> list = " + table_name + "Mapper.list(page.getPage(),page.getSize());\r\n"
+            string += "        HashMap map = " + table_name + "Service.list(page," + table_name + ");\r\n"
             string += "        \r\n"
-            string += "        HashMap<String, Object> map = new HashMap<>();\r\n"
-            string += "        map.put(\"code\", responseStatus.getCode(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"msg\", responseStatus.getMsg(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"data\", list);\r\n"
             string += "        return map;\r\n"
             string += "    }\r\n\r\n"
             string += "    // 删除\r\n"
             string += "    @GetMapping(\"/delete/{id}\")\r\n"
             string += "    public HashMap<String, Object> delete(@PathVariable(\"id\") Long id) {\r\n"
             string += "        \r\n"
-            string += "        " + table_name + "Mapper.delete(id);\r\n"
+            string += "        HashMap map = " + table_name + "Service.delete(id);\r\n"
             string += "        \r\n"
-            string += "        HashMap<String, Object> map = new HashMap<>();\r\n"
-            string += "        map.put(\"code\", responseStatus.getCode(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"msg\", responseStatus.getMsg(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"data\", null);\r\n"
             string += "        return map;\r\n"
             string += "    }\r\n\r\n"
             string += "    // 查看详情\r\n"
             string += "    @GetMapping(\"/{id}\")\r\n"
             string += "    public HashMap<String, Object> show(@PathVariable(\"id\") Long id) {\r\n"
             string += "        \r\n"
-            string += "        " + model_name + " " + table_name + " = " + table_name + "Mapper.show(id);\r\n"
+            string += "        HashMap map = " + table_name + "Service.show(id);\r\n"
             string += "        \r\n"
-            string += "        HashMap<String, Object> map = new HashMap<>();\r\n"
-            string += "        map.put(\"code\", responseStatus.getCode(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"msg\", responseStatus.getMsg(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"data\", " + table_name + ");\r\n"
             string += "        return map;\r\n"
             string += "    }\r\n\r\n"
             string += "    // 插入，保存\r\n"
             string += "    @PostMapping\r\n"
             string += "    public HashMap<String, Object> store(@Validated " + model_name + " " + table_name + ") {\r\n"
             string += "        \r\n"
-            string += "        Long id = " + table_name + ".getId() != null ? " + table_name + ".getId() : 0;\r\n"
+            string += "        HashMap map = " + table_name + "Service.store(" + table_name + ");\r\n"
             string += "        \r\n"
-            string += "        if (id > 0) {\r\n"
-            string += "        \r\n"
-            string += "            " + table_name + "Mapper.update(" + table_name + ");\r\n"
-            string += "        } else {\r\n"
-            string += "        \r\n"
-            string += "            " + table_name + "Mapper.insert(" + table_name + ");\r\n"
-            string += "        }\r\n"
-            string += "        \r\n"
-            string += "        HashMap<String, Object> map = new HashMap<>();\r\n"
-            string += "        map.put(\"code\", responseStatus.getCode(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"msg\", responseStatus.getMsg(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS));\r\n"
-            string += "        map.put(\"data\", " + table_name + ");\r\n"
             string += "        return map;\r\n"
-            string += "    }\r\n\r\n"
+            string += "    }\r\n"
             string += "}\r\n\r\n"
 
             f.write(string)
@@ -318,6 +286,88 @@ class cmds:
             string += "import org.springframework.stereotype.Repository;\r\n\r\n"
             string += "@Repository\r\n"
             string += "public interface " + model_name + "Repository extends JpaRepository <" + model_name + ",Long>  {}\r\n\r\n"
+
+            f.write(string)
+            f.close()
+
+    def create_services(self, path_name) :
+
+        c = iniParser("tableinfo.ini")
+        sections = c.getAllSections()
+
+        Log.info("","")
+        Log.info("service","============= 生成 java service ================")
+
+        for table_name in sections:
+
+            model_name = table_name.capitalize()
+
+            filepath = os.getcwd()+"/dist/service/" + model_name + "Service.java"
+            Log.info("Service","开始生成："+filepath)
+            f = open(filepath, mode='w+')
+
+            string = "package " + path_name + ".service;\r\n\r\n"
+            string += "import " + path_name + ".model." + model_name + ";\r\n"
+            string += "import " + path_name + ".mapper." + model_name + "Mapper;\r\n"
+            string += "import " + path_name + ".repository." + model_name + "Repository;\r\n\r\n"
+            string += "import " + path_name + ".utils.*;\r\n\r\n"
+            string += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
+            string += "import org.springframework.validation.annotation.Validated;\r\n"
+            string += "import org.springframework.web.bind.annotation.*;\r\n\r\n"
+            string += "import org.springframework.stereotype.Service;\r\n\r\n"
+            string += "import com.qlzw.smartwc.service.ResponseService;\r\n\r\n"
+            string += "import java.util.*;\r\n\r\n"
+            string += "@Service\r\n"
+            string += "public class " + model_name + "Service {\r\n\r\n"
+            string += "    @Autowired\r\n"
+            string += "    private " + model_name + "Mapper " + table_name + "Mapper; \r\n\r\n"
+            string += "    @Autowired\r\n"
+            string += "    private " + model_name + "Repository " + table_name + "Repository; \r\n\r\n"
+            string += "    @Autowired\r\n"
+            string += "    private ResponseService responseService; \r\n\r\n"
+            string += "    // 获取列表\r\n"
+            string += "    public HashMap<String, Object> list(Pager page,@Validated " + model_name + " " + table_name + ") {\r\n"
+            string += "        \r\n"
+            string += "        List<" + model_name + "> list = " + table_name + "Mapper.list(page.getPage(),page.getSize());\r\n"
+            string += "        \r\n"
+            string += "        HashMap map = responseService.getReturnResponse(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS,list);\r\n"
+            string += "        \r\n"
+            string += "        return map;\r\n"
+            string += "    }\r\n\r\n"
+            string += "    // 删除\r\n"
+            string += "    public HashMap<String, Object> delete(@PathVariable(\"id\") Long id) {\r\n"
+            string += "        \r\n"
+            string += "        " + table_name + "Mapper.delete(id);\r\n"
+            string += "        \r\n"
+            string += "        HashMap map = responseService.getReturnResponse(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS,null);\r\n"
+            string += "        \r\n"
+            string += "        return map;\r\n"
+            string += "    }\r\n\r\n"
+            string += "    // 查看详情\r\n"
+            string += "    public HashMap<String, Object> show(@PathVariable(\"id\") Long id) {\r\n"
+            string += "        \r\n"
+            string += "        " + model_name + " " + table_name + " = " + table_name + "Mapper.show(id);\r\n"
+            string += "        \r\n"
+            string += "        HashMap map = responseService.getReturnResponse(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS," + table_name + ");\r\n"
+            string += "        \r\n"
+            string += "        return map;\r\n"
+            string += "    }\r\n\r\n"
+            string += "    // 插入，保存\r\n"
+            string += "    public HashMap<String, Object> store(@Validated " + model_name + " " + table_name + ") {\r\n"
+            string += "        \r\n"
+            string += "        Long id = " + table_name + ".getId() != null ? " + table_name + ".getId() : 0;\r\n"
+            string += "        \r\n"
+            string += "        if (id > 0) {\r\n"
+            string += "            " + table_name + "Mapper.update(" + table_name + ");\r\n"
+            string += "        } else {\r\n"
+            string += "            " + table_name + "Mapper.insert(" + table_name + ");\r\n"
+            string += "        }\r\n"
+            string += "        \r\n"
+            string += "        HashMap map = responseService.getReturnResponse(RESPONSE_STATUS.RESPONSE_STATUS_SUCCESS," + table_name + ");\r\n"
+            string += "        \r\n"
+            string += "        return map;\r\n"
+            string += "    }\r\n\r\n"
+            string += "}\r\n\r\n"
 
             f.write(string)
             f.close()
@@ -376,9 +426,9 @@ class cmds:
 
             lists = c.getAllKeys(table_name)
             lists.insert(0, ('id', 'INT. 记录ID'))
-            lists.append(('create_at', 'INT. 创建于'))
-            lists.append(('update_at', 'INT. 更新于'))
-            lists.append(('delete_at', 'INT. 删除于'))
+            lists.append(('create_at', 'DATETIME. 创建于'))
+            lists.append(('update_at', 'DATETIME. 更新于'))
+            lists.append(('delete_at', 'IDATETIMENT. 删除于'))
 
             model_name = table_name.capitalize()
 
@@ -448,7 +498,7 @@ class cmds:
                     colum_type == 'DATE' or
                     colum_type == 'TIME'):
 
-                    if_string = "        if (" + table_name + ".get" +  key.capitalize() +  "() != null && " + table_name + ".get" +  key.capitalize() +  "() > 0) {\r\n"
+                    if_string = "        if (" + table_name + ".get" +  key.capitalize() +  "() != null) {\r\n"
 
                 else:
                     print(item)
@@ -504,9 +554,9 @@ class cmds:
 
             lists = c.getAllKeys(table_name)
             lists.insert(0, ('id', 'INT. 记录ID'))
-            lists.append(('create_at', 'INT. 创建于'))
-            lists.append(('update_at', 'INT. 更新于'))
-            lists.append(('delete_at', 'INT. 删除于'))
+            lists.append(('create_at', 'DATETIME. 创建于'))
+            lists.append(('update_at', 'DATETIME. 更新于'))
+            lists.append(('delete_at', 'DATETIME. 删除于'))
 
             model_name = table_name.capitalize()
 
@@ -519,7 +569,7 @@ class cmds:
             string += "import javax.persistence.GeneratedValue;\r\n"
             string += "import javax.persistence.GenerationType;\r\n"
             string += "import javax.persistence.Id;\r\n"
-            string += "import java.util.Date;\r\n\r\n"
+            string += "import java.sql.Timestamp;\r\n\r\n"
             string += "@Entity\r\n"
             string += "public class " + model_name + " {\r\n\r\n"
 
@@ -544,6 +594,11 @@ class cmds:
                 colum_type = colum_type.strip()
                 colum_type = colum_type.upper()
 
+                if count == 0 :
+                    tostring_string += key + " = \" + " + key + " + \", \" +\r\n"
+                else :
+                    tostring_string += "                \"" + key + " = \" + " + key + " + \", \" +\r\n"
+
                 if (key == 'id' or
                     colum_type == 'REAL'):
 
@@ -551,11 +606,6 @@ class cmds:
                     const_string += "Long " + key + ","
                     get_string += "    public Long get" + key.capitalize() + " () { return this." + key + ";}\r\n\r\n"
                     set_string += "    public void set" + key.capitalize() + " (Long " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
-
-                    if count == 0 :
-                        tostring_string += key + " = \" + " + key + " + \" \" +\r\n"
-                    else :
-                        tostring_string += "                \"" + key + " = \" + " + key + " + \" \" +\r\n"
 
                 elif (colum_type == 'TINYINT' or
                     colum_type == 'SMALLINT' or
@@ -567,8 +617,6 @@ class cmds:
                     const_string += "Integer " + key + ","
                     get_string += "    public Integer get" +  key.capitalize() +  " () { return this." + key + ";}\r\n\r\n"
                     set_string += "    public void set" + key.capitalize() + " (Integer " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
-
-                    tostring_string += "                \"" + key + " = \" + " + key + " + \" \" +\r\n"
 
                 elif (colum_type == 'CHAR' or
                     colum_type == 'VARCHAR' or
@@ -582,7 +630,7 @@ class cmds:
                     get_string += "    public String get" + key.capitalize() + " () { return this." + key + ";}\r\n\r\n"
                     set_string += "    public void set" + key.capitalize() + " (String " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
 
-                    tostring_string += "                \"" + key + " = '\" + " + key + " + \"' \" +\r\n"
+                    tostring_string += "                \"" + key + " = '\" + " + key + " + \"', \" +\r\n"
                     
                 elif (colum_type == 'FLOAT'):
 
@@ -591,16 +639,12 @@ class cmds:
                     get_string += "    public Float get" + key.capitalize() + " () { return this." + key + ";}\r\n\r\n"
                     set_string += "public void set" + key.capitalize() + " (Float " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
 
-                    tostring_string += "                \"" + key + " = \" + " + key + " + \" \" +\r\n"
-
                 elif (colum_type == 'DOUBLE'):
 
                     prop_string += "    private Double " + key + "; //" + des + " \r\n"
                     const_string += "Double " + key + ","
                     get_string += "    public Double get" + key.capitalize() + " () { return this." + key + ";}\r\n\r\n"
                     set_string += "    public void set" + key.capitalize() + " (Double " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
-
-                    tostring_string += "                \"" + key + " = \" + " + key + " + \" \" +\r\n"
 
                 elif (colum_type == 'BOOLEAN'):
 
@@ -609,26 +653,21 @@ class cmds:
                     get_string += "    public Boolean get" + key.capitalize() + " () { return this." + key + ";}\r\n\r\n"
                     set_string += "    public void set" + key.capitalize() + " (Boolean " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
 
-                    tostring_string += "                \"" + key + " = \" + " + key + " + \" \" +\r\n"
-
                 elif (colum_type == 'DATETIME' or
                     colum_type == 'DATE' or
                     colum_type == 'TIME' or
                     colum_type == 'TIMESTAMP'):
 
-                    prop_string += "    private Integer " + key + "; //" + des + " \r\n"
-                    const_string += "Integer " + key + ","
-                    get_string += "    public Integer get" +  key.capitalize() +  " () { return this." + key + ";}\r\n\r\n"
-                    set_string += "    public void set" + key.capitalize() + " (Integer " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
-
-                    tostring_string += "                \"" + key + " = \" + " + key + " + \", \" +\r\n"
+                    prop_string += "    private Timestamp " + key + "; //" + des + " \r\n"
+                    const_string += "Timestamp " + key + ","
+                    get_string += "    public Timestamp get" +  key.capitalize() +  " () { return this." + key + ";}\r\n\r\n"
+                    set_string += "    public void set" + key.capitalize() + " (Timestamp " + key + ") { this." + key + " = " + key + ";}\r\n\r\n"
 
                 else:
                     print(item)
                     pass
                 
                 const_string2 += "        this." + key + "=" + key + ";\r\n"
-
                 count = count + 1
 
             const_string = const_string[0:len(const_string)-1]
@@ -666,6 +705,7 @@ try:
             c.create_mappers(path)
             c.create_provider(path)
             c.create_model(path)
+            c.create_services(path)
             c.create_utils(path)
         else :
             Log.error("错误","未指定路径！")
@@ -697,6 +737,12 @@ try:
     elif cmd == "model" :
         if len(path) > 0 :
             c.create_model(path)
+        else :
+            Log.error("错误","未指定路径！")
+
+    elif cmd == "service" :
+        if len(path) > 0 :
+            c.create_services(path)
         else :
             Log.error("错误","未指定路径！")
 
