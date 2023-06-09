@@ -1,8 +1,6 @@
+.DS_Store
+.vscode/settings.json
 Log/*
-dist/controller/*
-dist/mapper/*
-dist/model/*
-dist/provider/*
-dist/repository/*
-dist/utils/*
+dist/*
 Core/__pycache__/*
+*/__pycache__/*

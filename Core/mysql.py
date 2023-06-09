@@ -1,16 +1,19 @@
 # 导入pymysql模块
 import pymysql
-from DBUtils.PooledDB import PooledDB
+from dbutils.pooled_db import PooledDB
 from pymysql.cursors import DictCursor
+from Core.file_manager import *
+from Core.table_util import *
 
 # 配置信息请核对清楚，一定不要在生产环境使用表生成工具！！！
 class Config:
     DBHOST = "localhost"
     DBPORT = 3306
     DBUSER = "root"
-    DBPWD = "1111"
-    DBNAME = "runoob_db"
+    DBPWD = "123"
+    DBNAME = "cleaner"
     DBCHAR = "utf8"
+
 
 class MySqlConn:
     _conn = None
@@ -29,8 +32,8 @@ class MySqlConn:
 
         if MySqlConn.__pool is None:
             MySqlConn.__pool = PooledDB(creator=pymysql, mincached=1, maxcached=20,
-                                    host=mysql_config.DBHOST, port=mysql_config.DBPORT, user=mysql_config.DBUSER, passwd=mysql_config.DBPWD,
-                                    db=mysql_config.DBNAME, use_unicode=False, charset=mysql_config.DBCHAR, cursorclass=DictCursor)
+                                        host=mysql_config.DBHOST, port=mysql_config.DBPORT, user=mysql_config.DBUSER, passwd=mysql_config.DBPWD,
+                                        db=mysql_config.DBNAME, use_unicode=False, charset=mysql_config.DBCHAR, cursorclass=DictCursor)
         return MySqlConn.__pool.connection()
 
     def getAll(self, sql, param=None):
@@ -92,7 +95,7 @@ class MySqlConn:
         @param value:要插入的记录数据tuple/list
         @return: insertId 受影响的行数
         """
-        
+
         self._cursor.execute(sql, value)
         return self.__getInsertId()
 
@@ -173,3 +176,36 @@ class MySqlConn:
             self.end('rollback')
         self._cursor.close()
         self._conn.close()
+
+    def createTable(self, tableInfo):
+        """
+        @summary: 创建新的表
+        @param info: 表信息
+        """
+
+        values = ""
+        dbName = tableInfo["dbName"]
+        tableName = tableInfo["name"]
+        columnList = tableInfo["columns"]
+
+        Log.info("Table", "开始创建数据表: {0}".format(tableName))
+
+        for columnInfo in columnList:
+            cName = TableUtil.instanceName(columnInfo["name"])
+            cProperty = columnInfo["columnProperty"]
+            cDes = columnInfo["des"]
+            values += "{0} {1} COMMENT '{2}', ".format(cName, cProperty, cDes)
+
+        values = values[0: len(values) - 2]
+        str = "CREATE TABLE {0}.{1} ({2}) ENGINE=InnoDB DEFAULT CHARSET='utf8'".format(
+            dbName, tableName, values)
+
+        i = self.execSql(str)
+        if i >= 0:
+            Log.success("Table", "{0} 创建成功！".format(tableName))
+
+    def createDB(self, dbName):
+        Log.info("DB", "开始创建数据库：{0}".format(dbName))
+
+        self.execSql(
+            "CREATE DATABASE {0} CHARACTER SET utf8 COLLATE utf8_general_ci".format(dbName))

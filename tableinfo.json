@@ -1,0 +1,67 @@
+{
+    "version": "1.0.1",
+    "build": "100",
+    "packageName": "com.dd.demo1",
+    "appPath": "/Users/mac/Desktop/java_fast_template/",
+    "appName": "blog111",
+    "appNameCN": "博客",
+    "dbName": "test1",
+    "tableList": [{
+            "name": "test_table1",
+            "des": "我是描述，描述！！！",
+            "title": "我是标题",
+            "columns": [{
+                    "name": "id",
+                    "des": "小程序用户性别",
+                    "columnProperty": "int",
+                    "sort": "up",
+                    "align": "left",
+                    "width": 100,
+                    "showInSearch": 1,
+                    "formType": "number",
+                    "required": 1
+                },
+                {
+                    "name": "name",
+                    "des": "昵称",
+                    "columnProperty": "varchar(20)",
+                    "sort": "up",
+                    "align": "left",
+                    "width": 100,
+                    "showInSearch": 1,
+                    "formType": "text",
+                    "required": 1
+                }
+            ]
+        },
+        {
+            "dbName": "test1",
+            "name": "test_table2",
+            "des": "asdfasdf",
+            "title": "asdfasdf",
+            "columns": [{
+                    "name": "id",
+                    "des": "小程序用户性别",
+                    "columnProperty": "int",
+                    "sort": "up",
+                    "align": "left",
+                    "width": 100,
+                    "showInSearch": 1,
+                    "formType": "number",
+                    "required": 1
+                },
+                {
+                    "name": "age",
+                    "des": "昵称",
+                    "columnProperty": "varchar(20)",
+                    "sort": "up",
+                    "align": "left",
+                    "width": 100,
+                    "showInSearch": 1,
+                    "formType": "text",
+                    "required": 1
+                }
+            ]
+        }
+    ]
+}
