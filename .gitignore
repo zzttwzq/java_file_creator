@@ -1,6 +1,8 @@
 .DS_Store
-.vscode/settings.json
+.vscode/*
 Log/*
 dist/*
 Core/__pycache__/*
-*/__pycache__/*
+Creator/__pycache__/*
+Core/.DS_Store
+Creator/.DS_Store
