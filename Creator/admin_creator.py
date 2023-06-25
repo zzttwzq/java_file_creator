@@ -6,22 +6,23 @@ class AdminCreator:
     dirs = ["pages"]
     logPath = os.getcwd()+"/Log/"
     pathPrefix = os.getcwd()+"/dist/admin/"
-    routerPath = "/Users/mac/Desktop/java_fast_template/admin/src/router/local.js"
-    apiPath = "/Users/mac/Desktop/java_fast_template/admin/src/api/"
+
+    routerPath = ""
+    apiPath = ""
 
     @staticmethod
-    def create(names):
+    def create(talbeInfo, names):
 
         adminCreator = AdminCreator()
+        adminCreator.routerPath = talbeInfo["appPath"] + "admin/src/router/local.js"
+        adminCreator.apiPath = talbeInfo["appPath"] + "admin/src/api/"
 
         if names == "-d":
 
             adminCreator.clearDir()
         else:
 
-            info = TableUtil.getConfigInfo()
-            adminCreator.packageName = info["packageName"]
-            tableList = TableUtil.getTableInfoWidthNames(names)
+            tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
 
             Log.blank()
             Log.info(
@@ -323,6 +324,8 @@ class AdminCreator:
             string += "                component: () => import (\"@/pages/{0}/\"),\r\n".format(className)
             string += "            },\r\n"
 
+            Log.info("router", "开始生成："+instanceName)
+
         content[1] = "\r\n"  + string + "            "
         content = "//### 自动生成的Router".join(content)
 
@@ -362,6 +365,7 @@ class AdminCreator:
 
             string += "\r\n    // {0} \r\n".format(tableTitle)
             string += "    {0}: `$".format(constName)  + '{BASE_URL}' + "/{0}/{1}`, // {2} \r\n".format(appName, instanceName, classDes)
+            Log.info("router", "开始生成："+instanceName)
 
         content[1] = "\r\n"  + string + "\r\n    "
         content = "//### 自动生成的Apis".join(content)
@@ -455,6 +459,8 @@ class AdminCreator:
             requests += "export async function delete" + className + "ByID(id) {\r\n"
             requests += "    return request(" + constName + ", METHOD.GET, {id : id}, null)\r\n"
             requests += "}\r\n\r\n"
+
+            Log.info("router", "开始生成："+className)
 
         content[1] = apis + "\r\n    "
         content[3] = requests

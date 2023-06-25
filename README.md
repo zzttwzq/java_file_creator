@@ -43,7 +43,8 @@
 }
 ```
  
-## java pom.xml 依赖配置
+## java 目录中的配置
+#### java pom.xml 依赖配置
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -166,7 +167,7 @@
 </project>
 ```
 
-## java application.properties 配置
+#### java application.properties 配置
 ```
 # server
 server.port=7777
@@ -188,7 +189,8 @@ mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
 logging.file.path=/Users/wuzhiqiang/Desktop/springboot
 ```
 
-## admin proxy_table 配置
+## admin 目录中的配置
+#### admin proxy_table 配置
 在 ``` vue.config.js ```中找到
 ```js
     devServer: {
@@ -210,3 +212,14 @@ logging.file.path=/Users/wuzhiqiang/Desktop/springboot
 ```
 VUE_APP_API_BASE_URL=xxx /// 修改成对应的地址即可
 ```
+
+## uni 目录中的配置
+#### 
+
+## 更新内容
+
+#### 1.0.1
+1. 指定tableInfo.json 位置，可以多工程工作，修复相关bug
+
+#### 1.0.0 
+1. java、admin目录能正常生成内容并正常工作

@@ -7,21 +7,21 @@ class JavaCreator:
     dirs = ["controller", "model", "mapper",
             "provider", "service", "utils", "backUp"]
     logPath = os.getcwd()+"/Log/"
-    javaDestinationDir = ""
     pathPrefix = os.getcwd()+"/dist/java/"
+    javaDestinationDir = ""
     packageName = ""
 
     @staticmethod
-    def create(names):
+    def create(talbeInfo, names):
 
         javaCreator = JavaCreator()
-        info = TableUtil.getConfigInfo()
-        javaCreator.packageName = info["packageName"]
-        packagePathName = info["packageName"]
+        javaCreator.packageName = talbeInfo["packageName"]
+        
+        packagePathName = talbeInfo["packageName"]
         packagePathName = packagePathName.replace(".", "/")
-        javaCreator.javaDestinationDir = info["appPath"] + \
+        javaCreator.javaDestinationDir = talbeInfo["appPath"] + \
             "java/src/main/java/" + packagePathName + "/"
-
+        
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
         if not os.path.exists(javaCreator.javaDestinationDir):
             Log.error("java_create", "源目录不存在，请指定源目录")
@@ -32,7 +32,7 @@ class JavaCreator:
             javaCreator.clearDir()
         else:
 
-            tableList = TableUtil.getTableInfoWidthNames(names)
+            tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
 
             Log.blank()
             Log.info(
@@ -163,6 +163,7 @@ class JavaCreator:
                     "FLOAT": "Float",
                     "DOUBLE": "Double",
                     "BOOLEAN": "Boolean",
+                    "BOOL": "Boolean",
                     "DATETIME": "Timestamp",
                     "DATE": "Timestamp",
                     "TIME": "Timestamp",

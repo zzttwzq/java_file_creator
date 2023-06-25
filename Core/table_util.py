@@ -5,14 +5,14 @@ import json
 class TableUtil:
 
     @staticmethod
-    def getConfigInfo():
+    def getConfigInfo(path = "tableinfo.json"):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param names: 输入的表名字符串
         @return: list 对应的表信息数组
         """
 
-        f = file_manager("tableinfo.json")
+        f = file_manager(path)
         c = f.read()
         f.close()
         c = ''.join(c)
@@ -21,18 +21,13 @@ class TableUtil:
         return d
 
     @staticmethod
-    def getTableInfoWidthNames(names):
+    def getTableInfoWidthNames(tableInfo, names):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
+        @param tableInfo: 配置信息
         @param names: 输入的表名字符串
         @return: list 对应的表信息数组
         """
-
-        f = file_manager("tableinfo.json")
-        c = f.read()
-        f.close()
-        c = ''.join(c)
-        d = json.loads(c)
 
         tableInfoList = []
         nameList = names.split(",")
@@ -41,7 +36,7 @@ class TableUtil:
             nameList = []
 
         # 获取数据表列表
-        tableList = d["tableList"]
+        tableList = tableInfo["tableList"]
         for tableInfo in tableList:
             if len(nameList) == 0:
                 tableInfoList.append(tableInfo)

@@ -9,15 +9,10 @@ class TableCreator:
     pathPrefix = os.getcwd()+"/dist/table/"
 
     @staticmethod
-    def create(cmd, param):
+    def create(info, cmd, param):
 
         tableCreator = TableCreator()
-        info = TableUtil.getConfigInfo()
-        # tableCreator.packageName = info["packageName"]
-        # packagePathName = info["packageName"]
-        # packagePathName = packagePathName.replace(".", "/")
-        # tableCreator.javaDestinationDir = info["appPath"] + "java/src/main/java/" + packagePathName + "/"
-
+        
         # 创建 文件夹
         tableCreator.checkFolder()
 
@@ -30,7 +25,7 @@ class TableCreator:
             if len(param) == 0:
                 Log.error("Table", "未指定表名！")
             else:
-                tableList = TableUtil.getTableInfoWidthNames(param)
+                tableList = TableUtil.getTableInfoWidthNames(info, param)
                 if len(tableList) == 0:
                     Log.error("Table", "{0} 在tableinfo.json 中未找到！".format(param))
                 for tableInfo in tableList:
