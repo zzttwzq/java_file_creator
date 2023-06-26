@@ -53,9 +53,11 @@ class cmds:
         # cmd2 = sys.argv[1]
 
         if cmd == "-all":
-            JavaCreator.create("-all")
-            AdminCreator.create("-all")
-            UniCreator.create("-all")
+            TableCreator.create(info, "-db", info["dbName"])
+            TableCreator.create(info, "-table", "-all")
+            JavaCreator.create(info, "-all")
+            AdminCreator.create(info, "-all")
+            # UniCreator.create(info, "-all")
 
         elif cmd == "table":
 
