@@ -1,6 +1,28 @@
 # java_file_creator
 快速生成 springboot下的java curd文件，admin文件，uniapp文件
 
+## 使用
+| 命令头  | 命令1                  | 命令2                         | 参数             |
+| ------- | ---------------------- | ----------------------------- | ---------------- |
+| python3 | admin 生成后台管理系统 | -all 生成所有内容。           | names 可以指定表 |
+| python3 |                        | -page 生成page文件。          | names 可以指定表 |
+| python3 |                        | -router 生成router路由。      | names 可以指定表 |
+| python3 |                        | -api 生成api信息。            | names 可以指定表 |
+| python3 |                        | -request 生成request文件。    | names 可以指定表 |
+|         |                        |                               |                  |
+| python3 | java 生成java后台内容  | -all 生成所有内容。           | names 可以指定表 |
+| python3 |                        | -model 生成page文件。         | names 可以指定表 |
+| python3 |                        | -mapper 生成router路由。      | names 可以指定表 |
+| python3 |                        | -provider 生成api信息。       | names 可以指定表 |
+| python3 |                        | -service 生成request文件。    | names 可以指定表 |
+| python3 |                        | -controller 生成request文件。 | names 可以指定表 |
+| python3 |                        | -util 生成request文件。       | names 可以指定表 |
+|         |                        |                               |                  |
+| python3 | db 生成数据库相关      | -db 生成数据库。              | names 数据库名称 |
+| python3 |                        | -table 生成数据表。           | names 可以指定表 |
+| python3 |                        | -seed 生成种子数据。          | names 可以指定表 |
+|         |                        |                               |                  |
+
 ## tableinfo.json文件中定义表内容
 ```json
 {
@@ -11,6 +33,11 @@
     "appName": "blog111", // app英文名称，用户api等
     "appNameCN": "博客", // app中文名称，显示在页面上的app名称
 	"dbName": "test1", // 数据库名称
+    "tableSchema": {
+        "learn_category^学习分类^学习分类": [
+            "title^标题^varchar(1000)"
+        ],
+    },
     "tableList": [{ // 表信息
             "name": "test_table1", // 表名称，请使用下划线分隔开
             "title": "我是标题", // 表标题
@@ -39,7 +66,15 @@
                 }
             ]
         },
-    ]
+    ],
+    "tableSeeds": [{
+        "name": "table1",
+        "data": [
+            {
+                "id": 1
+            }
+        ]
+    }]
 }
 ```
  
@@ -216,7 +251,50 @@ VUE_APP_API_BASE_URL=xxx /// 修改成对应的地址即可
 ## uni 目录中的配置
 #### 
 
+
+
 ## 更新内容
+#### 1.0.2
+1. 修复admin page 缺少id，createAt，updateAt，deleteAt，等字段
+2. admin page 添加key字段
+3. admin page search 屏蔽id，createAt，updateAt，deleteAt，等字段
+4. admin page 导入的接口方法调整
+5. admin page 添加handelModifyData handelWillAdd handelWillEdit等方法
+6. admin request 生成接口方法调整
+7. admin 命令调整如下：
+   
+| 命令头  | 命令1                  | 命令2                      | 参数             |
+| ------- | ---------------------- | -------------------------- | ---------------- |
+| python3 | admin 生成后台管理系统 | -all 生成所有内容。        | names 可以指定表 |
+| python3 |                        | -page 生成page文件。       | names 可以指定表 |
+| python3 |                        | -router 生成router路由。   | names 可以指定表 |
+| python3 |                        | -api 生成api信息。         | names 可以指定表 |
+| python3 |                        | -request 生成request文件。 | names 可以指定表 |
+
+8. 修复java mapper 缺少id，createAt，updateAt，deleteAt，等字段
+9. java 命令调整如下：
+   
+| 命令头  | 命令1                 | 命令2                         | 参数             |
+| ------- | --------------------- | ----------------------------- | ---------------- |
+| python3 | java 生成java后台内容 | -all 生成所有内容。           | names 可以指定表 |
+| python3 |                       | -model 生成page文件。         | names 可以指定表 |
+| python3 |                       | -mapper 生成router路由。      | names 可以指定表 |
+| python3 |                       | -provider 生成api信息。       | names 可以指定表 |
+| python3 |                       | -service 生成request文件。    | names 可以指定表 |
+| python3 |                       | -controller 生成request文件。 | names 可以指定表 |
+| python3 |                       | -util 生成request文件。       | names 可以指定表 |
+
+10. 添加db_creator，可以生成数据库和数据表 java 命令调整如下：
+
+| 命令头  | 命令1             | 命令2                | 参数             |
+| ------- | ----------------- | -------------------- | ---------------- |
+| python3 | db 生成数据库相关 | -db 生成数据库。     | names 数据库名称 |
+| python3 |                   | -table 生成数据表。  | names 可以指定表 |
+| python3 |                   | -seed 生成种子数据。 | names 可以指定表 |
+
+11. 添加schema 命令; 根据tableinfo.json 中的 tableSchema 字段信息生成 tableList字段内的内容，规则如下：
+    1.  table中 表名^表描述^表详细信息
+    2.  column中 字段名^字段描述^数据属性
 
 #### 1.0.1
 1. 指定tableInfo.json 位置，可以多工程工作，修复相关bug

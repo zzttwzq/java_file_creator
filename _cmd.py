@@ -33,7 +33,7 @@ from Core.mysql import MySqlConn
 from Creator.java_creator import *
 from Creator.admin_creator import *
 from Creator.uni_creator import *
-from Creator.table_creator import *
+from Creator.db_creator import *
 
 # 项目配置文件
 infoPath = "/Users/mac/Desktop/myblog/tableinfo.json"
@@ -43,14 +43,12 @@ class cmds:
 
     @staticmethod
     def checkCMD():
-
         if len(sys.argv) == 1:
-            Log.error("cmd", "请输入命令！")
+            cmds.cmdError("")
             return
 
         info = TableUtil.getConfigInfo(path=infoPath)
         cmd = sys.argv[1]
-        # cmd2 = sys.argv[1]
 
         if cmd == "-all":
             TableCreator.create(info, "-db", info["dbName"])
@@ -59,22 +57,18 @@ class cmds:
             AdminCreator.create(info, "-all")
             # UniCreator.create(info, "-all")
 
-        elif cmd == "table":
-
+        elif cmd == "db":
             if len(sys.argv) > 2:
                 mode = sys.argv[2]
+                names = "-all"
+                if len(sys.argv) > 3:
+                    names = sys.argv[3]
 
-            if len(sys.argv) > 3:
-                param = sys.argv[3]
-
-            TableCreator.create(info, mode, param)
+                DBCreator.create(info, mode, names)
+            else:
+                DBCreator.cmdError()
 
         elif cmd == "schema":
-
-            # if "tableSchema" in info.keys() == False:
-            #     Log.error("cmd", "不存在 tableSchema")
-            #     return
-
             schemas = info["tableSchema"]
             liKeys = schemas.keys()
             tableList = []
@@ -95,7 +89,7 @@ class cmds:
 
                     if len(columInfo) >= 4:
                         formType = columInfo[3]
-                    else :
+                    else:
                         coulumTypeTemp = {
                             "REAL": "number",
                             "TINYINT": "number",
@@ -154,50 +148,58 @@ class cmds:
             Log.success("schema", "生成成功")
 
         elif cmd == "java":
-            mode = sys.argv[2]
-            if len(sys.argv) > 3 or mode == "-all":
-                if mode == "-all":
-                    JavaCreator.create(info, "-all")
-                elif mode == "-d":
-                    JavaCreator.create(info, "-d")
-                else:
+            if len(sys.argv) > 2:
+                mode = sys.argv[2]
+                names = "-all"
+                if len(sys.argv) > 3:
                     names = sys.argv[3]
-                    JavaCreator.create(info, names)
+
+                JavaCreator.create(info, mode, names)
             else:
-                Log.error("错误", "命令错误！")
+                JavaCreator.cmdError()
 
         elif cmd == "admin":
-            mode = sys.argv[2]
-            if len(sys.argv) > 3 or mode == "-all":
-                if mode == "-all":
-                    AdminCreator.create(info, "-all")
-                elif mode == "-d":
-                    AdminCreator.create(info, "-d")
-                else:
+            if len(sys.argv) > 2:
+                mode = sys.argv[2]
+                names = "-all"
+                if len(sys.argv) > 3:
                     names = sys.argv[3]
-                    AdminCreator.create(info, names)
+
+                AdminCreator.create(info, mode, names)
             else:
-                Log.error("错误", "命令错误！")
+                AdminCreator.cmdError()
 
         elif cmd == "uni":
-            mode = sys.argv[2]
-            if len(sys.argv) > 3 or mode == "-all":
-                if mode == "-all":
-                    UniCreator.create("-all")
-                elif mode == "-n":
+            if len(sys.argv) > 2:
+                mode = sys.argv[2]
+                names = "-all"
+                if len(sys.argv) > 3:
                     names = sys.argv[3]
-                    UniCreator.create(names)
-                elif mode == "-d":
-                    UniCreator.create("-d")
+
+                UniCreator.create(info, mode, names)
             else:
-                Log.error("错误", "命令错误！")
+                UniCreator.cmdError()
+        else:
+            cmds.cmdError(cmd)
 
-        if cmd == "":
-            Log.error("错误", "未知命令")
-
+    @staticmethod
+    def cmdError(cmd):
+        Log.info("_cmd", "命令错误 [{0}]：\r\n \
+            尝试以下命令：、\r\n  \
+            -all 生成所有内容。\r\n \
+            db -[option] 数据库相关。\r\n \
+            schema 根据tableinfo.json中的schema数组生成表和字段列表。\r\n \
+            java -[option] 生成page文件。\r\n \
+            admin -[option] 生成router路由。\r\n \
+            uni -[option] 生成api信息。\r\n \
+            java -request 生成request文件。\r\n \
+        ".format(cmd))
 
 def __main__():
-    cmds.checkCMD()
+    try:
+        cmds.checkCMD()
+    except Exception as e:
+        print(e)
 
 
 __main__()

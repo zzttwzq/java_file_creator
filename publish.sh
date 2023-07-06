@@ -7,6 +7,6 @@ read -p "请输入提交版本号：" v
 echo 'update()：<'$v'> 详见readme.md文件'
 git commit -m 'update()：<'$v'> 详见readme.md文件'
 git tag -a $v -m $v
-git push --tags
 
 git push
+git push --tags

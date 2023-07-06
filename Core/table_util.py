@@ -5,7 +5,7 @@ import json
 class TableUtil:
 
     @staticmethod
-    def getConfigInfo(path = "tableinfo.json"):
+    def getConfigInfo(path="tableinfo.json"):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param names: 输入的表名字符串
@@ -74,13 +74,26 @@ class TableUtil:
 
         className = TableUtil.className(name)
         return className[:1].lower() + className[1:]
-    
+
     @staticmethod
-    def addModelDefaultProperty(columns) :
+    def addModelDefaultProperty(columns):
         """
         @summary: 对表添加 createTime updateTime deleteTime等信息
         @param columns: 表字段列表
         """
+
+        columns.insert(0, {
+            "name": "id",
+            "des": "记录id",
+            "columnProperty": "int NOT NULL AUTO_INCREMENT PRIMARY KEY",
+            "formType": "number",
+            "showTime": 0,
+            "showInSearch": 0,
+            "required": 0,
+            "sort": "up",
+            "align": "center",
+            "width": 100,
+        })
 
         columns.append({
             "name": "create_at",
@@ -126,7 +139,7 @@ class TableUtil:
         Log.error("TableUtil", "未实现的方法: uncamelize")
 
     @staticmethod
-    def replaceUnValidJsonValueWithKey(source, key, value) :
+    def replaceUnValidJsonValueWithKey(source, key, value):
         """
         @summary: 对于不标准的json字符串中替换key对应的value, key的冒号后面需要有一个空格
         @param source: json字符串
@@ -151,7 +164,7 @@ class TableUtil:
         return d
 
     @staticmethod
-    def replaceValidJsonValueWithKey(source, key, value) :
+    def replaceValidJsonValueWithKey(source, key, value):
         """
         @summary: 对于标准的json字符串中替换key对应的value, key的冒号后面需要有一个空格
         @param source: json字符串
@@ -160,7 +173,24 @@ class TableUtil:
         @return: string 替换好的字符串
         """
         c = json.loads(source)
-        
+
         c[key] = value
 
         return json.dumps(c)
+
+    @staticmethod
+    def createFolder(logPath, pathPrefix, dirs):
+        """
+        @summary: 检查对应的文件夹是否创建，如果未创建则创建之
+        @param logPath: 日志路径
+        @param pathPrefix: 目录路径位置
+        @param dirs: 要创建的目录名称
+        """
+
+        if not os.path.exists(logPath):
+            os.makedirs(logPath)
+
+        for name in dirs:
+            filepath = pathPrefix+name+"/"
+            if not os.path.exists(filepath):
+                os.makedirs(filepath)

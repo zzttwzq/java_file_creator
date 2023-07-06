@@ -1,35 +1,60 @@
+import copy
+
 import os
 from Core.file_manager import *
 from Core.table_util import *
+import shutil
 
 class AdminCreator:
-    dirs = ["pages"]
+    dirs = ["pages", "backUp"]
     logPath = os.getcwd()+"/Log/"
     pathPrefix = os.getcwd()+"/dist/admin/"
 
+    destinationDir = ""
     routerPath = ""
     apiPath = ""
 
     @staticmethod
-    def create(talbeInfo, names):
+    def create(talbeInfo, mode, names):
 
         adminCreator = AdminCreator()
-        adminCreator.routerPath = talbeInfo["appPath"] + "admin/src/router/local.js"
-        adminCreator.apiPath = talbeInfo["appPath"] + "admin/src/api/"
 
-        if names == "-d":
+        # ------------ 准备路径信息
+        adminCreator.routerPath = talbeInfo["appPath"] + \
+            "admin/src/router/local.js"
+        adminCreator.apiPath = talbeInfo["appPath"] + "admin/src/api/"
+        adminCreator.destinationDir = talbeInfo["appPath"] + "admin/src/pages/"
+        adminCreator.pathPrefix = talbeInfo["appPath"] + "admin/src/"
+        # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
+        if not os.path.exists(adminCreator.destinationDir):
+            Log.error("java_create", "源目录不存在，请指定源目录")
+            return 0
+
+        # 创建 文件夹
+        TableUtil.createFolder(adminCreator.logPath,
+                               adminCreator.pathPrefix, adminCreator.dirs)
+
+        # ------------ 备份文件
+        zip_name = shutil.make_archive(
+            adminCreator.destinationDir, f'zip', adminCreator.destinationDir)
+        print(zip_name)  # 返回文件的最终路径
+        zip_name1 = zip_name
+        zip_name = zip_name.split(".")
+        zip_name2 = "pagesBack_{0}.".format(time.strftime(
+            "%Y-%m-%d_%H:%M:%S", time.localtime())).join(zip_name)
+        os.rename(zip_name1, zip_name2)
+        shutil.move(zip_name2, "dist/admin/backUp")
+
+        # ------------ 执行操作
+        tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
+        Log.blank()
+        Log.info(
+            "admin_create", "================ 正在为`{0}`生成admin文件 ================".format(names))
+
+        if mode == "-d":
 
             adminCreator.clearDir()
-        else:
-
-            tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
-
-            Log.blank()
-            Log.info(
-                "admin_create", "================ 正在为`{0}`生成admin文件 ================".format(names))
-
-            # 创建 文件夹
-            adminCreator.checkFolder()
+        elif mode == "-all":
 
             # 创建 page
             adminCreator.createPage(tableList)
@@ -42,6 +67,25 @@ class AdminCreator:
 
             # 创建 request
             adminCreator.createRequest(tableList)
+        elif mode == "-page":
+
+            # 创建 page
+            adminCreator.createPage(tableList)
+        elif mode == "-router":
+
+            # 创建 router
+            adminCreator.createRouter(tableList)
+        elif mode == "-api":
+
+            # 创建 api
+            adminCreator.createApi(tableList)
+        elif mode == "-request":
+
+            # 创建 request
+            adminCreator.createRequest(tableList)
+        else:
+
+            AdminCreator.cmdError()
 
     def checkFolder(self):
         """
@@ -56,11 +100,11 @@ class AdminCreator:
             if not os.path.exists(filepath):
                 os.makedirs(filepath)
 
-    def createPage(self, tableInfos) :
+    def createPage(self, tableInfos):
         Log.blank()
         Log.info("admin", "生成 admin pages")
 
-        for tableInfo in tableInfos :
+        for tableInfo in tableInfos:
 
             # 表名称
             tableName = tableInfo["name"]
@@ -76,51 +120,61 @@ class AdminCreator:
 
             # 字段属性列表
             columnLists = tableInfo["columns"]
+            columnLists2 = copy.deepcopy(columnLists)
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnLists)
+            TableUtil.addModelDefaultProperty(columnLists2)
 
             columns = ""
             searchs = ""
             forms = ""
             content = ""
-            idItem = ""
 
-            for columnInfo in columnLists :
+            for columnInfo in columnLists2:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
                 columnName = TableUtil.instanceName(columnInfo['name'])
 
+                # if columnName == "createAt" or columnName == "updateAt" or columnName == "deleteAt":
+                #     continue
+
                 columns += "        {\r\n"
-                columns += "          title: '{0}',//{1}\r\n".format(columnDes, columnDes)
+                columns += "          title: '{0}',//{1}\r\n".format(
+                    columnDes, columnDes)
                 columns += "          dataIndex: '{0}',\r\n".format(columnName)
+                columns += "          key: '{0}',\r\n".format(columnName)
                 keys = columnInfo.keys()
 
                 propKeys = ""
-                if "sort" in keys :
-                    propKeys += "          sort: '{0}',\r\n".format(columnInfo["sort"])
+                if "sort" in keys:
+                    propKeys += "          sort: '{0}',\r\n".format(
+                        columnInfo["sort"])
 
-                if "align" in keys :
-                    propKeys += "          align: '{0}',\r\n".format(columnInfo["align"])
+                if "align" in keys:
+                    propKeys += "          align: '{0}',\r\n".format(
+                        columnInfo["align"])
 
-                if "width" in keys :
-                    propKeys += "          width: {0},\r\n".format(columnInfo["width"])
+                if "width" in keys:
+                    propKeys += "          width: {0},\r\n".format(
+                        columnInfo["width"])
 
-                if "fixed" in keys :
-                    propKeys += "          fixed: '{0}',\r\n".format(columnInfo["fixed"])
+                if "fixed" in keys:
+                    propKeys += "          fixed: '{0}',\r\n".format(
+                        columnInfo["fixed"])
 
-                if "precision" in keys :
-                    propKeys += "          precision: {0},\r\n".format(columnInfo["precision"])
+                if "precision" in keys:
+                    propKeys += "          precision: {0},\r\n".format(
+                        columnInfo["precision"])
 
-                if "showTime" in keys :
-                    if columnInfo["showTime"] == 1 :
+                if "showTime" in keys:
+                    if columnInfo["showTime"] == 1:
                         a = "true"
-                    else :
+                    else:
                         a = "false"
                     propKeys += "          showTime: {0},\r\n".format(a)
 
                 columns += propKeys
-                columns += "        },"
+                columns += "        },\r\n"
 
                 # ---------- searchs forms ----------
                 formType = columnInfo['formType']
@@ -128,38 +182,45 @@ class AdminCreator:
                 required = str(columnInfo['required'])
 
                 item = "        {\r\n"
-                item += "          name: '{0}', //{1} \r\n".format(columnName, columnDes)
-                item += "          type: '{0}', // text, number, numberRange, select, date, datetime, dateRange\r\n".format(formType)
+                item += "          name: '{0}', //{1} \r\n".format(
+                    columnName, columnDes)
+                item += "          type: '{0}', // text, number, numberRange, select, date, datetime, dateRange\r\n".format(
+                    formType)
                 item += "          decorator: [\r\n"
                 item += "            '{0}',\r\n".format(columnName)
                 item += "            {\r\n"
                 item += "              rules: [\r\n"
-                item += "                { required: " + required + ", message: '" + columnDes + " 为必填项' },\r\n"
-                if formType == 'text' :
-                    if "limit" in keys :
+                item += "                { required: " + required + \
+                    ", message: '" + columnDes + " 为必填项' },\r\n"
+                if formType == 'text':
+                    if "limit" in keys:
                         limit = columnInfo['limit'].split("-")
                         li1 = limit[0]
-                        if len(limit) > 1 :
+                        if len(limit) > 1:
                             li2 = limit[1]
-                        else :
+                        else:
                             li2 = ''
-                        
-                        item += "                { min: " + li1 + ", message: '内容必须大于{1}个字符' },\r\n".format(li1)
-                        item += "                { max: " + li2 + ", message: '内容不超过{1}个字符' },\r\n".format(li2)
-                
+
+                        item += "                { min: " + li1 + \
+                            ", message: '内容必须大于{1}个字符' },\r\n".format(li1)
+                        item += "                { max: " + li2 + \
+                            ", message: '内容不超过{1}个字符' },\r\n".format(li2)
+
                 item += "              ],\r\n"
                 item += "            },\r\n"
                 item += "          ],\r\n"
-                if formType == 'number' :
+                if formType == 'number':
                     item += "          precision: 0,\r\n"
-                
-                if formType == 'select' :
+
+                if formType == 'select':
 
                     option_string = ''
-                    for value3  in columnInfo['options'] :
+                    for value3 in columnInfo['options']:
                         option_string += "            {\r\n"
-                        option_string += "              'label': '{0}',\r\n".format(value3['label'])
-                        option_string += "              'value': {1}\r\n".format(value3['value'])
+                        option_string += "              'label': '{0}',\r\n".format(
+                            value3['label'])
+                        option_string += "              'value': {1}\r\n".format(
+                            value3['value'])
                         option_string += "            },\r\n"
 
                     item += "          options: [\r\n"
@@ -169,17 +230,16 @@ class AdminCreator:
                 item += propKeys
                 item += "        },\r\n"
 
-                if columnName == "id" :
-                    idItem = item
-                    idItem = idItem[8:len(idItem)]
-                else :
+                if columnName != "id" and columnName != "createAt" and columnName != "updateAt" and columnName != "deleteAt":
                     forms += item
 
                 # search
-                if showInSearch == 1 :
-                    item = item.replace('{ required: true', '{ required: false')
-                    searchs += item
-                
+                if showInSearch == 1:
+                    item = item.replace(
+                        '{ required: true', '{ required: false')
+                    if columnName != "id" and columnName != "createAt" and columnName != "updateAt" and columnName != "deleteAt":
+                        searchs += item
+
             content += "<template>\r\n"
             content += "  <div>\r\n"
             content += "    <FastTable\r\n"
@@ -205,10 +265,12 @@ class AdminCreator:
             content += "</template>\r\n"
             content += "\r\n"
             content += "<script>\r\n"
-            content += 'import { ' + 'get{0}, post{1}, get{2}ByID, delete{3}ByID'.format(className, className, className, className) + ' } from \"@/api/request\" \r\n'
+            content += 'import { ' + 'get{0}, post{1}, get{2}ByID, delete{3}ByID'.format(
+                className, className, className, className) + ' } from \"@/api/request\" \r\n'
             content += "\r\n"
             content += "export default {\r\n"
-            content += "  name: '{0}Page', // {1} {2} \r\n ".format(className, tableTitle, classDes)
+            content += "  name: '{0}Page', // {1} {2} \r\n ".format(
+                className, tableTitle, classDes)
             content += "  data() {\r\n"
             content += "    return {\r\n"
             content += "      /// table\r\n"
@@ -224,44 +286,33 @@ class AdminCreator:
             content += "\r\n"
             content += "      /// 搜索内容\r\n"
             content += "      searchList: [\r\n"
-            content += "{0}\r\n".format(searchs)
+            content += searchs
             content += "      ],\r\n"
             content += "\r\n"
             content += "      /// 表单信息列表\r\n"
-            content += "      formList: [],\r\n"
-            content += "\r\n"
-            content += "      /// 不带id的表单列表\r\n"
-            content += "      formItems: [\r\n"
-            content += "{0}\r\n".format(forms)
+            content += "      formList: [\r\n"
+            content += forms
             content += "      ],\r\n"
-            content += "\r\n"
-            content += "      /// 表单id信息\r\n"
-            content += "      formIdItem: {0}\r\n".format(idItem)
             content += "\r\n"
             content += "      listRequest: get{0},\r\n".format(className)
             content += "      addRequest: post{0},\r\n".format(className)
             content += "      editRequest: post{0},\r\n".format(className)
-            content += "      editDetailRequest: get{0}ByID,\r\n".format(className)
-            content += "      deleteRequest: delete{0}ByID,\r\n".format(className)
+            content += "      editDetailRequest: get{0}ByID,\r\n".format(
+                className)
+            content += "      deleteRequest: delete{0}ByID,\r\n".format(
+                className)
             content += "    };\r\n"
             content += "  },\r\n"
-            content += "  created() {\r\n"
-            content += "  },\r\n"
+            content += "  created() {},\r\n"
             content += "  methods: {\r\n"
             content += "    handelListData(data) {\r\n"
             content += "      data.map((it) => {\r\n"
             content += "        // console.log(it)\r\n"
             content += "      })\r\n"
             content += "    },\r\n"
-            content += "    handelModifyData(values) {\r\n"
-            content += "        console.log(values)\r\n"
-            content += "    },\r\n"
-            content += "    handelWillAdd(values) {\r\n"
-            content += "        this.formList = [].concat(this.formItems)\r\n"
-            content += "    },\r\n"
-            content += "    handelWillEdit(values) {\r\n"
-            content += "        this.formList = [this.formIdItem].concat(this.formItems)\r\n"
-            content += "    },\r\n"
+            content += "    handelModifyData(values) {},\r\n"
+            content += "    handelWillAdd(values) {},\r\n"
+            content += "    handelWillEdit(values) {},\r\n"
             content += "  },\r\n"
             content += "};\r\n"
             content += "</script>\r\n"
@@ -281,7 +332,7 @@ class AdminCreator:
             f.write(content)
             f.close()
 
-    def createRouter(self, tableInfos) :
+    def createRouter(self, tableInfos):
         Log.blank()
         Log.info("admin", "生成 admin routers")
 
@@ -293,7 +344,7 @@ class AdminCreator:
         content = c.split("//### 自动生成的Router")
 
         string = ''
-        for tableInfo in tableInfos :
+        for tableInfo in tableInfos:
             # 表名称
             tableName = tableInfo["name"]
 
@@ -312,28 +363,31 @@ class AdminCreator:
             tableKeys = tableInfo.keys()
 
             string += "            {\r\n"
-            string += "                path: \"/{0}\",\r\n".format(instanceName)
+            string += "                path: \"/{0}\",\r\n".format(
+                instanceName)
             string += "                name: \"{0}\",\r\n".format(tableTitle)
             string += "                des: \"{0}\",\r\n".format(classDes)
             string += "                meta: {\r\n"
-            if "icon" in tableKeys :
-                string += "                    icon: \"{0}\"\r\n".format(tableInfo["icon"])
-            else :
+            if "icon" in tableKeys:
+                string += "                    icon: \"{0}\"\r\n".format(
+                    tableInfo["icon"])
+            else:
                 string += "                    icon: \"user\"\r\n"
             string += "                },\r\n"
-            string += "                component: () => import (\"@/pages/{0}/\"),\r\n".format(className)
+            string += "                component: () => import (\"@/pages/{0}/\"),\r\n".format(
+                className)
             string += "            },\r\n"
 
             Log.info("router", "开始生成："+instanceName)
 
-        content[1] = "\r\n"  + string + "            "
+        content[1] = "\r\n" + string + "            "
         content = "//### 自动生成的Router".join(content)
 
         f = open(self.routerPath, encoding='utf-8', mode="w+")
         f.write(content)
         f.close()
 
-    def createApi(self, tableInfos) :
+    def createApi(self, tableInfos):
         Log.blank()
         Log.info("admin", "生成 admin api")
 
@@ -347,7 +401,7 @@ class AdminCreator:
         appName = info["appName"]
 
         string = ''
-        for tableInfo in tableInfos :
+        for tableInfo in tableInfos:
             # 表名称
             tableName = tableInfo["name"]
 
@@ -364,17 +418,19 @@ class AdminCreator:
             instanceName = TableUtil.instanceName(tableName)
 
             string += "\r\n    // {0} \r\n".format(tableTitle)
-            string += "    {0}: `$".format(constName)  + '{BASE_URL}' + "/{0}/{1}`, // {2} \r\n".format(appName, instanceName, classDes)
+            string += "    {0}: `$".format(constName) + '{BASE_URL}' + \
+                "/{0}/{1}`, // {2} \r\n".format(appName,
+                                                instanceName, classDes)
             Log.info("router", "开始生成："+instanceName)
 
-        content[1] = "\r\n"  + string + "\r\n    "
+        content[1] = "\r\n" + string + "\r\n    "
         content = "//### 自动生成的Apis".join(content)
 
         f = open(self.apiPath + "api.js", encoding='utf-8', mode="w+")
         f.write(content)
         f.close()
 
-    def createRequest(self, tableInfos) :
+    def createRequest(self, tableInfos):
         Log.blank()
         Log.info("admin", "生成 admin request")
 
@@ -382,11 +438,11 @@ class AdminCreator:
         c = f.read()
         f.close()
         c = ''.join(c)
-                
+
         content = c.split("//### 自动生成的Api")
         requests = ""
         apis = ""
-        for tableInfo in tableInfos :
+        for tableInfo in tableInfos:
             # 表名称
             tableName = tableInfo["name"]
 
@@ -404,21 +460,24 @@ class AdminCreator:
 
             # 字段属性列表
             columnLists = tableInfo["columns"]
+            columnLists2 = copy.deepcopy(columnLists)
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnLists)
+            TableUtil.addModelDefaultProperty(columnLists2)
 
             columnNames = ""
-            for columnInfo in columnLists :
+            for columnInfo in columnLists:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
                 columnName = columnInfo['name']
 
-                columnNames += "    {0} : {1}\r\n".format(columnName, columnDes)
+                columnNames += "    {0} : {1}\r\n".format(
+                    columnName, columnDes)
 
             apis += "\r\n    {0}, // {1}".format(constName, classDes)
 
-            requests += "\r\n\r\n//************************ {0}\r\n".format(tableTitle)
+            requests += "\r\n\r\n//************************ {0}\r\n".format(
+                tableTitle)
 
             requests += "/**\r\n"
             requests += " * 获取{0}列表\r\n".format(tableTitle)
@@ -427,16 +486,20 @@ class AdminCreator:
             requests += "\r\n" + columnNames
             requests += "  }\r\n"
             requests += " */\r\n"
-            requests += "export async function get" + className + "(params) {\r\n"
-            requests += "    return request(" + constName + ", METHOD.GET, params ? params : {}, null)\r\n"
+            requests += "export async function get" + \
+                className + "(params) {\r\n"
+            requests += "    return request(" + constName + \
+                ", METHOD.GET, params ? params : {}, null)\r\n"
             requests += "}\r\n\r\n"
 
             requests += "/**\r\n"
             requests += " * 添加或修改{0}\r\n".format(tableTitle)
             requests += " \r\n"
             requests += " */\r\n"
-            requests += "export async function post" + className + "(params) {\r\n"
-            requests += "    return request(" + constName + ", METHOD.POST, params ? params : { }, null)\r\n"
+            requests += "export async function post" + \
+                className + "(params) {\r\n"
+            requests += "    return request(" + constName + \
+                ", METHOD.POST, params ? params : { }, null)\r\n"
             requests += "}\r\n\r\n"
 
             requests += "/**\r\n"
@@ -447,8 +510,10 @@ class AdminCreator:
             requests += "\r\n" + columnNames
             requests += "  }\r\n"
             requests += " */\r\n"
-            requests += "export async function get" + className + "ByID(id) {\r\n"
-            requests += "    return request(" + constName  + ' + "/" + ' + "id, METHOD.GET, {id : id}, null)\r\n"
+            requests += "export async function get" + \
+                className + "ByID(id) {\r\n"
+            requests += "    return request(" + constName + \
+                ' + "/" + ' + "id, METHOD.GET, {id : id}, null)\r\n"
             requests += "}\r\n\r\n"
 
             requests += "/**\r\n"
@@ -456,8 +521,10 @@ class AdminCreator:
             requests += " * @param id 详情id \r\n"
             requests += " \r\n"
             requests += " */\r\n"
-            requests += "export async function delete" + className + "ByID(id) {\r\n"
-            requests += "    return request(" + constName + ", METHOD.GET, {id : id}, null)\r\n"
+            requests += "export async function delete" + \
+                className + "ByID(id) {\r\n"
+            requests += "    return request(" + constName + \
+                ' + "/delete/" + ' + "id, METHOD.GET, {}, null)\r\n"
             requests += "}\r\n\r\n"
 
             Log.info("router", "开始生成："+className)
@@ -469,3 +536,14 @@ class AdminCreator:
         f = open(self.apiPath + "request.js", encoding='utf-8', mode="w+")
         f.write(content)
         f.close()
+
+    @staticmethod
+    def cmdError():
+        Log.info("admin_create", "命令错误：\r\n \
+            尝试以下命令：、\r\n  \
+            admin -all [names] 生成所有内容。\r\n \
+            admin -page [names] 生成page文件。\r\n \
+            admin -router [names] 生成router路由。\r\n \
+            admin -api [names] 生成api信息。\r\n \
+            admin -request [names] 生成request文件。\r\n \
+        ")
