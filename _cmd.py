@@ -36,8 +36,7 @@ from Creator.uni_creator import *
 from Creator.db_creator import *
 
 # 项目配置文件
-infoPath = "/Users/mac/Desktop/myblog/tableinfo.json"
-
+infoPath = "tableinfo.json"
 
 class cmds:
 
@@ -51,11 +50,14 @@ class cmds:
         cmd = sys.argv[1]
 
         if cmd == "-all":
-            TableCreator.create(info, "-db", info["dbName"])
-            TableCreator.create(info, "-table", "-all")
-            JavaCreator.create(info, "-all")
-            AdminCreator.create(info, "-all")
+            JavaCreator.create(
+                info, "model,mapper,provider,services,controller", "-all")
+            AdminCreator.create(
+                info, "page", "-all")
             # UniCreator.create(info, "-all")
+
+            DBCreator.create(info, "-table", "-all")
+            DBCreator.create(info, "-seed", "-all")
 
         elif cmd == "db":
             if len(sys.argv) > 2:
@@ -75,45 +77,48 @@ class cmds:
 
             for key in liKeys:
                 data = schemas[key]
-                tableInfo = key.split("^")
+                tableInfo = key.split(":")
 
                 colums = []
-
                 for li in data:
-                    columInfo = li.split("^")
+                    columInfo = li.split(":")
 
-                    showInSearch = 0
+                    width = 100
+                    showInSearch = 1
                     required = 0
                     formType = "text"
                     columnProperty = columInfo[2]
 
-                    if len(columInfo) >= 4:
-                        formType = columInfo[3]
-                    else:
-                        coulumTypeTemp = {
-                            "REAL": "number",
-                            "TINYINT": "number",
-                            "SMALLINT": "number",
-                            "MEDIUMINT": "number",
-                            "INT": "number",
-                            "BIGINT": "number",
-                            "FLOAT": "number",
-                            "DOUBLE": "number",
-                            "CHAR": "text",
-                            "VARCHAR": "text",
-                            "TINYTEXT": "textArea",
-                            "TEXT": "textArea",
-                            "MEDIUMTEXT": "textArea",
-                            "LONGTEXT": "textArea",
-                            "BOOL": "number",
-                            "BOOLEAN": "number",
-                            "DATETIME": "time",
-                            "DATE": "time",
-                            "TIME": "time",
-                            "TIMESTAMP": "time",
-                        }
-                        columnProperty = columnProperty.split("(")[0].upper()
+                    coulumTypeTemp = {
+                        "REAL": "number",
+                        "TINYINT": "number",
+                        "SMALLINT": "number",
+                        "MEDIUMINT": "number",
+                        "INT": "number",
+                        "BIGINT": "number",
+                        "FLOAT": "number",
+                        "DOUBLE": "number",
+                        "CHAR": "text",
+                        "VARCHAR": "text",
+                        "TINYTEXT": "textArea",
+                        "TEXT": "textArea",
+                        "MEDIUMTEXT": "textArea",
+                        "LONGTEXT": "textArea",
+                        "BOOL": "number",
+                        "BOOLEAN": "number",
+                        "DATETIME": "time",
+                        "DATE": "time",
+                        "TIME": "time",
+                        "TIMESTAMP": "time",
+                    }
+                    columnProperty = columnProperty.split("(")[0].upper()
+                    if columnProperty in coulumTypeTemp:
                         formType = coulumTypeTemp[columnProperty]
+                    else:
+                        formType = columnProperty
+
+                    if len(columInfo) >= 4:
+                        width = columInfo[3]
 
                     if len(columInfo) >= 5:
                         showInSearch = columInfo[4]
@@ -127,7 +132,7 @@ class cmds:
                         "columnProperty": columInfo[2],
                         "sort": "up",
                         "align": "left",
-                        "width": 100,
+                        "width": width,
                         "formType": formType,
                         "showInSearch": showInSearch,
                         "required": required,
@@ -135,8 +140,8 @@ class cmds:
 
                 tableList.append({
                     "name": tableInfo[0],
+                    "title": tableInfo[1] + "管理",
                     "des": tableInfo[1],
-                    "title": tableInfo[2],
                     "columns": colums
                 })
 
@@ -194,6 +199,7 @@ class cmds:
             uni -[option] 生成api信息。\r\n \
             java -request 生成request文件。\r\n \
         ".format(cmd))
+
 
 def __main__():
     try:

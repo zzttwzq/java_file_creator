@@ -3,14 +3,10 @@ import copy
 import os
 from Core.file_manager import *
 from Core.table_util import *
-import shutil
+
 
 class AdminCreator:
-    dirs = ["pages", "backUp"]
-    logPath = os.getcwd()+"/Log/"
-    pathPrefix = os.getcwd()+"/dist/admin/"
-
-    destinationDir = ""
+    pagePath = ""
     routerPath = ""
     apiPath = ""
 
@@ -22,28 +18,18 @@ class AdminCreator:
         # ------------ 准备路径信息
         adminCreator.routerPath = talbeInfo["appPath"] + \
             "admin/src/router/local.js"
-        adminCreator.apiPath = talbeInfo["appPath"] + "admin/src/api/"
-        adminCreator.destinationDir = talbeInfo["appPath"] + "admin/src/pages/"
         adminCreator.pathPrefix = talbeInfo["appPath"] + "admin/src/"
+        adminCreator.apiPath = talbeInfo["appPath"] + "admin/src/api/"
+        adminCreator.pagePath = talbeInfo["appPath"] + "admin/src/pages/"
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
-        if not os.path.exists(adminCreator.destinationDir):
-            Log.error("java_create", "源目录不存在，请指定源目录")
+        if not os.path.exists(adminCreator.pathPrefix):
+            Log.error("admin_creator", "源目录不存在，请指定源目录")
             return 0
 
-        # 创建 文件夹
-        TableUtil.createFolder(adminCreator.logPath,
-                               adminCreator.pathPrefix, adminCreator.dirs)
-
-        # ------------ 备份文件
-        zip_name = shutil.make_archive(
-            adminCreator.destinationDir, f'zip', adminCreator.destinationDir)
-        print(zip_name)  # 返回文件的最终路径
-        zip_name1 = zip_name
-        zip_name = zip_name.split(".")
-        zip_name2 = "pagesBack_{0}.".format(time.strftime(
-            "%Y-%m-%d_%H:%M:%S", time.localtime())).join(zip_name)
-        os.rename(zip_name1, zip_name2)
-        shutil.move(zip_name2, "dist/admin/backUp")
+        # 备份目录
+        TableUtil.packDir(adminCreator.pagePath, "dist/admin/pages/")
+        TableUtil.packDir(adminCreator.apiPath, "dist/admin/api/")
+        TableUtil.packDir(adminCreator.pathPrefix + "/router", "dist/admin/router/")
 
         # ------------ 执行操作
         tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
@@ -54,58 +40,25 @@ class AdminCreator:
         if mode == "-d":
 
             adminCreator.clearDir()
-        elif mode == "-all":
 
-            # 创建 page
-            adminCreator.createPage(tableList)
+        elif len(tableList) == 0:
 
-            # 创建 router
-            adminCreator.createRouter(tableList)
+            Log.error("uni_creator", "生成的数据为空！")
 
-            # 创建 api
-            adminCreator.createApi(tableList)
-
-            # 创建 request
-            adminCreator.createRequest(tableList)
-        elif mode == "-page":
-
-            # 创建 page
-            adminCreator.createPage(tableList)
-        elif mode == "-router":
-
-            # 创建 router
-            adminCreator.createRouter(tableList)
-        elif mode == "-api":
-
-            # 创建 api
-            adminCreator.createApi(tableList)
-        elif mode == "-request":
-
-            # 创建 request
-            adminCreator.createRequest(tableList)
         else:
+            if "page" in mode == False:
+                AdminCreator.cmdError()
 
-            AdminCreator.cmdError()
-
-    def checkFolder(self):
-        """
-        @summary: 检查对应的文件夹是否创建，如果未创建则创建之
-        """
-
-        if not os.path.exists(self.logPath):
-            os.makedirs(self.logPath)
-
-        for name in self.dirs:
-            filepath = self.pathPrefix+name+"/"
-            if not os.path.exists(filepath):
-                os.makedirs(filepath)
-
-    def createPage(self, tableInfos):
+            AdminCreator.createApis(adminCreator.apiPath, tableList)
+            AdminCreator.createRouters(adminCreator.routerPath, tableList)
+            AdminCreator.createRequests(adminCreator.apiPath, tableList)
+            AdminCreator.createPage(adminCreator.pagePath, tableList)
+                    
+    def createPage(pagePath, tableInfos):
         Log.blank()
-        Log.info("admin", "生成 admin pages")
+        Log.info("AdminPages", "开始生成 pages")
 
         for tableInfo in tableInfos:
-
             # 表名称
             tableName = tableInfo["name"]
 
@@ -118,25 +71,24 @@ class AdminCreator:
             # 对应的类名称
             className = TableUtil.className(tableName)
 
+            # 创建 文件夹
+            TableUtil.checkPath(pagePath + className)
+
             # 字段属性列表
-            columnLists = tableInfo["columns"]
-            columnLists2 = copy.deepcopy(columnLists)
+            columnList = copy.deepcopy(tableInfo["columns"])
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnLists2)
+            TableUtil.addModelDefaultProperty(columnList)
 
             columns = ""
             searchs = ""
             forms = ""
             content = ""
 
-            for columnInfo in columnLists2:
+            for columnInfo in columnList:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
                 columnName = TableUtil.instanceName(columnInfo['name'])
-
-                # if columnName == "createAt" or columnName == "updateAt" or columnName == "deleteAt":
-                #     continue
 
                 columns += "        {\r\n"
                 columns += "          title: '{0}',//{1}\r\n".format(
@@ -184,6 +136,7 @@ class AdminCreator:
                 item = "        {\r\n"
                 item += "          name: '{0}', //{1} \r\n".format(
                     columnName, columnDes)
+                item += "          title: '{0}',\r\n".format(columnDes)
                 item += "          type: '{0}', // text, number, numberRange, select, date, datetime, dateRange\r\n".format(
                     formType)
                 item += "          decorator: [\r\n"
@@ -230,7 +183,7 @@ class AdminCreator:
                 item += propKeys
                 item += "        },\r\n"
 
-                if columnName != "id" and columnName != "createAt" and columnName != "updateAt" and columnName != "deleteAt":
+                if columnName != "id" and columnName != "updateAt" and columnName != "deleteAt":
                     forms += item
 
                 # search
@@ -307,12 +260,12 @@ class AdminCreator:
             content += "  methods: {\r\n"
             content += "    handelListData(data) {\r\n"
             content += "      data.map((it) => {\r\n"
-            content += "        // console.log(it)\r\n"
+            content += "        console.log(it)\r\n"
             content += "      })\r\n"
             content += "    },\r\n"
-            content += "    handelModifyData(values) {},\r\n"
-            content += "    handelWillAdd(values) {},\r\n"
-            content += "    handelWillEdit(values) {},\r\n"
+            content += "    handelModifyData(values) {console.log(values);},\r\n"
+            content += "    handelWillAdd(values) {console.log(values);},\r\n"
+            content += "    handelWillEdit(values) {console.log(values);},\r\n"
             content += "  },\r\n"
             content += "};\r\n"
             content += "</script>\r\n"
@@ -321,22 +274,19 @@ class AdminCreator:
             content += "</style>\r\n"
             content += "\r\n"
 
-            dirPath = "{0}pages/{1}/".format(self.pathPrefix, className)
-            filepath = "{0}index.vue".format(dirPath, className)
+            filepath = "{0}{1}/index.vue".format(pagePath, className)
 
-            if not os.path.exists(dirPath):
-                os.makedirs(dirPath)
+            Log.success("page", "生成："+className)
 
-            Log.info("page", "开始生成："+filepath)
             f = open(filepath, mode='w+')
             f.write(content)
             f.close()
 
-    def createRouter(self, tableInfos):
+    def createRouters(routerPath, tableInfos):
         Log.blank()
-        Log.info("admin", "生成 admin routers")
+        Log.info("AdminRouters", "创建 routers")
 
-        f = open(self.routerPath)
+        f = open(routerPath)
         c = f.read()
         f.close()
         c = ''.join(c)
@@ -378,20 +328,20 @@ class AdminCreator:
                 className)
             string += "            },\r\n"
 
-            Log.info("router", "开始生成："+instanceName)
+            Log.success("router", "创建："+instanceName)
 
         content[1] = "\r\n" + string + "            "
         content = "//### 自动生成的Router".join(content)
 
-        f = open(self.routerPath, encoding='utf-8', mode="w+")
+        f = open(routerPath, encoding='utf-8', mode="w+")
         f.write(content)
         f.close()
 
-    def createApi(self, tableInfos):
+    def createApis(apiPath, tableInfos):
         Log.blank()
-        Log.info("admin", "生成 admin api")
+        Log.info("AdminApis", "创建 api")
 
-        f = open(self.apiPath + "api.js")
+        f = open(apiPath + "index.js")
         c = f.read()
         f.close()
         c = ''.join(c)
@@ -417,24 +367,25 @@ class AdminCreator:
             # 对应的实例名称
             instanceName = TableUtil.instanceName(tableName)
 
-            string += "\r\n    // {0} \r\n".format(tableTitle)
+            string += "\r\n    // {0} \r\n".format(classDes)
             string += "    {0}: `$".format(constName) + '{BASE_URL}' + \
-                "/{0}/{1}`, // {2} \r\n".format(appName,
-                                                instanceName, classDes)
-            Log.info("router", "开始生成："+instanceName)
+                "/{0}/{1}`, \r\n".format(appName,
+                                         instanceName
+                                         )
+            Log.success("api", "创建："+instanceName)
 
         content[1] = "\r\n" + string + "\r\n    "
         content = "//### 自动生成的Apis".join(content)
 
-        f = open(self.apiPath + "api.js", encoding='utf-8', mode="w+")
+        f = open(apiPath + "index.js", encoding='utf-8', mode="w+")
         f.write(content)
         f.close()
 
-    def createRequest(self, tableInfos):
+    def createRequests(apiPath, tableInfos):
         Log.blank()
-        Log.info("admin", "生成 admin request")
+        Log.info("AdminRequest", "创建 request")
 
-        f = open(self.apiPath + "request.js")
+        f = open(apiPath + "request.js")
         c = f.read()
         f.close()
         c = ''.join(c)
@@ -527,13 +478,13 @@ class AdminCreator:
                 ' + "/delete/" + ' + "id, METHOD.GET, {}, null)\r\n"
             requests += "}\r\n\r\n"
 
-            Log.info("router", "开始生成："+className)
+            Log.success("request", "创建："+className)
 
         content[1] = apis + "\r\n    "
         content[3] = requests
 
         content = "//### 自动生成的Api".join(content)
-        f = open(self.apiPath + "request.js", encoding='utf-8', mode="w+")
+        f = open(apiPath + "request.js", encoding='utf-8', mode="w+")
         f.write(content)
         f.close()
 

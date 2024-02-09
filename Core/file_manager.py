@@ -32,6 +32,24 @@ class file_manager:
     def close(self):
         self.f.close()
 
+    @staticmethod
+    def checkFilePath(path):
+        """
+        @summary: 检查对应的文件是否存在
+        @param path: 路径
+        """
+
+        return os.path.exists(path)
+
+    @staticmethod
+    def checkDirPath(path):
+        """
+        @summary: 检查对应的文件夹是否创建，如果未创建则创建之
+        @param path: 路径
+        """
+
+        if not os.path.exists(path):
+            os.makedirs(path)
 
 class Log:
 
@@ -109,14 +127,17 @@ class Log:
                 times, retStr, types, title, msg)
             print("\033[1;40;30m[{0}] \033[1;40;31m[{1}] {2} \033[1;40;33m\r\n    callpath: \r\n{3} \033[0m".format(
                 times, title, msg, retStr))
-            
+
         elif types == 'BLANK':
             logStr = "[{0}] \r\n".format(times)
             print("\033[1;40;30m[{0}] \033[0m".format(times))
 
-        d = times.split(" ")[0]
+        log_path = file_manager.getCurrentDir()+"/Log/"
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
-        file_path = file_manager.getCurrentDir()+"/Log/" + d + ".log"
+        fileName = times.split(" ")[0]
+        file_path = log_path + fileName + ".log"
 
         f = open(file_path, mode='a+', encoding='utf8')
 

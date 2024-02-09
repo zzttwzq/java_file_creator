@@ -2,26 +2,22 @@
 快速生成 springboot下的java curd文件，admin文件，uniapp文件
 
 ## 使用
-| 命令头  | 命令1                  | 命令2                         | 参数             |
-| ------- | ---------------------- | ----------------------------- | ---------------- |
-| python3 | admin 生成后台管理系统 | -all 生成所有内容。           | names 可以指定表 |
-| python3 |                        | -page 生成page文件。          | names 可以指定表 |
-| python3 |                        | -router 生成router路由。      | names 可以指定表 |
-| python3 |                        | -api 生成api信息。            | names 可以指定表 |
-| python3 |                        | -request 生成request文件。    | names 可以指定表 |
-|         |                        |                               |                  |
-| python3 | java 生成java后台内容  | -all 生成所有内容。           | names 可以指定表 |
-| python3 |                        | -model 生成page文件。         | names 可以指定表 |
-| python3 |                        | -mapper 生成router路由。      | names 可以指定表 |
-| python3 |                        | -provider 生成api信息。       | names 可以指定表 |
-| python3 |                        | -service 生成request文件。    | names 可以指定表 |
-| python3 |                        | -controller 生成request文件。 | names 可以指定表 |
-| python3 |                        | -util 生成request文件。       | names 可以指定表 |
-|         |                        |                               |                  |
-| python3 | db 生成数据库相关      | -db 生成数据库。              | names 数据库名称 |
-| python3 |                        | -table 生成数据表。           | names 可以指定表 |
-| python3 |                        | -seed 生成种子数据。          | names 可以指定表 |
-|         |                        |                               |                  |
+| 命令头  | 命令1                  | 命令2                                                   | 参数             |
+| ------- | ---------------------- | ------------------------------------------------------- | ---------------- |
+| python3 | admin 生成后台管理系统 | -all 生成所有内容。                                     | names 可以指定表 |
+| python3 |                        | -page 生成page文件。                                    | names 可以指定表 |
+| python3 |                        | -router 生成router路由。                                | names 可以指定表 |
+| python3 |                        | -api 生成api信息。                                      | names 可以指定表 |
+| python3 |                        | -request 生成request文件。                              | names 可以指定表 |
+|         |                        |                                                         |                  |
+| python3 | java(生成java后台内容) | [model,mapper,provider,service,controller] 生成对应内容 | names 可以指定表 |
+| python3 |                        | -util 生成util文件                                      | names 可以指定表 |
+| python3 |                        | -d 删除文件                                             | names 可以指定表 |
+|         |                        |                                                         |                  |
+| python3 | db 生成数据库相关      | -db 生成数据库。                                        | names 数据库名称 |
+| python3 |                        | -table 生成数据表。                                     | names 可以指定表 |
+| python3 |                        | -seed 生成种子数据。                                    | names 可以指定表 |
+|         |                        |                                                         |                  |
 
 ## tableinfo.json文件中定义表内容
 ```json

@@ -1,6 +1,6 @@
+import shutil
 from Core.file_manager import *
 import json
-
 
 class TableUtil:
 
@@ -47,6 +47,20 @@ class TableUtil:
         return tableInfoList
 
     @staticmethod
+    def packDir(dirPath, storePath):
+        TableUtil.checkPath(storePath)
+
+        # ------------ 备份文件
+        zip_name = shutil.make_archive(dirPath, f'zip', dirPath)
+        print(zip_name)  # 返回文件的最终路径
+        zip_name1 = zip_name
+        zip_name = zip_name.split(".")
+        zip_name2 = "pagesBack_{0}.".format(time.strftime(
+            "%Y-%m-%d_%H:%M:%S", time.localtime())).join(zip_name)
+        os.rename(zip_name1, zip_name2)
+        shutil.move(zip_name2, storePath)
+
+    @staticmethod
     def className(name=""):
         """
         @summary: 根据下划线或中划线返回驼峰字符串
@@ -82,18 +96,24 @@ class TableUtil:
         @param columns: 表字段列表
         """
 
-        columns.insert(0, {
-            "name": "id",
-            "des": "记录id",
-            "columnProperty": "int NOT NULL AUTO_INCREMENT PRIMARY KEY",
-            "formType": "number",
-            "showTime": 0,
-            "showInSearch": 0,
-            "required": 0,
-            "sort": "up",
-            "align": "center",
-            "width": 100,
-        })
+        hasId = False
+        for it in columns:
+            if it["name"] == "id":
+                hasId = True
+
+        if hasId == False:
+            columns.insert(0, {
+                "name": "id",
+                "des": "记录id",
+                "columnProperty": "int NOT NULL AUTO_INCREMENT PRIMARY KEY",
+                "formType": "number",
+                "showTime": 0,
+                "showInSearch": 0,
+                "required": 0,
+                "sort": "up",
+                "align": "center",
+                "width": 100,
+            })
 
         columns.append({
             "name": "create_at",
@@ -179,18 +199,10 @@ class TableUtil:
         return json.dumps(c)
 
     @staticmethod
-    def createFolder(logPath, pathPrefix, dirs):
+    def autoGenerateFile(filePath, names):
         """
-        @summary: 检查对应的文件夹是否创建，如果未创建则创建之
-        @param logPath: 日志路径
-        @param pathPrefix: 目录路径位置
-        @param dirs: 要创建的目录名称
+        @summary: 根据输入的表名字符串，获取对应的表信息数组
+        @param tableInfo: 配置信息
+        @param names: 输入的表名字符串
+        @return: list 对应的表信息数组
         """
-
-        if not os.path.exists(logPath):
-            os.makedirs(logPath)
-
-        for name in dirs:
-            filepath = pathPrefix+name+"/"
-            if not os.path.exists(filepath):
-                os.makedirs(filepath)
