@@ -6,3 +6,4 @@ Core/__pycache__/*
 Creator/__pycache__/*
 Core/.DS_Store
 Creator/.DS_Store
+Backup/*

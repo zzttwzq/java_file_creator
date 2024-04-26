@@ -2,9 +2,6 @@ import copy
 
 import os
 from Core.file_manager import *
-from Core.table_util import *
-import shutil
-
 
 class UniCreator:
     pathPrefix = ""

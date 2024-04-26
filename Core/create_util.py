@@ -1,25 +1,29 @@
+import datetime
+import os
 import shutil
-from Core.file_manager import *
 import json
 
-class TableUtil:
+from Core.file_manager import Log
+from Core.mysql_config import MysqlConfig
 
+class CreateUtil:
+    
     @staticmethod
-    def getConfigInfo(path="tableinfo.json"):
+    def getConfigInfo(path="project.json"):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param names: 输入的表名字符串
         @return: list 对应的表信息数组
         """
 
-        f = file_manager(path)
-        c = f.read()
+        f = open(path, encoding='utf-8')
+        c = f.readlines()
         f.close()
         c = ''.join(c)
         d = json.loads(c)
 
         return d
-
+    
     @staticmethod
     def getTableInfoWidthNames(tableInfo, names):
         """
@@ -36,7 +40,7 @@ class TableUtil:
             nameList = []
 
         # 获取数据表列表
-        tableList = tableInfo["tableList"]
+        tableList = tableInfo["db"]["tableList"]
         for tableInfo in tableList:
             if len(nameList) == 0:
                 tableInfoList.append(tableInfo)
@@ -45,31 +49,60 @@ class TableUtil:
                     tableInfoList.append(tableInfo)
 
         return tableInfoList
+    
+    @staticmethod
+    def checkPath(path):
+        """
+        @summary: 检查文件或者文件夹路径是否存在，不存在会自动创建
+        @param path: 文件或者文件夹路径
+        """
+        
+        if os.path.exists(path) == False:
+            if "." in path:
+                f = open(path, encoding='utf-8')
+                f.close()
+            elif path[len(path) - 1: len(path)] == "/":
+                os.makedirs(path)
+    
+    @staticmethod
+    def pathExists(path):
+        """
+        @summary: 检查文件或者文件夹路径是否存在
+        @param path: 文件或者文件夹路径
+        """
+        
+        if os.path.exists(path):
+            return True
+        else:
+            return False
 
     @staticmethod
-    def packDir(dirPath, storePath):
-        TableUtil.checkPath(storePath)
-
-        # ------------ 备份文件
-        zip_name = shutil.make_archive(dirPath, f'zip', dirPath)
-        print(zip_name)  # 返回文件的最终路径
-        zip_name1 = zip_name
-        zip_name = zip_name.split(".")
-        zip_name2 = "pagesBack_{0}.".format(time.strftime(
-            "%Y-%m-%d_%H:%M:%S", time.localtime())).join(zip_name)
-        os.rename(zip_name1, zip_name2)
-        shutil.move(zip_name2, storePath)
-
+    def getMysqlConfig(projectInfo):
+        """
+        @summary: 根据输入的表名字符串，获取对应的表信息数组
+        @param projectInfo: 配置信息
+        @return: mysql配置信息
+        """
+        
+        config = MysqlConfig()
+        config.DBHOST = projectInfo["db"]["host"]
+        config.DBPORT = projectInfo["db"]["port"]
+        config.DBUSER = projectInfo["db"]["user"]
+        config.DBPWD = projectInfo["db"]["password"]
+        config.DBCHAR = projectInfo["db"]["charSet"]
+        
+        return config
+    
     @staticmethod
-    def className(name=""):
+    def camelize(s):
         """
-        @summary: 根据下划线或中划线返回驼峰字符串
-        @param name: 使用下划线或中划线拼接的字符串
-        @return: string 驼峰字符串
+        @summary: 下划线转驼峰
+        @param s: 字符串
+        @return: 转后的字符串
         """
-
-        name.replace("-", "_")
-        namelist = name.split("_")
+        
+        s.replace("-", "_")
+        namelist = s.split("_")
         newList = []
         for s in namelist:
             s = s.capitalize()
@@ -79,15 +112,79 @@ class TableUtil:
         return camelString
 
     @staticmethod
-    def instanceName(name):
+    def uncamelize(s):
         """
-        @summary: 根据下划线或中划线返回驼峰字符串并且首字母为小写
-        @param name: 使用下划线或中划线拼接的字符串
-        @return: string 驼峰字符串并且首字母为小写
+        @summary: 驼峰转下划线
+        @param s: 字符串
+        @return: 转后的字符串
+        """
+        
+        result = []
+        for c in s:
+            if c.isupper():
+                result.append('_')
+                result.append(c.lower())
+            else:
+                result.append(c)
+        return ''.join(result)
+
+    @staticmethod
+    def instanceName(s):
+        """
+        @summary: 返回实例对象名
+        @param s: 字符串
+        @return: 转后的字符串
         """
 
-        className = TableUtil.className(name)
+        className = CreateUtil.camelize(s)
         return className[:1].lower() + className[1:]
+
+    @staticmethod
+    def getTables(projectInfo, names):
+        """
+        @summary: 根据输入的表名字符串，获取对应的表信息数组
+        @param tableInfo: 配置信息
+        @param names: 输入的表名字符串
+        @return: list 对应的表信息数组
+        """
+
+        tableInfoList = []
+        nameList = names.split(",")
+
+        if names == "-all":
+            nameList = []
+
+        # 获取数据表列表
+        tableList = projectInfo["db"]["tableList"]
+        for t in tableList:
+            if len(nameList) == 0:
+                tableInfoList.append(t)
+            else:
+                if t["name"] in nameList:
+                    tableInfoList.append(t)
+
+        return tableInfoList
+
+    @staticmethod
+    def packDir(dirPath, storePath):
+        # 检查路径
+        CreateUtil.checkPath(storePath)
+        
+        # 压缩文件
+        zip_name = shutil.make_archive(dirPath, f'zip', dirPath)
+        # print(zip_name)  # 返回文件的最终路径
+        current_datetime = datetime.datetime.now()
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H:%M:%S")
+        names = zip_name.split("/")
+        
+        # 获取压缩文件名
+        zip_name1 = formatted_datetime+"_"+names[len(names) - 1]
+        
+        # 重命名文件
+        os.rename(zip_name, zip_name1)
+        
+        # 移动文件
+        shutil.move(zip_name1, storePath)
 
     @staticmethod
     def addModelDefaultProperty(columns):
@@ -155,10 +252,6 @@ class TableUtil:
         return columns
 
     @staticmethod
-    def uncamelize(name):
-        Log.error("TableUtil", "未实现的方法: uncamelize")
-
-    @staticmethod
     def replaceUnValidJsonValueWithKey(source, key, value):
         """
         @summary: 对于不标准的json字符串中替换key对应的value, key的冒号后面需要有一个空格
@@ -197,12 +290,3 @@ class TableUtil:
         c[key] = value
 
         return json.dumps(c)
-
-    @staticmethod
-    def autoGenerateFile(filePath, names):
-        """
-        @summary: 根据输入的表名字符串，获取对应的表信息数组
-        @param tableInfo: 配置信息
-        @param names: 输入的表名字符串
-        @return: list 对应的表信息数组
-        """

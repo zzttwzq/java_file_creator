@@ -4,73 +4,181 @@
 ## 使用
 | 命令头  | 命令1                  | 命令2                                                   | 参数             |
 | ------- | ---------------------- | ------------------------------------------------------- | ---------------- |
-| python3 | admin 生成后台管理系统 | -all 生成所有内容。                                     | names 可以指定表 |
-| python3 |                        | -page 生成page文件。                                    | names 可以指定表 |
-| python3 |                        | -router 生成router路由。                                | names 可以指定表 |
-| python3 |                        | -api 生成api信息。                                      | names 可以指定表 |
-| python3 |                        | -request 生成request文件。                              | names 可以指定表 |
-|         |                        |                                                         |                  |
-| python3 | java(生成java后台内容) | [model,mapper,provider,service,controller] 生成对应内容 | names 可以指定表 |
-| python3 |                        | -util 生成util文件                                      | names 可以指定表 |
-| python3 |                        | -d 删除文件                                             | names 可以指定表 |
-|         |                        |                                                         |                  |
 | python3 | db 生成数据库相关      | -db 生成数据库。                                        | names 数据库名称 |
 | python3 |                        | -table 生成数据表。                                     | names 可以指定表 |
 | python3 |                        | -seed 生成种子数据。                                    | names 可以指定表 |
 |         |                        |                                                         |                  |
+| python3 | java(生成java后台内容) | [model,mapper,provider,service,controller] 生成对应内容 | names 可以指定表 |
+| python3 |                        | -util 生成util文件                                      | names 可以指定表 |
+|         |                        |                                                         |                  |
+| python3 | admin 生成后台管理系统 | -all 生成所有内容。                                     | names 可以指定表 |
+| python3 |                        | -n 生成对应表的所有内容                                 | names 可以指定表 |
 
 ## tableinfo.json文件中定义表内容
 ```json
 {
-	"version": "1.0.1", // app 版本号
-    "build": "100", // app build版本号
-    "packageName": "com.dd.demo1", // java包名
-    "appPath": "/Users/mac/Desktop/java_fast_template/", //app根路径
-    "appName": "blog111", // app英文名称，用户api等
-    "appNameCN": "博客", // app中文名称，显示在页面上的app名称
-	"dbName": "test1", // 数据库名称
-    "tableSchema": {
-        "learn_category^学习分类^学习分类": [
-            "title^标题^varchar(1000)"
+    "version": "1.0.3",
+    "build": "1",
+    "name": "blog",
+    "title": "博客",
+    "logPath": "Log/",
+    "path": "/Users/wuzhiqiang/Documents/GitHub/blog/",
+    "db": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "root",
+        "dbNames": [
+            "myblog",
+            "test1",
+            "test2"
         ],
-    },
-    "tableList": [{ // 表信息
-            "name": "test_table1", // 表名称，请使用下划线分隔开
-            "title": "我是标题", // 表标题
-            "des": "我是描述，描述！！！", // 表描述
-            "columns": [{
-                    "name": "id", // 字段名称
-                    "des": "小程序用户性别", // 字段描述
-                    "columnProperty": "int", // 字段属性
-                    "sort": "up", // 字段排序，在admin table中会用到
-                    "align": "left", // 字段显示位置，在admin table中会用到
-                    "width": 100,// 字段显示位置，在admin search中用到
-                    "showInSearch": true,// 在admin 搜索栏中是否展示
-                    "formType": "number",// 在表单中使用的组件类型
-                    "required": true// 是否是必填项
-                },
-                {
-                    "name": "name",
-                    "des": "昵称",
-                    "columnProperty": "varchar(20)",
-                    "sort": "up",
-                    "align": "left",
-                    "width": 100,
-                    "showInSearch": true,
-                    "formType": "text",
-                    "required": true
-                }
+        "password": "123",
+        "charSet": "utf8",
+        "tableSchema": {
+            "user:用户:myblog": [
+                "nick_name:昵称:varchar(20)",
+                "phone:手机号:varchar(15)",
+                "email:邮箱:varchar(20)",
+                "token:凭证:varchar(20)",
+                "province:凭证:varchar(10)",
+                "city:凭证:varchar(20)",
+                "address:凭证:varchar(200)",
+                "role_id:角色ID:int",
+                "type:角色类型-0 管理用户 1 普通用户:int(2)"
+            ],
+        },
+        "tableSeed": {
+            "project_category": [
+                "前端",
+                "Flutter",
+                "Java",
+                "Python"
             ]
         },
-    ],
-    "tableSeeds": [{
-        "name": "table1",
-        "data": [
+        "tableList": [
             {
-                "id": 1
-            }
+                "name": "user",
+                "title": "用户",
+                "des": "用户",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "nick_name",
+                        "des": "昵称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "phone",
+                        "des": "手机号",
+                        "columnProperty": "varchar(15)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "email",
+                        "des": "邮箱",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "token",
+                        "des": "凭证",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "province",
+                        "des": "凭证",
+                        "columnProperty": "varchar(10)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "city",
+                        "des": "凭证",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "address",
+                        "des": "凭证",
+                        "columnProperty": "varchar(200)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "role_id",
+                        "des": "角色ID",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "type",
+                        "des": "角色类型-0 管理用户 1 普通用户",
+                        "columnProperty": "int(2)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
         ]
-    }]
+    },
+    "admin": {
+        "backupPath": "/Users/wuzhiqiang/Documents/GitHub/java_file_creator/Backup/admin/",
+        "adminSrcPath": "admin/src/",
+        "routerPath": "admin/src/router/local.js",
+        "apiPath": "admin/src/api/Api.js",
+        "requestPath": "admin/src/api/ApiRequest.js",
+        "pagePath": "admin/src/pages/"
+    },
+    "java": {
+        "backupPath": "/Users/wuzhiqiang/Documents/GitHub/java_file_creator/Backup/java/",
+        "packageName": "com.qlzw.smartwc",
+        "packagePath": "java/src/main/java/com/qlzw/smartwc/",
+        "utilsPath": "java/src/main/java/com/qlzw/smartwc/utils/"
+    }
 }
 ```
  
@@ -222,26 +330,10 @@ logging.file.path=/Users/wuzhiqiang/Desktop/springboot
 
 ## admin 目录中的配置
 #### admin proxy_table 配置
-在 ``` vue.config.js ```中找到
-```js
-    devServer: {
-        port: 8900,
-        proxy: {
-            '^/blog111': {
-                //此处要与 /services/api.js 中的 API_PROXY_PREFIX 值保持一致
-                target: process.env.VUE_APP_API_BASE_URL,
-                changeOrigin: true,
-                logLevel: 'debug',
-                pathRewrite: { //重写匹配的字段，如果不需要放在请求路径上，可以重写为""
-                    "^/blog111": ""
-                }
-            }
-        }
-    },
+将 
 ```
-将 ```blog111```改成对应的名称，再修改 ``` .env.xxx ```
-```
-VUE_APP_API_BASE_URL=xxx /// 修改成对应的地址即可
+VUE_APP_PROXY=xx # 改成对应的名称
+VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 ```
 
 ## uni 目录中的配置
@@ -252,6 +344,9 @@ VUE_APP_API_BASE_URL=xxx /// 修改成对应的地址即可
 ## 更新内容
 
 #### 1.0.3
+1. 修改 db_creator 调整到稳定
+2. 修改 java_creator 调整到稳定
+3. 修改 admin_creator 调整到稳定
 
 #### 1.0.2
 1. 修复admin page 缺少id，createAt，updateAt，deleteAt，等字段

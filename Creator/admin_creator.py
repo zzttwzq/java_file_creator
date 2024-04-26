@@ -2,61 +2,62 @@ import copy
 
 import os
 from Core.file_manager import *
-from Core.table_util import *
-
+from Core.create_util import *
 
 class AdminCreator:
     pagePath = ""
     routerPath = ""
     apiPath = ""
+    requestPath = ""
+    split_string = "    //### 自动生成 ###"
 
     @staticmethod
-    def create(talbeInfo, mode, names):
+    def create(tableInfo, mode, names):
 
         adminCreator = AdminCreator()
 
         # ------------ 准备路径信息
-        adminCreator.routerPath = talbeInfo["appPath"] + \
-            "admin/src/router/local.js"
-        adminCreator.pathPrefix = talbeInfo["appPath"] + "admin/src/"
-        adminCreator.apiPath = talbeInfo["appPath"] + "admin/src/api/"
-        adminCreator.pagePath = talbeInfo["appPath"] + "admin/src/pages/"
+        adminCreator.routerPath = tableInfo["path"] + tableInfo["admin"]["routerPath"]
+        adminCreator.apiPath = tableInfo["path"] + tableInfo["admin"]["apiPath"]
+        adminCreator.pagePath = tableInfo["path"] + tableInfo["admin"]["pagePath"]
+        adminCreator.requestPath = tableInfo["path"] + tableInfo["admin"]["requestPath"]
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
-        if not os.path.exists(adminCreator.pathPrefix):
-            Log.error("admin_creator", "源目录不存在，请指定源目录")
+        if not os.path.exists(adminCreator.pagePath):
+            Log.error("admin", "源目录不存在，请指定源目录")
             return 0
 
         # 备份目录
-        TableUtil.packDir(adminCreator.pagePath, "dist/admin/pages/")
-        TableUtil.packDir(adminCreator.apiPath, "dist/admin/api/")
-        TableUtil.packDir(adminCreator.pathPrefix + "/router", "dist/admin/router/")
+        CreateUtil.packDir(tableInfo["path"] + tableInfo["admin"]["adminSrcPath"], tableInfo["admin"]["backupPath"])
 
-        # ------------ 执行操作
-        tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
         Log.blank()
         Log.info(
-            "admin_create", "================ 正在为`{0}`生成admin文件 ================".format(names))
+            "admin", "================ 正在为`{0}`生成admin文件 ================".format(names))
 
-        if mode == "-d":
+        # ------------ 执行操作
+        tableList = CreateUtil.getTableInfoWidthNames(tableInfo, names)
 
+        if len(tableList) == 0:
+            Log.error(
+                "java", "字段 `{0}` 不存在".format(names))
+            return
+        
+        if len(names) == 0:
+            adminCreator._cmdError()
+        elif mode == "-d":
             adminCreator.clearDir()
-
-        elif len(tableList) == 0:
-
-            Log.error("uni_creator", "生成的数据为空！")
-
-        else:
-            if "page" in mode == False:
-                AdminCreator.cmdError()
-
-            AdminCreator.createApis(adminCreator.apiPath, tableList)
-            AdminCreator.createRouters(adminCreator.routerPath, tableList)
-            AdminCreator.createRequests(adminCreator.apiPath, tableList)
-            AdminCreator.createPage(adminCreator.pagePath, tableList)
+        elif mode == "-router":
+            adminCreator.clearDir()
+        elif mode == "-d":
+            adminCreator.clearDir()
+        elif mode == "-n" or mode == "-all":
+            adminCreator.createRouters(tableList)
+            adminCreator.createApis(tableInfo, tableList)
+            adminCreator.createRequests(tableList)
+            adminCreator.createPage(tableList)
                     
-    def createPage(pagePath, tableInfos):
+    def createPage(self, tableInfos):
         Log.blank()
-        Log.info("AdminPages", "开始生成 pages")
+        Log.info("admin", "开始生成 pages")
 
         for tableInfo in tableInfos:
             # 表名称
@@ -69,16 +70,16 @@ class AdminCreator:
             classDes = tableInfo["des"]
 
             # 对应的类名称
-            className = TableUtil.className(tableName)
+            className = CreateUtil.camelize(tableName)
 
             # 创建 文件夹
-            TableUtil.checkPath(pagePath + className)
+            CreateUtil.checkPath(self.pagePath + className)
 
             # 字段属性列表
             columnList = copy.deepcopy(tableInfo["columns"])
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnList)
+            CreateUtil.addModelDefaultProperty(columnList)
 
             columns = ""
             searchs = ""
@@ -88,7 +89,7 @@ class AdminCreator:
             for columnInfo in columnList:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
-                columnName = TableUtil.instanceName(columnInfo['name'])
+                columnName = CreateUtil.instanceName(columnInfo['name'])
 
                 columns += "        {\r\n"
                 columns += "          title: '{0}',//{1}\r\n".format(
@@ -218,80 +219,80 @@ class AdminCreator:
             content += "</template>\r\n"
             content += "\r\n"
             content += "<script>\r\n"
-            content += 'import { ' + 'get{0}, post{1}, get{2}ByID, delete{3}ByID'.format(
-                className, className, className, className) + ' } from \"@/api/request\" \r\n'
+            content += "// 导入mixin文件\r\n"
+            content += 'import mixin from \"./mixin\" \r\n'
             content += "\r\n"
             content += "export default {\r\n"
+            content += "  mixins: [mixin],\r\n"
             content += "  name: '{0}Page', // {1} {2} \r\n ".format(
                 className, tableTitle, classDes)
             content += "  data() {\r\n"
-            content += "    return {\r\n"
-            content += "      /// table\r\n"
-            content += "      columns: [\r\n"
-            content += "{0}\r\n".format(columns)
-            content += "        {\r\n"
-            content += "          title: '操作',\r\n"
-            content += "          scopedSlots: {\r\n"
-            content += "            customRender: 'action',\r\n"
-            content += "          },\r\n"
-            content += "        },\r\n"
-            content += "      ],\r\n"
-            content += "\r\n"
-            content += "      /// 搜索内容\r\n"
-            content += "      searchList: [\r\n"
-            content += searchs
-            content += "      ],\r\n"
-            content += "\r\n"
-            content += "      /// 表单信息列表\r\n"
-            content += "      formList: [\r\n"
-            content += forms
-            content += "      ],\r\n"
-            content += "\r\n"
-            content += "      listRequest: get{0},\r\n".format(className)
-            content += "      addRequest: post{0},\r\n".format(className)
-            content += "      editRequest: post{0},\r\n".format(className)
-            content += "      editDetailRequest: get{0}ByID,\r\n".format(
-                className)
-            content += "      deleteRequest: delete{0}ByID,\r\n".format(
-                className)
-            content += "    };\r\n"
+            content += "    return {}\r\n"
             content += "  },\r\n"
             content += "  created() {},\r\n"
-            content += "  methods: {\r\n"
-            content += "    handelListData(data) {\r\n"
-            content += "      data.map((it) => {\r\n"
-            content += "        console.log(it)\r\n"
-            content += "      })\r\n"
-            content += "    },\r\n"
-            content += "    handelModifyData(values) {console.log(values);},\r\n"
-            content += "    handelWillAdd(values) {console.log(values);},\r\n"
-            content += "    handelWillEdit(values) {console.log(values);},\r\n"
-            content += "  },\r\n"
+            content += "  methods: {},\r\n"
             content += "};\r\n"
             content += "</script>\r\n"
             content += "\r\n"
             content += "<style lang='less' scoped>\r\n"
             content += "</style>\r\n"
             content += "\r\n"
+            
+            mixin = "import {" + " get{0}, post{1}, get{2}ByID, delete{3}ByID ".format(
+                className, className, className, className) + " } from \"@/api/ApiRequest\" \r\n"
+            mixin += "\r\n"
+            mixin += "export default {\r\n"
+            mixin += "  data() {\r\n"
+            mixin += "    return {\r\n"
+            mixin += "      /// table\r\n"
+            mixin += "      columns: [\r\n"
+            mixin += "{0}\r\n".format(columns)
+            mixin += "        {\r\n"
+            mixin += "          title: '操作',\r\n"
+            mixin += "          scopedSlots: {\r\n"
+            mixin += "            customRender: 'action',\r\n"
+            mixin += "          },\r\n"
+            mixin += "        },\r\n"
+            mixin += "      ],\r\n"
+            mixin += "\r\n"
+            mixin += "      /// 搜索内容\r\n"
+            mixin += "      searchList: [\r\n"
+            mixin += searchs
+            mixin += "      ],\r\n"
+            mixin += "\r\n"
+            mixin += "      /// 表单信息列表\r\n"
+            mixin += "      formList: [\r\n"
+            mixin += forms
+            mixin += "      ],\r\n"
+            mixin += "\r\n"
+            mixin += "      listRequest: get{0},\r\n".format(className)
+            mixin += "      addRequest: post{0},\r\n".format(className)
+            mixin += "      editRequest: post{0},\r\n".format(className)
+            mixin += "      editDetailRequest: get{0}ByID,\r\n".format(
+                className)
+            mixin += "      deleteRequest: delete{0}ByID,\r\n".format(
+                className)
+            mixin += "    };\r\n"
+            mixin += "  },\r\n"
+            mixin += "  created() {},\r\n"
+            mixin += "  methods: {\r\n"
+            mixin += "    handelListData(data) {\r\n"
+            mixin += "      data.map((it) => {\r\n"
+            mixin += "        console.log(it)\r\n"
+            mixin += "      })\r\n"
+            mixin += "    },\r\n"
+            mixin += "    handelModifyData(values) {console.log(values);},\r\n"
+            mixin += "    handelWillAdd(values) {console.log(values);},\r\n"
+            mixin += "    handelWillEdit(values) {console.log(values);},\r\n"
+            mixin += "  },\r\n"
+            mixin += "};\r\n"
+            
+            self._generate_file(self.pagePath + className + "/index.vue", "", content, override=False)
+            self._generate_file(self.pagePath + className + "/mixin.js", "", mixin)
 
-            filepath = "{0}{1}/index.vue".format(pagePath, className)
-
-            Log.success("page", "生成："+className)
-
-            f = open(filepath, mode='w+')
-            f.write(content)
-            f.close()
-
-    def createRouters(routerPath, tableInfos):
+    def createRouters(self, tableInfos):
         Log.blank()
-        Log.info("AdminRouters", "创建 routers")
-
-        f = open(routerPath)
-        c = f.read()
-        f.close()
-        c = ''.join(c)
-
-        content = c.split("//### 自动生成的Router")
+        Log.info("admin", "创建 routers")
 
         string = ''
         for tableInfo in tableInfos:
@@ -305,10 +306,10 @@ class AdminCreator:
             classDes = tableInfo["des"]
 
             # 对应的类名称
-            className = TableUtil.className(tableName)
+            className = CreateUtil.camelize(tableName)
 
             # 对应的实例名称
-            instanceName = TableUtil.instanceName(tableName)
+            instanceName = CreateUtil.instanceName(tableName)
 
             tableKeys = tableInfo.keys()
 
@@ -328,35 +329,18 @@ class AdminCreator:
                 className)
             string += "            },\r\n"
 
-            Log.success("router", "创建："+instanceName)
+            self._generate_file(self.routerPath, "\r\n" + string, "", log_type=2, log_prefix="AdminRouters", log_txt="创建："+instanceName)
 
-        content[1] = "\r\n" + string + "            "
-        content = "//### 自动生成的Router".join(content)
-
-        f = open(routerPath, encoding='utf-8', mode="w+")
-        f.write(content)
-        f.close()
-
-    def createApis(apiPath, tableInfos):
+    def createApis(self, info, tableInfos):
         Log.blank()
-        Log.info("AdminApis", "创建 api")
+        Log.info("admin", "创建 api")
 
-        f = open(apiPath + "index.js")
-        c = f.read()
-        f.close()
-        c = ''.join(c)
-
-        content = c.split("//### 自动生成的Apis")
-        info = TableUtil.getConfigInfo()
-        appName = info["appName"]
+        appName = info["name"]
 
         string = ''
         for tableInfo in tableInfos:
             # 表名称
             tableName = tableInfo["name"]
-
-            # 表标题
-            tableTitle = tableInfo['title']
 
             # 表描述
             classDes = tableInfo["des"]
@@ -365,7 +349,7 @@ class AdminCreator:
             constName = tableName.upper()
 
             # 对应的实例名称
-            instanceName = TableUtil.instanceName(tableName)
+            instanceName = CreateUtil.instanceName(tableName)
 
             string += "\r\n    // {0} \r\n".format(classDes)
             string += "    {0}: `$".format(constName) + '{BASE_URL}' + \
@@ -374,23 +358,12 @@ class AdminCreator:
                                          )
             Log.success("api", "创建："+instanceName)
 
-        content[1] = "\r\n" + string + "\r\n    "
-        content = "//### 自动生成的Apis".join(content)
+        self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+instanceName)
 
-        f = open(apiPath + "index.js", encoding='utf-8', mode="w+")
-        f.write(content)
-        f.close()
-
-    def createRequests(apiPath, tableInfos):
+    def createRequests(self, tableInfos):
         Log.blank()
-        Log.info("AdminRequest", "创建 request")
+        Log.info("admin", "创建 request")
 
-        f = open(apiPath + "request.js")
-        c = f.read()
-        f.close()
-        c = ''.join(c)
-
-        content = c.split("//### 自动生成的Api")
         requests = ""
         apis = ""
         for tableInfo in tableInfos:
@@ -404,7 +377,7 @@ class AdminCreator:
             classDes = tableInfo["des"]
 
             # 对应的类名称
-            className = TableUtil.className(tableName)
+            className = CreateUtil.camelize(tableName)
 
             # 常量名称
             constName = tableName.upper()
@@ -414,7 +387,7 @@ class AdminCreator:
             columnLists2 = copy.deepcopy(columnLists)
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnLists2)
+            CreateUtil.addModelDefaultProperty(columnLists2)
 
             columnNames = ""
             for columnInfo in columnLists:
@@ -478,19 +451,53 @@ class AdminCreator:
                 ' + "/delete/" + ' + "id, METHOD.GET, {}, null)\r\n"
             requests += "}\r\n\r\n"
 
-            Log.success("request", "创建："+className)
+            Log.success("AmdinRequest", "创建："+className)
 
-        content[1] = apis + "\r\n    "
-        content[3] = requests
+        string = 'import { METHOD, request } from "../utils/request.js"\r\n'
+        string += 'import {'
+        string += apis
+        string += '\r\n} from "./Api.js"'
+        string += '\r\n'
+        string += requests
 
-        content = "//### 自动生成的Api".join(content)
-        f = open(apiPath + "request.js", encoding='utf-8', mode="w+")
-        f.write(content)
-        f.close()
+        self._generate_file(self.requestPath, "", string, log_prefix="AmdinRequest")
+
+    # 生成文件或替换文件内容
+    def _generate_file(self, filePath, replaceString, totalString, override=True, log_type=1, log_prefix="admin", log_txt=""):
+        # 检查文件路径
+        fileDir = filePath.split("/")
+        fileDir[len(fileDir) - 1] = ""
+        fileDir = "/".join(fileDir)
+        CreateUtil.checkPath(fileDir)
+        
+        if CreateUtil.pathExists(filePath) :
+            f1 = open(filePath, "r")
+            content = f1.readlines()
+            content = "".join(content)
+            content = content.split(self.split_string)
+            
+            if len(content) != 3:
+                content = totalString
+            else:
+                content[1] = replaceString
+                content = (self.split_string+"").join(content)
+        else:
+            content = totalString
+                
+        if override or CreateUtil.pathExists(filePath) == False:
+            # 创建文件
+            if log_type == 1:
+                Log.success(log_prefix, "生成："+filePath)
+            elif log_type == 2:
+                Log.success(log_prefix, log_txt)
+                
+            f = file_manager(filePath)
+            f.write(content)
+            f.close()
 
     @staticmethod
-    def cmdError():
-        Log.info("admin_create", "命令错误：\r\n \
+    def _cmdError():
+        Log.info("admin", "命令错误：\r\n \
             尝试以下命令：、\r\n  \
             admin -all [names] 生成所有内容。\r\n \
             admin -page [names] 生成page文件。\r\n \

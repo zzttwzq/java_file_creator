@@ -1,0 +1,1282 @@
+{
+    "version": "1.0.3",
+    "build": "1",
+    "name": "blog",
+    "title": "博客",
+    "logPath": "Log/",
+    "path": "/Users/wuzhiqiang/Documents/GitHub/blog/",
+    "db": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "root",
+        "dbNames": [
+            "myblog",
+            "test1",
+            "test2"
+        ],
+        "password": "123",
+        "charSet": "utf8",
+        "tableSchema": {
+            "user:用户:myblog": [
+                "nick_name:昵称:varchar(20)",
+                "phone:手机号:varchar(15)",
+                "email:邮箱:varchar(20)",
+                "token:凭证:varchar(20)",
+                "province:凭证:varchar(10)",
+                "city:凭证:varchar(20)",
+                "address:凭证:varchar(200)",
+                "role_id:角色ID:int",
+                "type:角色类型-0 管理用户 1 普通用户:int(2)"
+            ],
+            "role:角色:myblog": [
+                "name:角色名称:varchar(20)",
+                "data:角色数据:varchar(100)",
+                "type:角色类型-0 超级权限 1 普通权限:int(2)"
+            ],
+            "blog:博客:myblog": [
+                "title:标题:varchar(20)",
+                "des:描述:varchar(100)",
+                "cover:关联图片:varchar(100)",
+                "content:内容(markdown格式):text",
+                "tag:标签:varchar(40)",
+                "blog_category_id:关联博客分类#blog_category:int",
+                "user_id:关联用户#user:int",
+                "see:查看:int",
+                "star:点赞:int",
+                "coment:评论:int"
+            ],
+            "blog_category:博客分类:myblog": [
+                "name:博客分类名称:varchar(20)"
+            ],
+            "project:项目:myblog": [
+                "title:标题:varchar(20)",
+                "des:描述:varchar(100)",
+                "cover:封面图片:varchar(100)",
+                "content:内容:text",
+                "tag:标签:varchar(40)",
+                "project_category_id:关联项目分类#learn_category:int",
+                "user_id:关联用户#user:int",
+                "progress:进度:int"
+            ],
+            "project_category:项目分类:myblog": [
+                "name:项目分类名称:varchar(20)"
+            ],
+            "task:任务:myblog": [
+                "title:任务标题:varchar(20)",
+                "des:任务描述:varchar(100)",
+                "begin_time:开始时间:int",
+                "duration:持续时间:int",
+                "score:分数:int",
+                "tag:标签:varchar(40)",
+                "user_id:关联用户#user:int",
+                "task_category_id:关联任务分类#task_category:int",
+                "task_level_id:关联任务等级#task_level:int",
+                "learn_id:关联学习#learn:int"
+            ],
+            "task_level:任务等级:myblog": [
+                "name:任务等级名称:varchar(20)",
+                "level:等级:int"
+            ],
+            "task_category:任务分类:myblog": [
+                "name:任务分类名称:varchar(20)"
+            ],
+            "*bill:账单:myblog": [
+                "title:标题:varchar(20)",
+                "des:描述:varchar(100)",
+                "begin_time:开始时间:int",
+                "duration:持续时间:int",
+                "score:分数:int",
+                "tag:标签:varchar(40)",
+                "user_id:关联用户#user:int",
+                "plan_category_id:关联计划分类#plan_category:int",
+                "plan_level_id:关联计划等级#plan_level:int",
+                "learn_id:关联学习#learn:int"
+            ]
+        },
+        "tableSeed": {
+            "blog_category": [
+                "前端-js",
+                "前端-html",
+                "前端-vue2.0",
+                "前端-vue3.0",
+                "前端-vue2.0框架",
+                "前端-vue3.0框架",
+                "前端-react",
+                "前端-react-native",
+                "前端-浏览器",
+                "前端-nuxt",
+                "Flutter",
+                "Flutter-跨平台",
+                "Flutter-fluwx",
+                "Flutter-框架",
+                "Java-框架",
+                "Java-springboot",
+                "Java-redis",
+                "Java-mongodb",
+                "Java-mqtt",
+                "Java-rocktmq",
+                "Java-用户鉴权",
+                "Java-其他",
+                "Python"
+            ],
+            "project_category": [
+                "前端",
+                "Flutter",
+                "Java",
+                "Python"
+            ]
+        },
+        "tableList": [
+            {
+                "name": "user",
+                "title": "用户",
+                "des": "用户",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "nick_name",
+                        "des": "昵称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "phone",
+                        "des": "手机号",
+                        "columnProperty": "varchar(15)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "email",
+                        "des": "邮箱",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "token",
+                        "des": "凭证",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "province",
+                        "des": "凭证",
+                        "columnProperty": "varchar(10)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "city",
+                        "des": "凭证",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "address",
+                        "des": "凭证",
+                        "columnProperty": "varchar(200)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "role_id",
+                        "des": "角色ID",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "type",
+                        "des": "角色类型-0 管理用户 1 普通用户",
+                        "columnProperty": "int(2)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "role",
+                "title": "角色",
+                "des": "角色",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "角色名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "data",
+                        "des": "角色数据",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "type",
+                        "des": "角色类型-0 超级权限 1 普通权限",
+                        "columnProperty": "int(2)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "blog_category",
+                "title": "博客分类",
+                "des": "博客分类",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "博客分类名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "blog",
+                "title": "博客",
+                "des": "博客",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "title",
+                        "des": "标题",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "des",
+                        "des": "描述",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "cover",
+                        "des": "关联图片",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "content",
+                        "des": "内容(markdown格式)",
+                        "columnProperty": "text",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "textArea",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "tag",
+                        "des": "标签",
+                        "columnProperty": "varchar(40)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "blog_category_id",
+                        "des": "关联博客分类#blog_category",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "user_id",
+                        "des": "关联用户#user",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "see",
+                        "des": "查看",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "star",
+                        "des": "点赞",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "coment",
+                        "des": "评论",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "project_category",
+                "title": "项目分类",
+                "des": "项目分类",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "项目分类名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "project",
+                "title": "项目",
+                "des": "项目",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "title",
+                        "des": "标题",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "des",
+                        "des": "描述",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "cover",
+                        "des": "封面图片",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "content",
+                        "des": "内容",
+                        "columnProperty": "text",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "textArea",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "tag",
+                        "des": "标签",
+                        "columnProperty": "varchar(40)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "project_category_id",
+                        "des": "关联项目分类#learn_category",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "user_id",
+                        "des": "关联用户#user",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "progress",
+                        "des": "进度",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "task",
+                "title": "任务",
+                "des": "任务",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "title",
+                        "des": "任务标题",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "des",
+                        "des": "任务描述",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "begin_time",
+                        "des": "开始时间",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "duration",
+                        "des": "持续时间",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "score",
+                        "des": "分数",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "tag",
+                        "des": "标签",
+                        "columnProperty": "varchar(40)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "user_id",
+                        "des": "关联用户#user",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "task_category_id",
+                        "des": "关联任务分类#task_category",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "task_level_id",
+                        "des": "关联任务等级#task_level",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "learn_id",
+                        "des": "关联学习#learn",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "task_level",
+                "title": "任务等级",
+                "des": "任务等级",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "任务等级名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "level",
+                        "des": "等级",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "task_category",
+                "title": "任务分类",
+                "des": "任务分类",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "任务分类名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            }
+        ],
+        "tableListOld": [
+            {
+                "name": "user",
+                "title": "用户",
+                "des": "用户",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "nick_name",
+                        "des": "昵称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "phone",
+                        "des": "手机号",
+                        "columnProperty": "varchar(15)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "email",
+                        "des": "邮箱",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "token",
+                        "des": "凭证",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "province",
+                        "des": "凭证",
+                        "columnProperty": "varchar(10)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "city",
+                        "des": "凭证",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "address",
+                        "des": "凭证",
+                        "columnProperty": "varchar(200)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "role_id",
+                        "des": "角色ID",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "type",
+                        "des": "角色类型-0 管理用户 1 普通用户",
+                        "columnProperty": "int(2)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "role",
+                "title": "角色",
+                "des": "角色",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "角色名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "data",
+                        "des": "角色数据",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "type",
+                        "des": "角色类型-0 超级权限 1 普通权限",
+                        "columnProperty": "int(2)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "blog_category",
+                "title": "博客分类",
+                "des": "博客分类",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "博客分类名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "blog",
+                "title": "博客",
+                "des": "博客",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "title",
+                        "des": "标题",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "des",
+                        "des": "描述",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "cover",
+                        "des": "关联图片",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "content",
+                        "des": "内容(markdown格式)",
+                        "columnProperty": "text",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "textArea",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "tag",
+                        "des": "标签",
+                        "columnProperty": "varchar(40)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "blog_category_id",
+                        "des": "关联博客分类#blog_category",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "user_id",
+                        "des": "关联用户#user",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "see",
+                        "des": "查看",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "star",
+                        "des": "点赞",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "coment",
+                        "des": "评论",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "project_category",
+                "title": "项目分类",
+                "des": "项目分类",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "项目分类名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "project",
+                "title": "项目",
+                "des": "项目",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "title",
+                        "des": "标题",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "des",
+                        "des": "描述",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "cover",
+                        "des": "封面图片",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "content",
+                        "des": "内容",
+                        "columnProperty": "text",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "textArea",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "tag",
+                        "des": "标签",
+                        "columnProperty": "varchar(40)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "project_category_id",
+                        "des": "关联项目分类#learn_category",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "user_id",
+                        "des": "关联用户#user",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "progress",
+                        "des": "进度",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "task",
+                "title": "任务",
+                "des": "任务",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "title",
+                        "des": "任务标题",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "des",
+                        "des": "任务描述",
+                        "columnProperty": "varchar(100)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "begin_time",
+                        "des": "开始时间",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "duration",
+                        "des": "持续时间",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "score",
+                        "des": "分数",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "tag",
+                        "des": "标签",
+                        "columnProperty": "varchar(40)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "user_id",
+                        "des": "关联用户#user",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "task_category_id",
+                        "des": "关联任务分类#task_category",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "task_level_id",
+                        "des": "关联任务等级#task_level",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "learn_id",
+                        "des": "关联学习#learn",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "task_level",
+                "title": "任务等级",
+                "des": "任务等级",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "任务等级名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    },
+                    {
+                        "name": "level",
+                        "des": "等级",
+                        "columnProperty": "int",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "number",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            },
+            {
+                "name": "task_category",
+                "title": "任务分类",
+                "des": "任务分类",
+                "dbName": "myblog",
+                "columns": [
+                    {
+                        "name": "name",
+                        "des": "任务分类名称",
+                        "columnProperty": "varchar(20)",
+                        "sort": "up",
+                        "align": "left",
+                        "width": 100,
+                        "formType": "text",
+                        "showInSearch": 1,
+                        "required": 0
+                    }
+                ]
+            }
+        ]
+    },
+    "admin": {
+        "backupPath": "/Users/wuzhiqiang/Documents/GitHub/java_file_creator/Backup/admin/",
+        "adminSrcPath": "admin/src/",
+        "routerPath": "admin/src/router/local.js",
+        "apiPath": "admin/src/api/Api.js",
+        "requestPath": "admin/src/api/ApiRequest.js",
+        "pagePath": "admin/src/pages/"
+    },
+    "java": {
+        "backupPath": "/Users/wuzhiqiang/Documents/GitHub/java_file_creator/Backup/java/",
+        "packageName": "com.qlzw.smartwc",
+        "packagePath": "java/src/main/java/com/qlzw/smartwc/",
+        "utilsPath": "java/src/main/java/com/qlzw/smartwc/utils/"
+    }
+}

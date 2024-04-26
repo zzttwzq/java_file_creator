@@ -3,37 +3,26 @@ import pymysql
 from dbutils.pooled_db import PooledDB
 from pymysql.cursors import DictCursor
 from Core.file_manager import *
-from Core.table_util import *
-
-# 配置信息请核对清楚，一定不要在生产环境使用表生成工具！！！
-class Config:
-    DBHOST = "localhost"
-    DBPORT = 3306
-    DBUSER = "root"
-    DBPWD = "123"
-    DBNAME = "cleaner"
-    DBCHAR = "utf8"
-
+from Core.mysql_config import MysqlConfig
 
 class MySqlConn:
     _conn = None
     _cursor = None
     __pool = None
+    _config = None
 
-    def __init__(self):
+    def __init__(self, config = MysqlConfig()):
         # 从连接池中获取连接
-        self._conn = MySqlConn.__getConn()
+        self._config = config
+        self._conn = MySqlConn.__getConn(self._config)
         self._cursor = self._conn.cursor()
 
     @staticmethod
-    def __getConn():
-
-        mysql_config = Config()
-
+    def __getConn(config):
         if MySqlConn.__pool is None:
             MySqlConn.__pool = PooledDB(creator=pymysql, mincached=1, maxcached=20,
-                                        host=mysql_config.DBHOST, port=mysql_config.DBPORT, user=mysql_config.DBUSER, passwd=mysql_config.DBPWD,
-                                        db=mysql_config.DBNAME, use_unicode=False, charset=mysql_config.DBCHAR, cursorclass=DictCursor)
+                                        host=config.DBHOST, port=config.DBPORT, user=config.DBUSER, passwd=config.DBPWD,
+                                        db=config.DBNAME, use_unicode=False, charset=config.DBCHAR, cursorclass=DictCursor,)
         return MySqlConn.__pool.connection()
 
     def getAll(self, sql, param=None):
@@ -187,11 +176,11 @@ class MySqlConn:
         dbName = tableInfo["dbName"]
         tableName = tableInfo["name"]
         columnList = tableInfo["columns"]
-
+        
         Log.info("Table", "开始创建数据表: {0}".format(tableName))
 
         for columnInfo in columnList:
-            cName = TableUtil.instanceName(columnInfo["name"])
+            cName = columnInfo["name"]
             cProperty = columnInfo["columnProperty"]
             cDes = columnInfo["des"]
             values += "{0} {1} COMMENT '{2}', ".format(cName, cProperty, cDes)

@@ -1,10 +1,7 @@
 import sys
-import os
 import json
 from Core.fileparser import *
 from Core.file_manager import *
-from Core.table_util import *
-from Core.mysql import MySqlConn
 
 # colum_type_list = [
 #     'TINYINT', 'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
@@ -20,7 +17,7 @@ from Core.mysql import MySqlConn
 # colum_view_type = [
 #     "text", *
 #     "textArea", *
-#     "number", *
+#     "number", * 
 #     "numberRange",
 #     "select",
 #     "date", *
@@ -36,7 +33,7 @@ from Creator.uni_creator import *
 from Creator.db_creator import *
 
 # 项目配置文件
-infoPath = "tableinfo.json"
+projectEnvPath = "/Users/wuzhiqiang/Documents/GitHub/blog/project.json"
 
 class cmds:
 
@@ -46,18 +43,14 @@ class cmds:
             cmds.cmdError("")
             return
 
-        info = TableUtil.getConfigInfo(path=infoPath)
+        info = CreateUtil.getConfigInfo(path=projectEnvPath)
         cmd = sys.argv[1]
 
         if cmd == "-all":
-            JavaCreator.create(
-                info, "model,mapper,provider,services,controller", "-all")
-            AdminCreator.create(
-                info, "page", "-all")
-            # UniCreator.create(info, "-all")
-
-            DBCreator.create(info, "-table", "-all")
-            DBCreator.create(info, "-seed", "-all")
+            DBCreator.create(info, "-all")
+            JavaCreator.create(info, "-all")
+            AdminCreator.create(info, "-all")
+            UniCreator.create(info, "-all")
 
         elif cmd == "db":
             if len(sys.argv) > 2:
@@ -71,86 +64,91 @@ class cmds:
                 DBCreator.cmdError()
 
         elif cmd == "schema":
-            schemas = info["tableSchema"]
+            schemas = info["db"]["tableSchema"]
             liKeys = schemas.keys()
             tableList = []
 
             for key in liKeys:
-                data = schemas[key]
-                tableInfo = key.split(":")
+                tableProps = schemas[key]
+                tableTitle = key.split(":")
+                
+                if tableTitle[0][0:1] == "*":
+                    Log.info("schema", "自动跳过：{0}".format(tableTitle))
+                else: 
+                    colums = []
+                    for li in tableProps:
+                        columInfo = li.split(":")
 
-                colums = []
-                for li in data:
-                    columInfo = li.split(":")
+                        width = 100
+                        showInSearch = 1
+                        required = 0
+                        formType = "text"
+                        columnProperty = columInfo[2]
 
-                    width = 100
-                    showInSearch = 1
-                    required = 0
-                    formType = "text"
-                    columnProperty = columInfo[2]
+                        coulumTypeTemp = {
+                            "REAL": "number",
+                            "TINYINT": "number",
+                            "SMALLINT": "number",
+                            "MEDIUMINT": "number",
+                            "INT": "number",
+                            "BIGINT": "number",
+                            "FLOAT": "number",
+                            "DOUBLE": "number",
+                            "CHAR": "text",
+                            "VARCHAR": "text",
+                            "TINYTEXT": "textArea",
+                            "TEXT": "textArea",
+                            "MEDIUMTEXT": "textArea",
+                            "LONGTEXT": "textArea",
+                            "BOOL": "number",
+                            "BOOLEAN": "number",
+                            "DATETIME": "time",
+                            "DATE": "time",
+                            "TIME": "time",
+                            "TIMESTAMP": "time",
+                        }
+                        columnProperty = columnProperty.split("(")[0].upper()
+                        if columnProperty in coulumTypeTemp:
+                            formType = coulumTypeTemp[columnProperty]
+                        else:
+                            formType = columnProperty
 
-                    coulumTypeTemp = {
-                        "REAL": "number",
-                        "TINYINT": "number",
-                        "SMALLINT": "number",
-                        "MEDIUMINT": "number",
-                        "INT": "number",
-                        "BIGINT": "number",
-                        "FLOAT": "number",
-                        "DOUBLE": "number",
-                        "CHAR": "text",
-                        "VARCHAR": "text",
-                        "TINYTEXT": "textArea",
-                        "TEXT": "textArea",
-                        "MEDIUMTEXT": "textArea",
-                        "LONGTEXT": "textArea",
-                        "BOOL": "number",
-                        "BOOLEAN": "number",
-                        "DATETIME": "time",
-                        "DATE": "time",
-                        "TIME": "time",
-                        "TIMESTAMP": "time",
-                    }
-                    columnProperty = columnProperty.split("(")[0].upper()
-                    if columnProperty in coulumTypeTemp:
-                        formType = coulumTypeTemp[columnProperty]
-                    else:
-                        formType = columnProperty
+                        if len(columInfo) >= 4:
+                            width = columInfo[3]
 
-                    if len(columInfo) >= 4:
-                        width = columInfo[3]
+                        if len(columInfo) >= 5:
+                            showInSearch = columInfo[4]
 
-                    if len(columInfo) >= 5:
-                        showInSearch = columInfo[4]
+                        if len(columInfo) >= 6:
+                            required = columInfo[5]
 
-                    if len(columInfo) >= 6:
-                        required = columInfo[5]
+                        colums.append({
+                            "name": columInfo[0],
+                            "des": columInfo[1],
+                            "columnProperty": columInfo[2],
+                            "sort": "up",
+                            "align": "left",
+                            "width": width,
+                            "formType": formType,
+                            "showInSearch": showInSearch,
+                            "required": required,
+                        })
 
-                    colums.append({
-                        "name": columInfo[0],
-                        "des": columInfo[1],
-                        "columnProperty": columInfo[2],
-                        "sort": "up",
-                        "align": "left",
-                        "width": width,
-                        "formType": formType,
-                        "showInSearch": showInSearch,
-                        "required": required,
+                    tableList.append({
+                        "name": tableTitle[0],
+                        "title": tableTitle[1],
+                        "des": tableTitle[1],
+                        "dbName": tableTitle[2],
+                        "columns": colums
                     })
 
-                tableList.append({
-                    "name": tableInfo[0],
-                    "title": tableInfo[1] + "管理",
-                    "des": tableInfo[1],
-                    "columns": colums
-                })
-
-            info["tableList"] = tableList
-
-            with open(infoPath, "w") as f:
+            info["db"]["tableListOld"] = info["db"]["tableList"]
+            info["db"]["tableList"] = tableList
+            
+            with open(projectEnvPath, "w") as f:
                 json.dump(info, f, ensure_ascii=False)
 
-            Log.success("schema", "生成成功")
+            Log.success("schema", "tableList，生成成功")
 
         elif cmd == "java":
             if len(sys.argv) > 2:
@@ -200,12 +198,7 @@ class cmds:
             java -request 生成request文件。\r\n \
         ".format(cmd))
 
-
 def __main__():
-    try:
-        cmds.checkCMD()
-    except Exception as e:
-        print(e)
-
-
+    cmds.checkCMD()
+    
 __main__()
