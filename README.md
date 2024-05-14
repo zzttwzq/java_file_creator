@@ -22,7 +22,7 @@
     "name": "blog",
     "title": "博客",
     "logPath": "Log/",
-    "path": "/Users/wuzhiqiang/Documents/GitHub/blog/",
+    "path": "/Users/xxx/Documents/GitHub/blog/",
     "db": {
         "host": "127.0.0.1",
         "port": 3306,
@@ -166,7 +166,7 @@
         ]
     },
     "admin": {
-        "backupPath": "/Users/wuzhiqiang/Documents/GitHub/java_file_creator/Backup/admin/",
+        "backupPath": "/Users/xxx/Documents/GitHub/java_file_creator/Backup/admin/",
         "adminSrcPath": "admin/src/",
         "routerPath": "admin/src/router/local.js",
         "apiPath": "admin/src/api/Api.js",
@@ -174,7 +174,7 @@
         "pagePath": "admin/src/pages/"
     },
     "java": {
-        "backupPath": "/Users/wuzhiqiang/Documents/GitHub/java_file_creator/Backup/java/",
+        "backupPath": "/Users/xxx/Documents/GitHub/java_file_creator/Backup/java/",
         "packageName": "com.qlzw.smartwc",
         "packagePath": "java/src/main/java/com/qlzw/smartwc/",
         "utilsPath": "java/src/main/java/com/qlzw/smartwc/utils/"
@@ -325,7 +325,7 @@ spring.datasource.minIdle=5
 mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
 
 # log4j
-logging.file.path=/Users/wuzhiqiang/Desktop/springboot
+logging.file.path=/Users/xxx/Desktop/springboot
 ```
 
 ## admin 目录中的配置
@@ -342,6 +342,28 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 
 ## 更新内容
+
+#### 1.0.4
+1. create_util 工具类方法修改成下划线
+2. file_manager 
+   1. 工具类名修改为FileManager
+   2. 工具类方法修改成下划线
+3. mysql 工具类方法名修改为下划线
+4. db_creator 
+   1. 修改表字段名为驼峰
+   2. 数据库名纯大写
+   3. 表名下划线
+   4. 字段名驼峰首字母小写
+5. admin_creator 
+   1. 工具类修改方法为下划线
+   2. 在 'tableSchema' 的对应字段中加入’#‘号可以关联到其他的表，并将输入内容改成select
+   3. 在 'tableSchema' 的对应字段中加入’-‘号可以自动截断并加入到选项，选项内容可以用空格空开
+   4. 在 'tableList' 的对应字段中加入'options'字段，可以加入选项
+   5. adminPage 中的 'handelxxx' 方法名写错改成 'handel'
+6. java_creator
+   1. 工具类修改方法为下划线
+   2. 修改
+7. 
 
 #### 1.0.3
 1. 修改 db_creator 调整到稳定
@@ -362,6 +384,9 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 11. 添加schema 命令; 根据tableinfo.json 中的 tableSchema 字段信息生成 tableList字段内的内容，规则如下：
     1.  table中 表名^表描述^表详细信息
     2.  column中 字段名^字段描述^数据属性
+
+#### 1.0.2
+1. admin_creator 增加和修改去除createAt；搜索列表添加createAt；
 
 #### 1.0.1
 1. 指定tableInfo.json 位置，可以多工程工作，修复相关bug

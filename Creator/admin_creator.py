@@ -1,8 +1,8 @@
 import copy
 
 import os
-from Core.file_manager import *
-from Core.create_util import *
+from Core.file_manager import FileManager, Log
+from Core.create_util import CreateUtil
 
 class AdminCreator:
     pagePath = ""
@@ -13,7 +13,6 @@ class AdminCreator:
 
     @staticmethod
     def create(tableInfo, mode, names):
-
         adminCreator = AdminCreator()
 
         # ------------ 准备路径信息
@@ -27,14 +26,14 @@ class AdminCreator:
             return 0
 
         # 备份目录
-        CreateUtil.packDir(tableInfo["path"] + tableInfo["admin"]["adminSrcPath"], tableInfo["admin"]["backupPath"])
+        CreateUtil.pack_dir(tableInfo["path"] + tableInfo["admin"]["adminSrcPath"], tableInfo["admin"]["backupPath"])
 
         Log.blank()
         Log.info(
             "admin", "================ 正在为`{0}`生成admin文件 ================".format(names))
 
         # ------------ 执行操作
-        tableList = CreateUtil.getTableInfoWidthNames(tableInfo, names)
+        tableList = CreateUtil.get_tableInfo_width_names(tableInfo, names)
 
         if len(tableList) == 0:
             Log.error(
@@ -42,7 +41,7 @@ class AdminCreator:
             return
         
         if len(names) == 0:
-            adminCreator._cmdError()
+            adminCreator._cmd_error()
         elif mode == "-d":
             adminCreator.clearDir()
         elif mode == "-router":
@@ -50,12 +49,12 @@ class AdminCreator:
         elif mode == "-d":
             adminCreator.clearDir()
         elif mode == "-n" or mode == "-all":
-            adminCreator.createRouters(tableList)
-            adminCreator.createApis(tableInfo, tableList)
-            adminCreator.createRequests(tableList)
-            adminCreator.createPage(tableList)
+            adminCreator.create_routers(tableList)
+            adminCreator.create_apis(tableInfo, tableList)
+            adminCreator.create_requests(tableList)
+            adminCreator.create_page(tableList)
                     
-    def createPage(self, tableInfos):
+    def create_page(self, tableInfos):
         Log.blank()
         Log.info("admin", "开始生成 pages")
 
@@ -73,30 +72,66 @@ class AdminCreator:
             className = CreateUtil.camelize(tableName)
 
             # 创建 文件夹
-            CreateUtil.checkPath(self.pagePath + className)
+            CreateUtil.check_path(self.pagePath + className)
 
             # 字段属性列表
             columnList = copy.deepcopy(tableInfo["columns"])
 
             # 添加时间信息
-            CreateUtil.addModelDefaultProperty(columnList)
+            CreateUtil.add_model_default_property(columnList)
 
             columns = ""
             searchs = ""
             forms = ""
             content = ""
+            relateApi = ""
+            relateData = ""
+            relateMethod = ""
+            relateMethodCall = ""
 
             for columnInfo in columnList:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
-                columnName = CreateUtil.instanceName(columnInfo['name'])
+                columnName = CreateUtil.instance_name(columnInfo['name'])
 
                 columns += "        {\r\n"
                 columns += "          title: '{0}',//{1}\r\n".format(
-                    columnDes, columnDes)
+                    columnDes.split("-")[0], columnDes)
                 columns += "          dataIndex: '{0}',\r\n".format(columnName)
                 columns += "          key: '{0}',\r\n".format(columnName)
                 keys = columnInfo.keys()
+                
+                if "#" in columnDes:
+                    relateName = columnDes.split("#")[1]
+                    relateClassName = CreateUtil.camelize(relateName)
+                    relateInstanceName = CreateUtil.instance_name(relateName)
+                    
+                    relateApi += "get{0}, \r\n".format(relateClassName)
+                    relateData += "      {0}List: [], \r\n".format(relateInstanceName)
+                    relateMethodCall += "\r\n      this.get{0}List(); ".format(relateClassName)
+                    
+                    relateMethod += '    async get{0}List() {1} \r\n'.format(relateClassName, '{')
+                    relateMethod += '      let data = await get{0}({1} "page": 0, "size": 100000 {2});\r\n'.format(relateClassName, '{', '}')
+                    relateMethod += '      // 转换select options 数据\r\n'
+                    relateMethod += '      data = data.map(v => {\r\n'
+                    relateMethod += '        return {\r\n'
+                    relateMethod += '          "label": v["name"] != undefined ? v["name"] : v["title"],\r\n'
+                    relateMethod += '          "value": v["id"],\r\n'
+                    relateMethod += '        };\r\n'
+                    relateMethod += '      })\r\n'
+                    relateMethod += '      this.{0}List = data; \r\n'.format(relateInstanceName)
+                    relateMethod += '      console.log(">>>> {0}List", data); \r\n'.format(relateInstanceName)
+                    relateMethod += '      // 给formlist里的`{0}`.options 重新赋值\r\n'.format(columnName)
+                    relateMethod += '      this.formList.map(it => {0}\r\n'.format("{")
+                    relateMethod += '        if (it["name"] == "{0}") {1}\r\n'.format(columnName, "{")
+                    relateMethod += '          it["options"] = this.{0}List;\r\n'.format(relateInstanceName)
+                    relateMethod += '        }\r\n'
+                    relateMethod += '      })\r\n'
+                    relateMethod += '    },\r\n'
+                    
+                    columnDes = columnDes.split("#")[0]
+                    columnInfo['formType'] = "select"
+                    columnInfo['options'] = []
 
                 propKeys = ""
                 if "sort" in keys:
@@ -163,11 +198,11 @@ class AdminCreator:
                 item += "              ],\r\n"
                 item += "            },\r\n"
                 item += "          ],\r\n"
+                
                 if formType == 'number':
                     item += "          precision: 0,\r\n"
 
                 if formType == 'select':
-
                     option_string = ''
                     for value3 in columnInfo['options']:
                         option_string += "            {\r\n"
@@ -184,14 +219,14 @@ class AdminCreator:
                 item += propKeys
                 item += "        },\r\n"
 
-                if columnName != "id" and columnName != "updateAt" and columnName != "deleteAt":
+                if columnName != "id" and columnName != "createAt" and columnName != "updateAt" and columnName != "deleteAt":
                     forms += item
 
                 # search
                 if showInSearch == 1:
                     item = item.replace(
                         '{ required: true', '{ required: false')
-                    if columnName != "id" and columnName != "createAt" and columnName != "updateAt" and columnName != "deleteAt":
+                    if columnName != "id" and columnName != "deleteAt":
                         searchs += item
 
             content += "<template>\r\n"
@@ -206,10 +241,10 @@ class AdminCreator:
             content += "      :editRequest=\"editRequest\"\r\n"
             content += "      :editDetailRequest=\"editDetailRequest\"\r\n"
             content += "      :deleteRequest=\"deleteRequest\"\r\n"
-            content += "      :handelListData=\"handelListData\"\r\n"
-            content += "      :handelModifyData=\"handelModifyData\"\r\n"
-            content += "      :handelWillAdd=\"handelWillAdd\"\r\n"
-            content += "      :handelWillEdit=\"handelWillEdit\"\r\n"
+            content += "      :handleListData=\"handleListData\"\r\n"
+            content += "      :handleModifyData=\"handleModifyData\"\r\n"
+            content += "      :handleWillAdd=\"handleWillAdd\"\r\n"
+            content += "      :handleWillEdit=\"handleWillEdit\"\r\n"
             content += "      pageNumKey=\"page\"\r\n"
             content += "      pageSizeKey=\"size\"\r\n"
             content += "      :pageStart=\"0\"\r\n"
@@ -229,7 +264,9 @@ class AdminCreator:
             content += "  data() {\r\n"
             content += "    return {}\r\n"
             content += "  },\r\n"
-            content += "  created() {},\r\n"
+            content += "  created() {\r\n"
+            content += "    this.init();\r\n"
+            content += "  },\r\n"
             content += "  methods: {},\r\n"
             content += "};\r\n"
             content += "</script>\r\n"
@@ -238,12 +275,15 @@ class AdminCreator:
             content += "</style>\r\n"
             content += "\r\n"
             
-            mixin = "import {" + " get{0}, post{1}, get{2}ByID, delete{3}ByID ".format(
-                className, className, className, className) + " } from \"@/api/ApiRequest\" \r\n"
+            mixin = "import {" + " get{0}, post{1}, get{2}ByID, delete{3}ByID,{4} ".format(
+                className, className, className, className, relateApi) + " } from \"@/api/ApiRequest\" \r\n"
             mixin += "\r\n"
             mixin += "export default {\r\n"
             mixin += "  data() {\r\n"
             mixin += "    return {\r\n"
+            mixin += "      /// relateList\r\n"
+            mixin += "{0}".format(relateData)
+            mixin += "\r\n"
             mixin += "      /// table\r\n"
             mixin += "      columns: [\r\n"
             mixin += "{0}\r\n".format(columns)
@@ -274,23 +314,38 @@ class AdminCreator:
                 className)
             mixin += "    };\r\n"
             mixin += "  },\r\n"
-            mixin += "  created() {},\r\n"
             mixin += "  methods: {\r\n"
-            mixin += "    handelListData(data) {\r\n"
+            mixin += "{0}".format(relateMethod)
+            mixin += "    async init() {"
+            mixin += "{0}\r\n".format(relateMethodCall)
+            mixin += "\r\n"
+            mixin += "      // 绑定方法，避免传入的this指向不正确。\r\n"
+            mixin += "      this.handleListData.bind(this);\r\n"
+            mixin += "      this.handleModifyData.bind(this);\r\n"
+            mixin += "      this.handleWillAdd.bind(this);\r\n"
+            mixin += "      this.handleWillEdit.bind(this);\r\n"
+            mixin += "    },\r\n"
+            mixin += "    handleListData(data) {\r\n"
             mixin += "      data.map((it) => {\r\n"
             mixin += "        console.log(it)\r\n"
             mixin += "      })\r\n"
             mixin += "    },\r\n"
-            mixin += "    handelModifyData(values) {console.log(values);},\r\n"
-            mixin += "    handelWillAdd(values) {console.log(values);},\r\n"
-            mixin += "    handelWillEdit(values) {console.log(values);},\r\n"
+            mixin += '    handleModifyData(values) {\r\n'
+            mixin += '      console.log("handleModifyData", values);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    handleWillAdd() {\r\n'
+            mixin += '      console.log("handleWillAdd");\r\n'
+            mixin += '    },\r\n'
+            mixin += '    handleWillEdit(values) {\r\n'
+            mixin += '      console.log("handleWillEdit", values);\r\n'
+            mixin += '    },\r\n'
             mixin += "  },\r\n"
             mixin += "};\r\n"
             
             self._generate_file(self.pagePath + className + "/index.vue", "", content, override=False)
             self._generate_file(self.pagePath + className + "/mixin.js", "", mixin)
 
-    def createRouters(self, tableInfos):
+    def create_routers(self, tableInfos):
         Log.blank()
         Log.info("admin", "创建 routers")
 
@@ -309,13 +364,13 @@ class AdminCreator:
             className = CreateUtil.camelize(tableName)
 
             # 对应的实例名称
-            instanceName = CreateUtil.instanceName(tableName)
+            instance_name = CreateUtil.instance_name(tableName)
 
             tableKeys = tableInfo.keys()
 
             string += "            {\r\n"
             string += "                path: \"/{0}\",\r\n".format(
-                instanceName)
+                instance_name)
             string += "                name: \"{0}\",\r\n".format(tableTitle)
             string += "                des: \"{0}\",\r\n".format(classDes)
             string += "                meta: {\r\n"
@@ -329,9 +384,9 @@ class AdminCreator:
                 className)
             string += "            },\r\n"
 
-            self._generate_file(self.routerPath, "\r\n" + string, "", log_type=2, log_prefix="AdminRouters", log_txt="创建："+instanceName)
+            self._generate_file(self.routerPath, "\r\n" + string, "", log_type=2, log_prefix="AdminRouters", log_txt="创建："+instance_name)
 
-    def createApis(self, info, tableInfos):
+    def create_apis(self, info, tableInfos):
         Log.blank()
         Log.info("admin", "创建 api")
 
@@ -349,18 +404,18 @@ class AdminCreator:
             constName = tableName.upper()
 
             # 对应的实例名称
-            instanceName = CreateUtil.instanceName(tableName)
+            instance_name = CreateUtil.instance_name(tableName)
 
             string += "\r\n    // {0} \r\n".format(classDes)
             string += "    {0}: `$".format(constName) + '{BASE_URL}' + \
                 "/{0}/{1}`, \r\n".format(appName,
-                                         instanceName
+                                         instance_name
                                          )
-            Log.success("api", "创建："+instanceName)
+            Log.success("api", "创建："+instance_name)
 
-        self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+instanceName)
+        self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+instance_name)
 
-    def createRequests(self, tableInfos):
+    def create_requests(self, tableInfos):
         Log.blank()
         Log.info("admin", "创建 request")
 
@@ -387,7 +442,7 @@ class AdminCreator:
             columnLists2 = copy.deepcopy(columnLists)
 
             # 添加时间信息
-            CreateUtil.addModelDefaultProperty(columnLists2)
+            CreateUtil.add_model_default_property(columnLists2)
 
             columnNames = ""
             for columnInfo in columnLists:
@@ -468,9 +523,9 @@ class AdminCreator:
         fileDir = filePath.split("/")
         fileDir[len(fileDir) - 1] = ""
         fileDir = "/".join(fileDir)
-        CreateUtil.checkPath(fileDir)
+        CreateUtil.check_path(fileDir)
         
-        if CreateUtil.pathExists(filePath) :
+        if CreateUtil.path_exists(filePath) :
             f1 = open(filePath, "r")
             content = f1.readlines()
             content = "".join(content)
@@ -484,19 +539,19 @@ class AdminCreator:
         else:
             content = totalString
                 
-        if override or CreateUtil.pathExists(filePath) == False:
+        if override or CreateUtil.path_exists(filePath) == False:
             # 创建文件
             if log_type == 1:
                 Log.success(log_prefix, "生成："+filePath)
             elif log_type == 2:
                 Log.success(log_prefix, log_txt)
                 
-            f = file_manager(filePath)
+            f = FileManager(filePath)
             f.write(content)
             f.close()
 
     @staticmethod
-    def _cmdError():
+    def _cmd_error():
         Log.info("admin", "命令错误：\r\n \
             尝试以下命令：、\r\n  \
             admin -all [names] 生成所有内容。\r\n \

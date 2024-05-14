@@ -11,7 +11,8 @@ python3 _cmd.py java -all
 # python3 _cmd.py java controller user
 # python3 _cmd.py java -d user
 
-python3 _cmd.py admin -all
+# python3 _cmd.py admin -all
+# python3 _cmd.py admin -all
 
 # python3 _cmd.py uni page -all
 

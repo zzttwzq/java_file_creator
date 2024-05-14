@@ -22,9 +22,9 @@
                 "phone:手机号:varchar(15)",
                 "email:邮箱:varchar(20)",
                 "token:凭证:varchar(20)",
-                "province:凭证:varchar(10)",
-                "city:凭证:varchar(20)",
-                "address:凭证:varchar(200)",
+                "province:省:varchar(10)",
+                "city:城市:varchar(20)",
+                "address:地址:varchar(200)",
                 "role_id:角色ID:int",
                 "type:角色类型-0 管理用户 1 普通用户:int(2)"
             ],

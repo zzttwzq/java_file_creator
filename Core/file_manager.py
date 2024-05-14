@@ -1,20 +1,16 @@
 import os
 import time
 import sys
-import traceback
-import logging
-import threading
 
-
-class file_manager:
+class FileManager:
     f = ''
 
     @staticmethod
-    def getBaseDir():
+    def get_base_dir():
         return os.path.abspath('..')
 
     @staticmethod
-    def getCurrentDir():
+    def get_current_dir():
         return os.path.abspath('.')
 
     def __init__(self, path):
@@ -33,7 +29,7 @@ class file_manager:
         self.f.close()
 
     @staticmethod
-    def checkFilePath(path):
+    def check_file_path(path):
         """
         @summary: 检查对应的文件是否存在
         @param path: 路径
@@ -42,7 +38,7 @@ class file_manager:
         return os.path.exists(path)
 
     @staticmethod
-    def checkDirPath(path):
+    def check_dir_path(path):
         """
         @summary: 检查对应的文件夹是否创建，如果未创建则创建之
         @param path: 路径
@@ -98,10 +94,6 @@ class Log:
                                                 co.co_name) + "\r\n" + retStr
             f = f.f_back
             
-        # l = retStr.split("\n")
-        # l.pop(len(l) - 2)
-        # retStr = "\n".join(l)
-
         if types == 'DEBUG':
             logStr = "[{0}] [{2}] [{3}] {4} \r\n    callpath: \r\n{1}\r\n".format(
                 times, retStr, types, title, msg)
@@ -137,7 +129,7 @@ class Log:
             print("\033[1;40;30m[{0}] \033[0m".format(times))
             
 
-        log_path = file_manager.getCurrentDir()+"/Log/"
+        log_path = FileManager.get_current_dir()+"/Log/"
         if not os.path.exists(log_path):
             os.makedirs(log_path)
 
@@ -150,15 +142,15 @@ class Log:
 
         f.close()
 
-
 class SqlLog:
 
     @staticmethod
-    def record(sql, msg):
+    def record(msg, sql):
 
         date_time = time.strftime("%Y-%m-%d %H:%M:%S")
+        date = date_time.split(" ")[0]
 
-        file_path = file_manager.getCurrentDir()+"/Log/sql.sql"
+        file_path = FileManager.get_current_dir()+"/Log/" + date + ".sql"
         f = open(file_path, mode='a+', encoding='utf8')
-        f.write("\r\n#[{0}] {1}\r\n {2}\r\n".format(date_time, msg, sql))
+        f.write("[{0}] {1} {2}\r\n".format(date_time, msg, sql))
         f.close()

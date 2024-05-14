@@ -9,7 +9,7 @@ from Core.mysql_config import MysqlConfig
 class CreateUtil:
     
     @staticmethod
-    def getConfigInfo(path="project.json"):
+    def get_config_info(path="project.json"):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param names: 输入的表名字符串
@@ -25,7 +25,7 @@ class CreateUtil:
         return d
     
     @staticmethod
-    def getTableInfoWidthNames(tableInfo, names):
+    def get_tableInfo_width_names(tableInfo, names):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param tableInfo: 配置信息
@@ -51,7 +51,7 @@ class CreateUtil:
         return tableInfoList
     
     @staticmethod
-    def checkPath(path):
+    def check_path(path):
         """
         @summary: 检查文件或者文件夹路径是否存在，不存在会自动创建
         @param path: 文件或者文件夹路径
@@ -65,7 +65,7 @@ class CreateUtil:
                 os.makedirs(path)
     
     @staticmethod
-    def pathExists(path):
+    def path_exists(path):
         """
         @summary: 检查文件或者文件夹路径是否存在
         @param path: 文件或者文件夹路径
@@ -77,7 +77,7 @@ class CreateUtil:
             return False
 
     @staticmethod
-    def getMysqlConfig(projectInfo):
+    def get_mysql_config(projectInfo):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param projectInfo: 配置信息
@@ -129,7 +129,7 @@ class CreateUtil:
         return ''.join(result)
 
     @staticmethod
-    def instanceName(s):
+    def instance_name(s):
         """
         @summary: 返回实例对象名
         @param s: 字符串
@@ -140,7 +140,7 @@ class CreateUtil:
         return className[:1].lower() + className[1:]
 
     @staticmethod
-    def getTables(projectInfo, names):
+    def get_tables(projectInfo, names):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param tableInfo: 配置信息
@@ -166,9 +166,9 @@ class CreateUtil:
         return tableInfoList
 
     @staticmethod
-    def packDir(dirPath, storePath):
+    def pack_dir(dirPath, storePath):
         # 检查路径
-        CreateUtil.checkPath(storePath)
+        CreateUtil.check_path(storePath)
         
         # 压缩文件
         zip_name = shutil.make_archive(dirPath, f'zip', dirPath)
@@ -187,7 +187,19 @@ class CreateUtil:
         shutil.move(zip_name1, storePath)
 
     @staticmethod
-    def addModelDefaultProperty(columns):
+    def modify_config_file_key_value(filePath, key, value):
+        f1 = open(filePath, "r")
+        content = f1.readlines()
+        content = "".join(content)
+        content = content.split(key)
+        
+        if len(content) == 2:
+            d1 = content[1]
+            d2 = d1.split("\n")
+            # d2[0] = "="
+        
+    @staticmethod
+    def add_model_default_property(columns):
         """
         @summary: 对表添加 createTime updateTime deleteTime等信息
         @param columns: 表字段列表
@@ -218,7 +230,7 @@ class CreateUtil:
             "columnProperty": "DATETIME",
             "formType": "date",
             "showTime": 1,
-            "showInSearch": 0,
+            "showInSearch": 1,
             "required": 0,
             "sort": "up",
             "align": "center",
@@ -252,7 +264,7 @@ class CreateUtil:
         return columns
 
     @staticmethod
-    def replaceUnValidJsonValueWithKey(source, key, value):
+    def replace_unvalid_json_value_with_key(source, key, value):
         """
         @summary: 对于不标准的json字符串中替换key对应的value, key的冒号后面需要有一个空格
         @param source: json字符串
@@ -277,7 +289,7 @@ class CreateUtil:
         return d
 
     @staticmethod
-    def replaceValidJsonValueWithKey(source, key, value):
+    def replace_valid_json_value_with_key(source, key, value):
         """
         @summary: 对于标准的json字符串中替换key对应的value, key的冒号后面需要有一个空格
         @param source: json字符串

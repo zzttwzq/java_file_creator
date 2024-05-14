@@ -1,7 +1,6 @@
 import sys
 import json
-from Core.fileparser import *
-from Core.file_manager import *
+from Core.file_manager import Log
 
 # colum_type_list = [
 #     'TINYINT', 'SMALLINT', 'MEDIUMINT', 'INT', 'BIGINT',
@@ -27,10 +26,11 @@ from Core.file_manager import *
 #     "checkboxGroup",
 # ]
 
-from Creator.java_creator import *
-from Creator.admin_creator import *
-from Creator.uni_creator import *
-from Creator.db_creator import *
+from Creator.db_creator import DBCreator
+from Creator.java_creator import JavaCreator
+from Creator.admin_creator import AdminCreator
+from Creator.uni_creator import UniCreator
+from Core.create_util import CreateUtil
 
 # 项目配置文件
 projectEnvPath = "/Users/wuzhiqiang/Documents/GitHub/blog/project.json"
@@ -40,10 +40,10 @@ class cmds:
     @staticmethod
     def checkCMD():
         if len(sys.argv) == 1:
-            cmds.cmdError("")
+            cmds._cmd_error("")
             return
 
-        info = CreateUtil.getConfigInfo(path=projectEnvPath)
+        info = CreateUtil.get_config_info(path=projectEnvPath)
         cmd = sys.argv[1]
 
         if cmd == "-all":
@@ -61,7 +61,7 @@ class cmds:
 
                 DBCreator.create(info, mode, names)
             else:
-                DBCreator.cmdError()
+                DBCreator._cmd_error()
 
         elif cmd == "schema":
             schemas = info["db"]["tableSchema"]
@@ -159,7 +159,7 @@ class cmds:
 
                 JavaCreator.create(info, mode, names)
             else:
-                JavaCreator.cmdError()
+                JavaCreator._cmd_error()
 
         elif cmd == "admin":
             if len(sys.argv) > 2:
@@ -170,7 +170,7 @@ class cmds:
 
                 AdminCreator.create(info, mode, names)
             else:
-                AdminCreator.cmdError()
+                AdminCreator._cmd_error()
 
         elif cmd == "uni":
             if len(sys.argv) > 2:
@@ -181,12 +181,12 @@ class cmds:
 
                 UniCreator.create(info, mode, names)
             else:
-                UniCreator.cmdError()
+                UniCreator._cmd_error()
         else:
-            cmds.cmdError(cmd)
+            cmds._cmd_error(cmd)
 
     @staticmethod
-    def cmdError(cmd):
+    def _cmd_error(cmd):
         Log.info("_cmd", "命令错误 [{0}]：\r\n \
             尝试以下命令：、\r\n  \
             -all 生成所有内容。\r\n \

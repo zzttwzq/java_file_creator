@@ -1,7 +1,8 @@
 import copy
 
 import os
-from Core.file_manager import *
+from Core.file_manager import Log
+from Core.create_util import CreateUtil
 
 class UniCreator:
     pathPrefix = ""
@@ -26,12 +27,12 @@ class UniCreator:
             return 0
 
         # 备份目录
-        TableUtil.packDir(uniCreator.pagePath, "dist/uni/pages/")
-        TableUtil.packDir(uniCreator.apiPath, "dist/uni/api/")
-        # TableUtil.packDir(uniCreator.routerPath, "dist/uni/router/")
+        CreateUtil.pack_dir(uniCreator.pagePath, "dist/uni/pages/")
+        CreateUtil.pack_dir(uniCreator.apiPath, "dist/uni/api/")
+        CreateUtil.pack_dir(uniCreator.routerPath, "dist/uni/router/")
 
         # ------------ 执行操作
-        tableList = TableUtil.getTableInfoWidthNames(talbeInfo, names)
+        tableList = CreateUtil.get_tableInfo_width_names(talbeInfo, names)
         Log.blank()
         Log.info(
             "UniCreator", "================ 正在为`{0}`生成Uni文件 ================".format(names))
@@ -46,7 +47,7 @@ class UniCreator:
 
         else:
             if "page" in mode == False:
-                UniCreator.cmdError()
+                UniCreator._cmd_error()
 
             UniCreator.createApis(uniCreator.apiPath, tableList)
             UniCreator.createRouters(uniCreator.routerPath, tableList)
@@ -70,16 +71,16 @@ class UniCreator:
             classDes = tableInfo["des"]
 
             # 对应的类名称
-            className = TableUtil.className(tableName)
+            className = CreateUtil.className(tableName)
 
             # 创建 文件夹
-            TableUtil.checkPath(pagePath + className)
+            CreateUtil.check_path(pagePath + className)
 
             # 字段属性列表
             columnList = copy.deepcopy(tableInfo["columns"])
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnList)
+            CreateUtil.add_model_default_property(columnList)
 
             columns = ""
             searchs = ""
@@ -89,7 +90,7 @@ class UniCreator:
             for columnInfo in columnList:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
-                columnName = TableUtil.instanceName(columnInfo['name'])
+                columnName = CreateUtil.instance_name(columnInfo['name'])
 
                 columns += "        {\r\n"
                 columns += "          title: '{0}',//{1}\r\n".format(
@@ -307,10 +308,10 @@ class UniCreator:
             classDes = tableInfo["des"]
 
             # 对应的类名称
-            className = TableUtil.className(tableName)
+            className = CreateUtil.className(tableName)
 
             # 对应的实例名称
-            instanceName = TableUtil.instanceName(tableName)
+            instance_name = CreateUtil.instance_name(tableName)
 
             tableKeys = tableInfo.keys()
 
@@ -319,7 +320,7 @@ class UniCreator:
                 className)
             string += "        },\r\n"
 
-            Log.success("router", "生成："+instanceName)
+            Log.success("router", "生成："+instance_name)
 
         string = string[0:len(string)-3]
         string += "\r\n"
@@ -341,7 +342,7 @@ class UniCreator:
         c = ''.join(c)
 
         content = c.split("//### 自动生成的Apis")
-        info = TableUtil.getConfigInfo()
+        info = CreateUtil.get_config_info()
         appName = info["appName"]
 
         string = ''
@@ -359,13 +360,13 @@ class UniCreator:
             constName = tableName.upper()
 
             # 对应的实例名称
-            instanceName = TableUtil.instanceName(tableName)
+            instance_name = CreateUtil.instance_name(tableName)
 
             string += "\r\n    // {0} \r\n".format(tableTitle)
             string += "    {0}: `$".format(constName) + '{BASE_URL}' + \
                 "/{0}/{1}`, // {2} \r\n".format(appName,
-                                                instanceName, classDes)
-            Log.success("api", "生成："+instanceName)
+                                                instance_name, classDes)
+            Log.success("api", "生成："+instance_name)
 
         content[1] = "\r\n" + string + "\r\n    "
         content = "//### 自动生成的Apis".join(content)
@@ -398,10 +399,10 @@ class UniCreator:
             classDes = tableInfo["des"]
 
             # 对应的类名称
-            className = TableUtil.className(tableName)
+            className = CreateUtil.className(tableName)
 
             # 对应的类实例化名称
-            instanceName = TableUtil.instanceName(tableName)
+            instance_name = CreateUtil.instance_name(tableName)
 
             # 常量名称
             constName = tableName.upper()
@@ -411,7 +412,7 @@ class UniCreator:
             columnLists2 = copy.deepcopy(columnLists)
 
             # 添加时间信息
-            TableUtil.addModelDefaultProperty(columnLists2)
+            CreateUtil.add_model_default_property(columnLists2)
 
             columnNames = ""
             paramNames = ""
@@ -442,7 +443,7 @@ class UniCreator:
             requests += "    return new Promise((resolve, reject) => {\r\n"
             requests += "        request.{0}(\r\n".format('get')
             requests += "            `{0}/{1}`,\r\n".format(
-                "${config.getRequestHost()}", instanceName)
+                "${config.getRequestHost()}", instance_name)
             requests += "            params,\r\n"
             requests += "            success_data => {\r\n"
             requests += "                resolve(success_data);\r\n"
@@ -463,7 +464,7 @@ class UniCreator:
             requests += "    return new Promise((resolve, reject) => {\r\n"
             requests += "        request.{0}(\r\n".format('post')
             requests += "            `{0}/{1}`,\r\n".format(
-                "${config.getRequestHost()}", instanceName)
+                "${config.getRequestHost()}", instance_name)
             requests += "            params,\r\n"
             requests += "            success_data => {\r\n"
             requests += "                resolve(success_data);\r\n"
@@ -488,7 +489,7 @@ class UniCreator:
             requests += "    return new Promise((resolve, reject) => {\r\n"
             requests += "        request.{0}(\r\n".format('post')
             requests += "            `{0}/{1}`,\r\n".format(
-                "${config.getRequestHost()}", instanceName)
+                "${config.getRequestHost()}", instance_name)
             requests += "            {'id': id},\r\n"
             requests += "            success_data => {\r\n"
             requests += "                resolve(success_data);\r\n"
@@ -509,7 +510,7 @@ class UniCreator:
             requests += "    return new Promise((resolve, reject) => {\r\n"
             requests += "        request.{0}(\r\n".format('post')
             requests += "            `{0}/{1}`,\r\n".format(
-                "${config.getRequestHost()}", instanceName)
+                "${config.getRequestHost()}", instance_name)
             requests += "            {'id': id},\r\n"
             requests += "            success_data => {\r\n"
             requests += "                resolve(success_data);\r\n"
@@ -532,7 +533,7 @@ class UniCreator:
         f.close()
 
     @staticmethod
-    def cmdError():
+    def _cmd_error():
         Log.info("uni_create", "命令错误：\r\n \
             尝试以下命令：、\r\n  \
             uni -page [-all/names] 生成页面\r\n \

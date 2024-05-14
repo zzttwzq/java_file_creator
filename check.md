@@ -9,14 +9,14 @@ DbCreator
     def create(info, mode, names)
 
     /// d 创建数据库
-    def createDB(self, dbNameList)
+    def create_db(self, dbNameList)
 
     /// d 创建数据表
     ///   根据内容更新数据表
-    def createOrUpdateTable(self, info, names)
+    def create_or_update_table(self, info, names)
 
     ///   创建数据种子
-    def createSeed(self, info, names)
+    def create_seed(self, info, names)
 
 /// d 根据tablelist 生成对应文件
 /// d 生成项目的登录相关文件
