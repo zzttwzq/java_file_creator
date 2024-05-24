@@ -1,26 +1,28 @@
 import copy
-
 import os
-from Core.file_manager import FileManager, Log
-from Core.create_util import CreateUtil
+import sys
+
+#添加上级目录
+sys.path.append("..//")
+from Utils.log_util import Log
+from Utils.file_util import FileUtil
+from Utils.create_util import CreateUtil
 
 class JavaCreator:
     java_temp_path = os.getcwd()+"/dist/java/"
     package_path = ""
     package_name = ""
-    split_string = "    //### 自动生成 ###"
+    split_string = "    // ### 自动生成 ###"
 
     @staticmethod
     def create(talbe_info, mode, names):
-
         javaCreator = JavaCreator()
 
         # ------------ 准备路径信息
         javaCreator.package_name = talbe_info["java"]["packageName"]
         javaCreator.package_path = talbe_info["path"] + talbe_info["java"]["packagePath"]
 
-        # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
-        if not os.path.exists(javaCreator.package_path):
+        if not FileUtil.path_exists(javaCreator.package_path):
             Log.error("java_creator", "源目录不存在，请指定源目录")
             return 0
 
@@ -29,14 +31,14 @@ class JavaCreator:
             "java", "================ 正在为`{0}`生成java文件 ================".format(names))
 
         # 备份目录
-        CreateUtil.pack_dir(javaCreator.package_path, talbe_info["java"]["backupPath"])
+        FileUtil.pack_dir(javaCreator.package_path, talbe_info["java"]["backupPath"])
 
         # ------------ 执行操作
         tableList = CreateUtil.get_tableInfo_width_names(talbe_info, names)
         if len(tableList) == 0:
             Log.error(
                 "java", "字段 `{0}` 不存在".format(names))
-            return
+            return 0
         
         if len(names) == 0:
             JavaCreator.__cmd_error()
@@ -64,21 +66,25 @@ class JavaCreator:
 
     def create_model(self, table_info_list):
         """
-        @summary: 创建pojo实体类
+        @summary: 创建model实体类
         @param tableInfos: 表信息
         """
+        
+        Log.blank()
+        Log.info("java", "================ 创建model实体类 ================")
 
         for tableInfo in table_info_list:
             # 表名称
             tableName = tableInfo["name"]
+            
             # 产生的类名称
             className = CreateUtil.camelize(tableName)
+            
             # 产生的实例名称
             instance_name = CreateUtil.instance_name(tableName)
+            
             # 字段属性列表
             columns = copy.deepcopy(tableInfo["columns"])
-            # 添加时间信息
-            CreateUtil.add_model_default_property(columns)
             
             # 文件信息
             string = "package " + self.package_name + "." + className + ";\r\n\r\n"
@@ -95,17 +101,13 @@ class JavaCreator:
             const_string = "\r\n    public " + className + "("
             const_string2 = ""
             const_string3 = "    public " + className + "() {} \r\n\r\n"
-            tostring_string = "    public String toString() {\r\n\r\n        return \" <" + \
-                className + "> {"
+            tostring_string = "    public String toString() {\r\n\r\n        return \" <" + className + "> {"
 
             count = 0
             for columnInfo in columns:
 
                 # 字段名称
-                propertyName = CreateUtil.instance_name(columnInfo["name"])
-                propClassName = CreateUtil.camelize(columnInfo["name"])
-                
-                print(propertyName)
+                propertyName = columnInfo["name"]
 
                 # 字段描述
                 des = columnInfo["des"]
@@ -143,8 +145,7 @@ class JavaCreator:
                 if count == 0:
                     tostring_string += propertyName + " = \" + " + propertyName + " + \", \" +\r\n"
                 else:
-                    tostring_string += "                \"" + propertyName + \
-                        " = \" + " + propertyName + " + \", \" +\r\n"
+                    tostring_string += "                \"" + propertyName +         " = \" + " + propertyName + " + \", \" +\r\n"
 
                 coulumTypeTemp = {
                     "REAL": "Long",
@@ -178,11 +179,8 @@ class JavaCreator:
                     dataType, propertyName, des)
                 const_string += "{0} {1},".format(dataType, propertyName)
 
-                json_string += "        if (map.get(\"" + \
-                    propertyName + "\") != null) {\r\n"
-                json_string += "            " + propertyName + " = " + \
-                    parseMap[columType] + \
-                    "((String) map.get(\"" + propertyName + "\"));\r\n"
+                json_string += "        if (map.get(\"" +     propertyName + "\") != null) {\r\n"
+                json_string += "            " + propertyName + " = " +     parseMap[columType] +     "((String) map.get(\"" + propertyName + "\"));\r\n"
                 json_string += "        }\r\n\r\n"
 
                 const_string2 += "        this." + propertyName + "=" + propertyName + ";\r\n"
@@ -197,21 +195,32 @@ class JavaCreator:
             tostring_string = ""+tostring_string
             tostring_string += " \"}\";\r\n    }"
 
-            string += prop_string + const_string + const_string3 + \
-                json_string + tostring_string + "\r\n}"
+            string += prop_string + const_string + const_string3 + json_string + tostring_string + "\r\n}"
 
             # 生成文件
             self._generate_file(tableName, ".java", "", string)
 
     def create_mapper(self, table_info_list):
+        """
+        @summary: 创建Mapper
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建Mapper ================")
         
         for tableInfo in table_info_list:
             # 表名称
             tableName = tableInfo["name"]
+            
             # 产生的类名称
             className = CreateUtil.camelize(tableName)
+            
             # 对应的实例名称
-            instance_name = CreateUtil.instance_name(tableName)       
+            instance_name = CreateUtil.instance_name(tableName)     
+
+            # 登录功能
+            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1  
 
             string = "package " + self.package_name + "." + className + ";\r\n"
             string += "import org.apache.ibatis.annotations.*;\r\n\r\n"
@@ -222,26 +231,29 @@ class JavaCreator:
             string += "public interface " + className + "Mapper {\r\n\r\n"
             string += format(self.split_string)
             
-            contentString = "\r\n    @SelectProvider(type = " + className + \
-                "Provider.class, method = \"selectAll\")\r\n"
-            contentString += "    public List<" + className + \
-                "> list(@Param(\"page\") Integer page, @Param(\"size\") Integer size);\r\n\r\n"
-            contentString += "    @SelectProvider(type = " + className + \
-                "Provider.class, method = \"selectOne\")\r\n"
-            contentString += "    public " + className + \
-                " show(@Param(\"id\") Long id);\r\n\r\n"
-            contentString += "    @InsertProvider(type = " + className + \
-                "Provider.class, method = \"insertOne\")\r\n"
+            contentString = "\r\n"
+            if addUserLogin:
+                contentString += "\r\n"
+                contentString += '    @SelectProvider(type = {}Provider.class, method = "getUserByName")\r\n'.format(className)
+                contentString += '    public List<{}> getUserByName(@Param("name") String name, @Param("password") String password);\r\n'.format(className)
+                
+            contentString += "\r\n"
+            contentString += "     @SelectProvider(type = " + className + "Provider.class, method = \"selectAll\")\r\n"
+            contentString += "    public List<" + className + "> list(@Param(\"page\") Integer page, @Param(\"size\") Integer size);\r\n"
+            contentString += "\r\n"
+            contentString += "    @SelectProvider(type = " + className + "Provider.class, method = \"selectOne\")\r\n"
+            contentString += "    public " + className + " show(@Param(\"id\") Long id);\r\n"
+            contentString += "\r\n"
+            contentString += "    @InsertProvider(type = " + className + "Provider.class, method = \"insertOne\")\r\n"
             contentString += "    @Options(useGeneratedKeys = true, keyProperty = \"id\", keyColumn = \"id\")//加入该注解可以保持对象后，查看对象插入id\r\n"
-            contentString += "    public Boolean insert(" + \
-                className + " " + instance_name + ");\r\n\r\n"
-            contentString += "    @DeleteProvider(type = " + className + \
-                "Provider.class, method = \"deleteOne\")\r\n"
-            contentString += "    public Boolean delete(@Param(\"id\") Long id);\r\n\r\n"
-            contentString += "    @UpdateProvider(type = " + className + \
-                "Provider.class, method = \"updateOne\")\r\n"
-            contentString += "    public Boolean update(" + \
-                className + " " + instance_name + ");\r\n\r\n"
+            contentString += "    public Boolean insert(" + className + " " + instance_name + ");\r\n"
+            contentString += "\r\n"
+            contentString += "    @DeleteProvider(type = " + className + "Provider.class, method = \"deleteOne\")\r\n"
+            contentString += "    public Boolean delete(@Param(\"id\") Long id);\r\n"
+            contentString += "\r\n"
+            contentString += "    @UpdateProvider(type = " + className + "Provider.class, method = \"updateOne\")\r\n"
+            contentString += "    public Boolean update(" + className + " " + instance_name + ");\r\n"
+            contentString += "\r\n"
             
             string += contentString
             string += "{0}\r\n".format(self.split_string)
@@ -251,6 +263,13 @@ class JavaCreator:
             self._generate_file(tableName, "Mapper.java", contentString, string)
 
     def create_provider(self, table_info_list):
+        """
+        @summary: 创建Provider
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建Provider ================")
         
         for tableInfo in table_info_list:
             # 表名称
@@ -262,13 +281,18 @@ class JavaCreator:
             # 对应的实例名称
             instance_name = CreateUtil.instance_name(tableName)
 
-            # 字段属性列表
-            columns = tableInfo["columns"]
-            columns = CreateUtil.add_model_default_property(columns)      
+            # 登录功能
+            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1 
 
-            string = "package " + self.package_name + "." + className + ";\r\n\r\n"
-            string += "import java.util.Map;\r\n\r\n"
-            string += "public class " + className + "Provider {\r\n\r\n"
+            # 字段属性列表
+            columns = tableInfo["columns"] 
+
+            string = "package " + self.package_name + "." + className + ";\r\n"
+            string += "\r\n"
+            string += "import java.util.Map;\r\n"
+            string += "\r\n"
+            string += "public class " + className + "Provider {\r\n"
+            string += "\r\n"
             string += self.split_string
 
             if_string = ""
@@ -279,8 +303,8 @@ class JavaCreator:
             for columnInfo in columns:
                 # 字段名称
                 propertyName = columnInfo["name"]
-                propInstanceName = CreateUtil.instance_name(columnInfo["name"])
-                propClassName = CreateUtil.camelize(columnInfo["name"])
+                propInstanceName = propertyName
+                propClassName = propertyName[:1].upper() + propertyName[1:]
 
                 # 字段类型
                 columType = columnInfo["columnProperty"].split('(')[0]
@@ -288,9 +312,7 @@ class JavaCreator:
                 columType = columType.upper()
 
                 if (propertyName == 'id' or columType == 'REAL'):
-                    if_string = "        if (" + instance_name + ".get" + propClassName + \
-                        "() != null && " + instance_name + \
-                        ".get" + propClassName + "() > 0) {\r\n"
+                    if_string = "        if (" + instance_name + ".get" + propClassName +         "() != null && " + instance_name +         ".get" + propClassName + "() > 0) {\r\n"
 
                 elif (columType == 'TINYINT' or
                     columType == 'SMALLINT' or
@@ -298,9 +320,7 @@ class JavaCreator:
                     columType == 'INT' or
                     columType == 'BIGINT' or
                     columType == 'TIMESTAMP'):
-                    if_string = "        if (" + instance_name + ".get" + propClassName + \
-                        "() != null && " + instance_name + \
-                        ".get" + propClassName + "() >= 0) {\r\n"
+                    if_string = "        if (" + instance_name + ".get" + propClassName +         "() != null && " + instance_name +         ".get" + propClassName + "() >= 0) {\r\n"
 
                 elif (columType == 'CHAR' or
                     columType == 'VARCHAR' or
@@ -308,30 +328,21 @@ class JavaCreator:
                     columType == 'TEXT' or
                     columType == 'MEDIUMTEXT' or
                     columType == 'LONGTEXT'):
-                    if_string = "        if (" + instance_name + ".get" + propClassName + \
-                        "() != null && !" + instance_name + ".get" + \
-                        propClassName + "().isEmpty()) {\r\n"
+                    if_string = "        if (" + instance_name + ".get" + propClassName +         "() != null && !" + instance_name + ".get" +         propClassName + "().isEmpty()) {\r\n"
 
                 elif (columType == 'FLOAT'):
-                    if_string = "        if (" + instance_name + ".get" + propClassName + \
-                        "() != null && " + instance_name + \
-                        ".get" + propClassName + "() > 0) {\r\n"
+                    if_string = "        if (" + instance_name + ".get" + propClassName +         "() != null && " + instance_name +         ".get" + propClassName + "() > 0) {\r\n"
 
                 elif (columType == 'DOUBLE'):
-                    if_string = "        if (" + instance_name + ".get" + propClassName + \
-                        "() != null && " + instance_name + \
-                        ".get" + propClassName + "() > 0) {\r\n"
+                    if_string = "        if (" + instance_name + ".get" + propClassName +         "() != null && " + instance_name +         ".get" + propClassName + "() > 0) {\r\n"
 
                 elif (columType == 'BOOLEAN'):
-                    if_string = "        if (" + instance_name + ".get" + propClassName + \
-                        "() != null && " + instance_name + ".get" + \
-                        propClassName + "() == true) {\r\n"
+                    if_string = "        if (" + instance_name + ".get" + propClassName +         "() != null && " + instance_name + ".get" +         propClassName + "() == true) {\r\n"
 
                 elif (columType == 'DATETIME' or
                     columType == 'DATE' or
                     columType == 'TIME'):
-                    if_string = "        if (" + instance_name + \
-                        ".get" + propClassName + "() != null) {\r\n"
+                    if_string = "        if (" + instance_name +         ".get" + propClassName + "() != null) {\r\n"
 
                 else:
                     Log.info("pojo", "未知字段类型: " + columType)
@@ -341,43 +352,54 @@ class JavaCreator:
 
                 insert_string += if_string
                 insert_string += "           key += \"" + propInstanceName + ",\";\r\n"
-                insert_string += "           value += \"#{" + \
-                    propInstanceName + "},\";\r\n"
+                insert_string += "           value += \"#{" +     propInstanceName + "},\";\r\n"
                 insert_string += "        }\r\n\r\n"
 
                 update_string += if_string
-                update_string += "           sql += \"" + \
-                    propInstanceName + " = #{" + propInstanceName + "},\";\r\n"
+                update_string += "           sql += \"" +     propInstanceName + " = #{" + propInstanceName + "},\";\r\n"
                 update_string += "        }\r\n\r\n"
 
             colum_string = colum_string[0:len(colum_string)-1]
 
-            contentString = "\r\n    public String selectAll(Map<String, Object> parm) {\r\n\r\n"
-            contentString += "        return \"select" + colum_string + \
-                " from " + tableName + " limit #{page},#{size}\";\r\n"
-            contentString += "    }\r\n\r\n"
-            contentString += "    public String selectOne() {\r\n\r\n"
-            contentString += "        return \"select" + colum_string + " from " + \
-                tableName + " where " + tableName + ".id=#{id}\";\r\n"
-            contentString += "    }\r\n\r\n"
-            contentString += "    public String deleteOne() {\r\n\r\n"
-            contentString += "        return \"delete from " + \
-                tableName + " where id = #{id}\";\r\n"
-            contentString += "    }\r\n\r\n"
-            contentString += "    public String insertOne(" + \
-                className + " " + instance_name + ") {\r\n\r\n"
+            contentString = "\r\n"
+            if addUserLogin:
+                contentString += "\r\n"
+                contentString += "    public String getUserByName() {\r\n"
+                contentString += "\r\n"
+                contentString += '        return "select ' + colum_string + ' from ' + tableName + ' where ' + tableName + '.name=#{name} and ' + tableName + '.password=#{password}";\r\n'
+                contentString += "    }\r\n"
+                contentString += "\r\n"
+            
+            contentString += "    public String selectAll(Map<String, Object> parm) {\r\n"
+            contentString += "\r\n"
+            contentString += "        return \"select" + colum_string + " from " + tableName + " limit #{page},#{size}\";\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
+            contentString += "    public String selectOne() {\r\n"
+            contentString += "\r\n"
+            contentString += "        return \"select" + colum_string + " from " + tableName + " where " + tableName + ".id=#{id}\";\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
+            contentString += "    public String deleteOne() {\r\n"
+            contentString += "\r\n"
+            contentString += "        return \"delete from " + tableName + " where id = #{id}\";\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
+            contentString += "    public String insertOne(" + className + " " + instance_name + ") {\r\n"
+            contentString += "\r\n"
             contentString += insert_string
             contentString += "        key = key.substring(0,key.length()-1);\r\n"
-            contentString += "        value = value.substring(0,value.length()-1);\r\n\r\n"
-            contentString += "        return \"insert into " + tableName + \
-                " (\" + key + \") values (\" + value + \")\";\r\n"
-            contentString += "    }\r\n\r\n"
-            contentString += "    public String updateOne(" + \
-                className + " " + instance_name + ") {\r\n\r\n"
+            contentString += "        value = value.substring(0,value.length()-1);\r\n"
+            contentString += "\r\n"
+            contentString += "        return \"insert into " + tableName + " (\" + key + \") values (\" + value + \")\";\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
+            contentString += "    public String updateOne(" + className + " " + instance_name + ") {\r\n"
+            contentString += "\r\n"
             contentString += update_string
-            contentString += "        sql = sql.substring(0,sql.length()-1);\r\n\r\n"
-            contentString += "        return \"update " + tableName + \
-                " set \" + sql + \" where id = #{id}\";\r\n"
+            contentString += "        sql = sql.substring(0,sql.length()-1);\r\n"
+            contentString += "\r\n"
+            contentString += "        return \"update " + tableName + " set \" + sql + \" where id = #{id}\";\r\n"
             contentString += "    }\r\n"
             
             string += contentString
@@ -388,6 +410,13 @@ class JavaCreator:
             self._generate_file(tableName, "Provider.java", contentString, string)
 
     def create_service(self, table_info_list):
+        """
+        @summary: 创建Service
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建Service ================")
         
         for tableInfo in table_info_list:
             # 表名称
@@ -399,35 +428,71 @@ class JavaCreator:
             # 对应的实例名称
             instance_name = CreateUtil.instance_name(tableName)      
 
-            string = "package " + self.package_name + "." + className + ";\r\n\r\n"
+            # 登录功能
+            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1
+
+            string = "package " + self.package_name + "." + className + ";\r\n"
+            string += "\r\n"
             string += "import java.sql.Timestamp;\r\n"
             string += "import java.util.*;\r\n"
             string += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
             string += "import org.springframework.validation.annotation.Validated;\r\n"
             string += "import org.springframework.web.bind.annotation.*;\r\n"
-            string += "import org.springframework.stereotype.Service;\r\n\r\n"
-            string += "import " + self.package_name + ".Service.ResponseService;\r\n"
-            string += "import " + self.package_name + ".utils.ResponseStatus;\r\n"
+            string += "import org.springframework.stereotype.Service;\r\n"
+            string += "\r\n"
+            string += "import " + self.package_name + ".Utils.JWTUtils;\r\n"
+            string += "import " + self.package_name + ".Utils.ResponseService;\r\n"
+            string += "import " + self.package_name + ".Utils.ResponseStatus;\r\n"
             string += "@Service\r\n"
-            string += "public class " + className + "Service {\r\n\r\n"
+            string += "public class " + className + "Service {\r\n"
+            string += "\r\n"
             string += "    @Autowired\r\n"
-            string += "    private " + className + \
-                "Mapper " + instance_name + "Mapper; \r\n\r\n"
+            string += "    private " + className + "Mapper " + instance_name + "Mapper; \r\n"
+            string += "\r\n"
             string += "    @Autowired\r\n"
-            string += "    private ResponseService responseService; \r\n\r\n"
+            string += "    private ResponseService responseService; \r\n"
+            string += "\r\n"
             string += self.split_string
             
-            contentString = "\r\n    // 获取列表\r\n"
-            contentString += "    public HashMap<String, Object> list(int page, int size, @Validated " + \
-                className + " " + instance_name + ") {\r\n"
+            contentString = ""
+            if addUserLogin:
+                contentString += "\r\n    // 登录接口\r\n"
+                contentString += "    public HashMap<String, Object> login(" + className + " " + instance_name + ") {\r\n"
+                contentString += "        List<{}> findUsers = {}Mapper.getUserByName({}.getName(), {}.getPassword());\r\n".format(className, instance_name, instance_name, instance_name)
+                contentString += "\r\n"
+                contentString += "        if (findUsers.size() == 0) {\r\n"
+                contentString += "            ResponseService responseService = new ResponseService();\r\n"
+                contentString += "            HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.error, null);\r\n"
+                contentString += '            map.put("msg", "用户名或密码错误！");\r\n'
+                contentString += "\r\n"
+                contentString += "            return map;\r\n"
+                contentString += "        } else {\r\n"
+                contentString += "\r\n"
+                contentString += "            // 更新用户\r\n"
+                contentString += "            Timestamp t = new Timestamp((new Date()).getTime());\r\n"
+                contentString += "            String token = JWTUtils.getToken({}.getId(), {}.getName(), {}.getPassword());\r\n".format(instance_name, instance_name, instance_name)
+                contentString += "\r\n"
+                contentString += "            {} findUser = findUsers.get(0);\r\n".format(className)
+                contentString += "            findUser.setToken(token);\r\n"
+                contentString += "            findUser.setUpdateAt(t);\r\n"
+                contentString += "            Boolean status = {}Mapper.update(findUser);\r\n".format(instance_name)
+                contentString += "            findUser.setPassword(null);\r\n"
+                contentString += "\r\n"
+                contentString += "            HashMap<String, Object> map = responseService.getReturnResponse(status ? ResponseStatus.success : ResponseStatus.error, findUser);\r\n"
+                contentString += "            return map;\r\n"
+                contentString += "        }\r\n"
+                contentString += "    }\r\n"
+                contentString += "\r\n"
+                
+            contentString += "\r\n    // 获取列表\r\n"
+            contentString += "    public HashMap<String, Object> list(int page, int size, @Validated " + className + " " + instance_name + ") {\r\n"
             contentString += "        \r\n"
-            contentString += "        List<" + className + "> list = " + \
-                instance_name + \
-                "Mapper.list(page, size);\r\n"
+            contentString += "        List<" + className + "> list = " + instance_name + "Mapper.list(page, size);\r\n"
             contentString += "        \r\n"
             contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success,list);\r\n"
             contentString += "        return map;\r\n"
-            contentString += "    }\r\n\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
             contentString += "    // 删除\r\n"
             contentString += "    public HashMap<String, Object> delete(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
@@ -435,20 +500,19 @@ class JavaCreator:
             contentString += "        \r\n"
             contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success,null);\r\n"
             contentString += "        return map;\r\n"
-            contentString += "    }\r\n\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
             contentString += "    // 查看详情\r\n"
             contentString += "    public HashMap<String, Object> show(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        " + className + " " + instance_name + \
-                " = " + instance_name + "Mapper.show(id);\r\n"
+            contentString += "        " + className + " " + instance_name + " = " + instance_name + "Mapper.show(id);\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success," + \
-                instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success," + instance_name + ");\r\n"
             contentString += "        return map;\r\n"
-            contentString += "    }\r\n\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
             contentString += "    // 插入，保存\r\n"
-            contentString += "    public HashMap<String, Object> store(@Validated " + \
-                className + " " + instance_name + ") {\r\n"
+            contentString += "    public HashMap<String, Object> store(@Validated " + className + " " + instance_name + ") {\r\n"
             contentString += "        \r\n"
             contentString += "        Long id = " + instance_name + ".getId();\r\n"
             contentString += "        Timestamp t = new Timestamp((new Date()).getTime());\r\n"
@@ -457,19 +521,17 @@ class JavaCreator:
             contentString += "        if (id != null && id > 0) {\r\n"
             contentString += "            // * 修改 */\r\n"
             contentString += "            " + instance_name + ".setUpdateAt(t);\r\n"
-            contentString += "            status = " + instance_name + \
-                "Mapper.update(" + instance_name + ");\r\n"
+            contentString += "            status = " + instance_name + "Mapper.update(" + instance_name + ");\r\n"
             contentString += "        } else {\r\n"
             contentString += "            // * 添加 */\r\n"
             contentString += "            " + instance_name + ".setCreateAt(t);\r\n"
-            contentString += "            status = " + instance_name + \
-                "Mapper.insert(" + instance_name + ");\r\n"
+            contentString += "            status = " + instance_name + "Mapper.insert(" + instance_name + ");\r\n"
             contentString += "        }\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(status ? ResponseStatus.success : ResponseStatus.error," + \
-                instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(status ? ResponseStatus.success : ResponseStatus.error," + instance_name + ");\r\n"
             contentString += "        return map;\r\n"
-            contentString += "    }\r\n\r\n"
+            contentString += "    }\r\n"
+            contentString += "\r\n"
             
             string += contentString
             string += "{0}\r\n".format(self.split_string)
@@ -479,6 +541,13 @@ class JavaCreator:
             self._generate_file(tableName, "Service.java", contentString, string)
 
     def create_controller(self, table_info_list):
+        """
+        @summary: 创建Controller
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建Controller ================")
         
         for tableInfo in table_info_list:
             # 表名称
@@ -494,37 +563,32 @@ class JavaCreator:
             addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1
 
             string = "package " + self.package_name + "." + className + ";\r\n\r\n"
-            string += "import java.util.*;\r\n\r\n"
+            string += "import java.util.*;\r\n"
+            string += "\r\n"
             string += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
             string += "import org.springframework.validation.annotation.Validated;\r\n"
-            string += "import org.springframework.web.bind.annotation.*;\r\n\r\n"
-            if addUserLogin:
-                string += "import " + self.package_name + ".Service.LoginService;\r\n"
-                string += "import " + self.package_name + ".model.AdminUser;\r\n\r\n"
+            string += "import org.springframework.web.bind.annotation.*;\r\n"
+            string += "\r\n"
             string += "@RequestMapping(\"/" + instance_name + "\")\r\n"
             string += "@RestController\r\n"
-            string += "public class " + className + "Controller {\r\n\r\n"
+            string += "public class " + className + "Controller {\r\n"
+            string += "\r\n"
             string += "    @Autowired\r\n"
-            string += "    private " + className + \
-                "Service " + instance_name + "Service; \r\n\r\n"
-            if addUserLogin:
-                string += "    @Autowired\r\n"
-                string += "    private LoginService loginService; \r\n"
-            if addUserLogin:
-                string += "\r\n    // 登录接口\r\n"
-                string += "    @PostMapping(\"/login\")\r\n"
-                string += "    public HashMap<String, Object> login(@RequestBody HashMap<String, Object> data) {\r\n"
-                string += "\r\n"
-                string += "        AdminUser adminUser = new AdminUser();\r\n"
-                string += "        adminUser.setName(data.get(\"name\").toString());\r\n"
-                string += "        adminUser.setPassword(data.get(\"password\").toString());\r\n"
-                string += "\r\n"
-                string += "        HashMap<String, Object> map = loginService.login(adminUser);\r\n"
-                string += "        return map;\r\n"
-                string += "    }\r\n\r\n"
+            string += "    private " + className + "Service " + instance_name + "Service; \r\n"
+            string += "\r\n"
             string += self.split_string
                 
-            contentString = "\r\n    // 获取列表\r\n"
+            contentString = ""
+            if addUserLogin:
+                contentString += "\r\n    // 登录接口\r\n"
+                contentString += "    @PostMapping(\"/login\")\r\n"
+                contentString += "    public HashMap<String, Object> login(@RequestBody " + className + " " + instance_name + ") {\r\n"
+                contentString += "\r\n"
+                contentString += "        HashMap<String, Object> map = {}Service.login({});\r\n".format(instance_name, instance_name)
+                contentString += "        return map;\r\n"
+                contentString += "    }\r\n"
+                
+            contentString += "\r\n    // 获取列表\r\n"
             contentString += "    @GetMapping\r\n"
             contentString += "    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n"
             contentString += "        \r\n"
@@ -537,39 +601,32 @@ class JavaCreator:
             contentString += "            size = Integer.parseInt((String) param.get(\"size\"));\r\n"
             contentString += "        }\r\n"
             contentString += "        \r\n"
-            contentString += "        " + className + " " + \
-                instance_name + " = new " + className + "();\r\n"
+            contentString += "        " + className + " " + instance_name + " = new " + className + "();\r\n"
             contentString += "        " + instance_name + ".fromMap(param);\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + \
-                instance_name + \
-                "Service.list(page, size, " + instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.list(page, size, " + instance_name + ");\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n\r\n"
             contentString += "    // 删除\r\n"
             contentString += "    @GetMapping(\"/delete/{id}\")\r\n"
             contentString += "    public HashMap<String, Object> delete(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + \
-                instance_name + "Service.delete(id);\r\n"
+            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.delete(id);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n\r\n"
             contentString += "    // 查看详情\r\n"
             contentString += "    @GetMapping(\"/{id}\")\r\n"
             contentString += "    public HashMap<String, Object> show(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + \
-                instance_name + "Service.show(id);\r\n"
+            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.show(id);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n\r\n"
             contentString += "    // 插入，保存\r\n"
             contentString += "    @PostMapping\r\n"
             contentString += "    @Validated\r\n"
-            contentString += "    public HashMap<String, Object> store(@RequestBody " + \
-                className + " " + instance_name + ") {\r\n"
+            contentString += "    public HashMap<String, Object> store(@RequestBody " + className + " " + instance_name + ") {\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + \
-                instance_name + "Service.store(" + instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.store(" + instance_name + ");\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n"
 
@@ -590,29 +647,24 @@ class JavaCreator:
         
         # 检查文件路径
         fileDir = self.package_path + className + "/"
-        CreateUtil.check_path(fileDir)
+        FileUtil.check_path(fileDir)
         filePath = fileDir + className + fileName
         
-        print(fileDir)
-        
-        if CreateUtil.path_exists(filePath) :
-            f1 = open(filePath, "r")
-            content = f1.readlines()
+        if FileUtil.path_exists(filePath) :
+            content = FileUtil.read_file(filePath)
             content = "".join(content)
             content = content.split(self.split_string)
             if len(content) != 3:
                 content = totalString
             else:
                 content[1] = replaceString
-                content = (self.split_string+"").join(content)
+                content = (self.split_string).join(content)
         else:
             content = totalString
                 
         # 创建文件
         Log.success("java", "生成："+filePath)
-        f = FileManager(filePath)
-        f.write(content)
-        f.close()
+        FileUtil.write_file(content=content, file_path=filePath)
 
     def CreateUtil(self):
         Log.blank()
@@ -630,7 +682,7 @@ class JavaCreator:
             Log.success("utils", "生成："+file_path)
             f = open(file_path, mode='w+')
 
-            string = "package " + self.package_name + ".utils;\r\n\r\n"
+            string = "package " + self.package_name + ".Utils;\r\n\r\n"
             if file_path.find("Pager.java") > 0:
                 string += "public class Pager {\r\n"
                 string += "\r\n"
@@ -674,12 +726,12 @@ class JavaCreator:
                 string += "}\r\n"
 
             elif file_path.find("ResponseService.java") > 0:
-                string = "package " + self.package_name + ".service;\r\n"
+                string = "package " + self.package_name + ".Service;\r\n\r\n"
                 string += "\r\n"
                 string += "import java.util.HashMap;\r\n"
                 string += "import org.springframework.stereotype.Service;\r\n"
                 string += "\r\n"
-                string += "import " + self.package_name + ".utils.ResponseStatus;\r\n"
+                string += "import " + self.package_name + ".Utils.ResponseStatus;\r\n"
                 string += "\r\n"
                 string += "@Service\r\n"
                 string += "public class ResponseService {\r\n"
@@ -723,7 +775,7 @@ class JavaCreator:
                 string += "}\r\n"
 
             elif file_path.find("LoginService.java") > 0:
-                string = "package com.blog.zz.service;\r\n"
+                string = "package " + self.package_name + ".Service;\r\n\r\n"
                 string += "\r\n"
                 string += "import java.sql.Timestamp;\r\n"
                 string += "import java.util.Calendar;\r\n"
@@ -753,7 +805,7 @@ class JavaCreator:
                 string += "public class LoginService {\r\n"
                 string += "    public static String secretKeString = \"secretKeString\";\r\n"
                 string += "\r\n"
-                string += "    //过期时间:秒\r\n"
+                string += "    // 过期时间:秒\r\n"
                 string += "    public static final int EXPIRE = 60 * 60 * 24;\r\n"
                 string += "\r\n"
                 string += "    @Autowired\r\n"
@@ -898,13 +950,13 @@ class JavaCreator:
                 string += "\r\n"
 
             elif file_path.find("LoginMapper.java") > 0:
-                string = "package " + self.package_name + ".service;\r\n\r\n"
+                string = "package " + self.package_name + ".Service;\r\n\r\n"
                 string += "\r\n"
                 string += "import org.apache.ibatis.annotations.*;\r\n"
                 string += "\r\n"
                 string += "import java.util.HashMap;\r\n"
                 string += "import org.springframework.stereotype.Component;\r\n"
-                string += "import " + self.package_name + ".service.LoginService;\r\n"
+                string += "import " + self.package_name + ".Service.LoginService;\r\n"
                 string += "\r\n"
                 string += "@Component(value = \"LoginMapper\")\r\n"
                 string += "@Mapper\r\n"

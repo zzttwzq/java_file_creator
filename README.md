@@ -340,8 +340,18 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 #### 
 
 
-
 ## 更新内容
+
+#### 1.0.5
+1. Core/ 文件夹内容转移到 Utils/ 中
+2. db_creator 
+   1. 数据库，表明均为下划线，方便阅读
+   2. 将_cmd 中的schema 方法移动到 dbcreator；
+   3. schema 将字段处理为驼峰，首字母小写形式；
+3. java_creator
+   1. split_string 改成 // "    // ### 自动生成 ###"
+   2. User类自动添加登录代码
+   3. * 添加swagger doc文档
 
 #### 1.0.4
 1. create_util 工具类方法修改成下划线

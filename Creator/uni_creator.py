@@ -1,8 +1,12 @@
 import copy
-
 import os
-from Core.file_manager import Log
-from Core.create_util import CreateUtil
+import sys
+
+#添加上级目录
+sys.path.append("..//")
+from Utils.file_util import FileUtil
+from Utils.log_util import Log
+from Utils.create_util import CreateUtil
 
 class UniCreator:
     pathPrefix = ""
@@ -78,9 +82,6 @@ class UniCreator:
 
             # 字段属性列表
             columnList = copy.deepcopy(tableInfo["columns"])
-
-            # 添加时间信息
-            CreateUtil.add_model_default_property(columnList)
 
             columns = ""
             searchs = ""
@@ -279,10 +280,8 @@ class UniCreator:
             filepath = "{0}{1}/index.vue".format(pagePath, className)
 
             Log.success("page", "生成："+className)
-
-            f = open(filepath, mode='w+')
-            f.write(content)
-            f.close()
+            
+            FileUtil.write_file(content, filepath)
 
     @staticmethod
     def createRouters(routerPath, tableInfos):
@@ -326,10 +325,8 @@ class UniCreator:
         string += "\r\n"
         content[1] = "\r\n" + string + "        "
         content = "//### 自动生成的Router".join(content)
-
-        f = open(routerPath, encoding='utf-8', mode="w+")
-        f.write(content)
-        f.close()
+        
+        FileUtil.write_file(content, routerPath)
 
     @staticmethod
     def createApis(apiPath, tableInfos):
@@ -370,10 +367,8 @@ class UniCreator:
 
         content[1] = "\r\n" + string + "\r\n    "
         content = "//### 自动生成的Apis".join(content)
-
-        f = open(apiPath + "api.js", encoding='utf-8', mode="w+")
-        f.write(content)
-        f.close()
+        
+        FileUtil.write_file(content, apiPath + "api.js")
 
     @staticmethod
     def createRequests(apiPath, tableInfos):
@@ -409,10 +404,6 @@ class UniCreator:
 
             # 字段属性列表
             columnLists = tableInfo["columns"]
-            columnLists2 = copy.deepcopy(columnLists)
-
-            # 添加时间信息
-            CreateUtil.add_model_default_property(columnLists2)
 
             columnNames = ""
             paramNames = ""
@@ -528,9 +519,8 @@ class UniCreator:
         content[3] = requests
 
         content = "//### 自动生成的Api".join(content)
-        f = open(apiPath + "request.js", encoding='utf-8', mode="w+")
-        f.write(content)
-        f.close()
+        
+        FileUtil.write_file(content, apiPath + "request.js")
 
     @staticmethod
     def _cmd_error():

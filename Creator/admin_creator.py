@@ -1,8 +1,12 @@
 import copy
-
 import os
-from Core.file_manager import FileManager, Log
-from Core.create_util import CreateUtil
+import sys
+
+#添加上级目录
+sys.path.append("..//")
+from Utils.file_util import FileUtil
+from Utils.log_util import Log
+from Utils.create_util import CreateUtil
 
 class AdminCreator:
     pagePath = ""
@@ -76,9 +80,6 @@ class AdminCreator:
 
             # 字段属性列表
             columnList = copy.deepcopy(tableInfo["columns"])
-
-            # 添加时间信息
-            CreateUtil.add_model_default_property(columnList)
 
             columns = ""
             searchs = ""
@@ -440,9 +441,6 @@ class AdminCreator:
             # 字段属性列表
             columnLists = tableInfo["columns"]
             columnLists2 = copy.deepcopy(columnLists)
-
-            # 添加时间信息
-            CreateUtil.add_model_default_property(columnLists2)
 
             columnNames = ""
             for columnInfo in columnLists:

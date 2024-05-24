@@ -1,8 +1,12 @@
+import json
 import os
-from Core.file_manager import Log
-from Core.mysql import MySqlConn
+import sys
 
-from Core.create_util import CreateUtil
+#添加上级目录
+sys.path.append("..//")
+from Utils.mysql_util import MySqlUtil
+from Utils.log_util import Log
+from Utils.create_util import CreateUtil
 
 class DBCreator:
     dirs = ["back"]
@@ -11,12 +15,12 @@ class DBCreator:
     logPrefix = "DB"
     
     sqlConnection = ""
-
     @staticmethod
     def create(info, mode, names):
         dbCreator = DBCreator()
         # 数据库
-        dbCreator.sqlConnection = MySqlConn(config= CreateUtil.get_mysql_config(info))
+        mysqlConfig=CreateUtil.get_mysql_config(info)
+        dbCreator.sqlConnection = MySqlUtil(mysqlConfig)
 
         # 执行操作
         # 数据库
@@ -50,6 +54,143 @@ class DBCreator:
             
         dbCreator.sqlConnection.dispose()
 
+    @staticmethod
+    def schema(info, projectEnvPath):
+        schemas = info["db"]["tableSchema"]
+        liKeys = schemas.keys()
+        tableList = []
+
+        for key in liKeys:
+            tableProps = schemas[key]
+            tableTitle = key.split(":")
+                
+            if tableTitle[0][0:1] == "*":
+                Log.info("schema", "自动跳过：{0}".format(tableTitle))
+            else: 
+                colums = [{
+                    "name": "id",
+                    "des": "记录id",
+                    "columnProperty": "INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
+                    "formType": "number",
+                    "showTime": 0,
+                    "showInSearch": 0,
+                    "required": 0,
+                    "sort": "up",
+                    "align": "center",
+                    "width": 100,
+                }]
+                
+                for li in tableProps:
+                    columInfo = li.split(":")
+
+                    width = 100
+                    showInSearch = 1
+                    required = 0
+                    formType = "text"
+                    columnProperty = columInfo[2]
+
+                    coulumTypeTemp = {
+                        "REAL": "number",
+                        "TINYINT": "number",
+                        "SMALLINT": "number",
+                        "MEDIUMINT": "number",
+                        "INT": "number",
+                        "BIGINT": "number",
+                        "FLOAT": "number",
+                        "DOUBLE": "number",
+                        "CHAR": "text",
+                        "VARCHAR": "text",
+                        "TINYTEXT": "textArea",
+                        "TEXT": "textArea",
+                        "MEDIUMTEXT": "textArea",
+                        "LONGTEXT": "textArea",
+                        "BOOL": "number",
+                        "BOOLEAN": "number",
+                        "DATETIME": "time",
+                        "DATE": "time",
+                        "TIME": "time",
+                        "TIMESTAMP": "time",
+                    }
+                    columnProperty = columnProperty.split("(")[0].upper()
+                    if columnProperty in coulumTypeTemp:
+                        formType = coulumTypeTemp[columnProperty]
+                    else:
+                        formType = columnProperty
+
+                    if len(columInfo) >= 4:
+                        width = columInfo[3]
+
+                    if len(columInfo) >= 5:
+                        showInSearch = columInfo[4]
+
+                    if len(columInfo) >= 6:
+                        required = columInfo[5]
+                        
+                    colums.append({
+                        "name": CreateUtil.instance_name(columInfo[0]),
+                        "des": columInfo[1],
+                        "columnProperty": columInfo[2],
+                        "sort": "up",
+                        "align": "left",
+                        "width": width,
+                        "formType": formType,
+                        "showInSearch": showInSearch,
+                        "required": required,
+                    })
+
+                colums.append({
+                    "name": "createAt",
+                    "des": "创建于",
+                    "columnProperty": "DATETIME",
+                    "formType": "date",
+                    "showTime": 1,
+                    "showInSearch": 1,
+                    "required": 0,
+                    "sort": "up",
+                    "align": "center",
+                    "width": 100,
+                })
+                colums.append({
+                    "name": "updateAt",
+                    "des": "更新于",
+                    "columnProperty": "DATETIME",
+                    "formType": "date",
+                    "showTime": 1,
+                    "showInSearch": 0,
+                    "required": 0,
+                    "sort": "up",
+                    "align": "center",
+                    "width": 100,
+                })
+                colums.append({
+                    "name": "deleteAt",
+                    "des": "删除于",
+                    "columnProperty": "DATETIME",
+                    "formType": "date",
+                    "showTime": 1,
+                    "showInSearch": 0,
+                    "required": 0,
+                    "sort": "up",
+                    "align": "center",
+                    "width": 100,
+                })
+        
+                tableList.append({
+                    "name": tableTitle[0],
+                    "title": tableTitle[1],
+                    "des": tableTitle[1],
+                    "dbName": tableTitle[2],
+                    "columns": colums
+                })
+
+        info["db"]["tableListOld"] = info["db"]["tableList"]
+        info["db"]["tableList"] = tableList
+            
+        with open(projectEnvPath, "w") as f:
+            json.dump(info, f, ensure_ascii=False)
+
+        Log.success("schema", "tableList，生成成功")
+
     def create_db(self, dbNameList):
         Log.blank()
         Log.info(self.logPrefix,
@@ -57,10 +198,8 @@ class DBCreator:
         
         for name in dbNameList:
             res = self.sqlConnection.create_db(name)
-            if res:
-                Log.success(self.logPrefix, "数据库：`{0}`创建成功".format(name))
-            else:
-                Log.error(self.logPrefix, "数据库：`{0}`创建失败".format(name))
+            if res >= 0:
+                Log.info(self.logPrefix, "数据库：'{0}' 创建成功或已存在".format(name))
                 
     def create_or_update_table(self, info, names):
         Log.blank()
@@ -74,15 +213,9 @@ class DBCreator:
             return
         
         for tableInfo in tableList:
-            tableInfo["columns"] = CreateUtil.add_model_default_property(
-                tableInfo["columns"])
-            
-            res = self.sqlConnection.create_table(tableInfo)
-            
-            if res:
-                Log.success(self.logPrefix, "数据表：`{0}`创建成功".format(tableInfo["name"]))
-            else:
-                Log.error(self.logPrefix, "数据表：`{0}`创建失败".format(tableInfo["name"]))
+            res = self.sqlConnection.create_table_from_table_info(tableInfo)
+            if res >= 0:
+                Log.info(self.logPrefix, "数据表：'{0}' 创建成功或已存在".format(tableInfo["name"]))
 
     def create_seed(self, info, names):
         Log.blank()

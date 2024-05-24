@@ -1,10 +1,6 @@
-import datetime
-import os
-import shutil
 import json
 
-from Core.file_manager import Log
-from Core.mysql_config import MysqlConfig
+from Utils.mysql_util import MySqlConfig
 
 class CreateUtil:
     
@@ -51,32 +47,6 @@ class CreateUtil:
         return tableInfoList
     
     @staticmethod
-    def check_path(path):
-        """
-        @summary: 检查文件或者文件夹路径是否存在，不存在会自动创建
-        @param path: 文件或者文件夹路径
-        """
-        
-        if os.path.exists(path) == False:
-            if "." in path:
-                f = open(path, encoding='utf-8')
-                f.close()
-            elif path[len(path) - 1: len(path)] == "/":
-                os.makedirs(path)
-    
-    @staticmethod
-    def path_exists(path):
-        """
-        @summary: 检查文件或者文件夹路径是否存在
-        @param path: 文件或者文件夹路径
-        """
-        
-        if os.path.exists(path):
-            return True
-        else:
-            return False
-
-    @staticmethod
     def get_mysql_config(projectInfo):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
@@ -84,12 +54,12 @@ class CreateUtil:
         @return: mysql配置信息
         """
         
-        config = MysqlConfig()
-        config.DBHOST = projectInfo["db"]["host"]
-        config.DBPORT = projectInfo["db"]["port"]
-        config.DBUSER = projectInfo["db"]["user"]
-        config.DBPWD = projectInfo["db"]["password"]
-        config.DBCHAR = projectInfo["db"]["charSet"]
+        config = MySqlConfig()
+        config.host = projectInfo["db"]["host"]
+        config.port = projectInfo["db"]["port"]
+        config.user = projectInfo["db"]["user"]
+        config.passwd = projectInfo["db"]["password"]
+        config.char_set = projectInfo["db"]["charSet"]
         
         return config
     
@@ -166,27 +136,6 @@ class CreateUtil:
         return tableInfoList
 
     @staticmethod
-    def pack_dir(dirPath, storePath):
-        # 检查路径
-        CreateUtil.check_path(storePath)
-        
-        # 压缩文件
-        zip_name = shutil.make_archive(dirPath, f'zip', dirPath)
-        # print(zip_name)  # 返回文件的最终路径
-        current_datetime = datetime.datetime.now()
-        formatted_datetime = current_datetime.strftime("%Y-%m-%d_%H:%M:%S")
-        names = zip_name.split("/")
-        
-        # 获取压缩文件名
-        zip_name1 = formatted_datetime+"_"+names[len(names) - 1]
-        
-        # 重命名文件
-        os.rename(zip_name, zip_name1)
-        
-        # 移动文件
-        shutil.move(zip_name1, storePath)
-
-    @staticmethod
     def modify_config_file_key_value(filePath, key, value):
         f1 = open(filePath, "r")
         content = f1.readlines()
@@ -198,71 +147,6 @@ class CreateUtil:
             d2 = d1.split("\n")
             # d2[0] = "="
         
-    @staticmethod
-    def add_model_default_property(columns):
-        """
-        @summary: 对表添加 createTime updateTime deleteTime等信息
-        @param columns: 表字段列表
-        """
-
-        hasId = False
-        for it in columns:
-            if it["name"] == "id":
-                hasId = True
-
-        if hasId == False:
-            columns.insert(0, {
-                "name": "id",
-                "des": "记录id",
-                "columnProperty": "int NOT NULL AUTO_INCREMENT PRIMARY KEY",
-                "formType": "number",
-                "showTime": 0,
-                "showInSearch": 0,
-                "required": 0,
-                "sort": "up",
-                "align": "center",
-                "width": 100,
-            })
-
-        columns.append({
-            "name": "create_at",
-            "des": "创建于",
-            "columnProperty": "DATETIME",
-            "formType": "date",
-            "showTime": 1,
-            "showInSearch": 1,
-            "required": 0,
-            "sort": "up",
-            "align": "center",
-            "width": 100,
-        })
-        columns.append({
-            "name": "update_at",
-            "des": "更新于",
-            "columnProperty": "DATETIME",
-            "formType": "date",
-            "showTime": 1,
-            "showInSearch": 0,
-            "required": 0,
-            "sort": "up",
-            "align": "center",
-            "width": 100,
-        })
-        columns.append({
-            "name": "delete_at",
-            "des": "删除于",
-            "columnProperty": "DATETIME",
-            "formType": "date",
-            "showTime": 1,
-            "showInSearch": 0,
-            "required": 0,
-            "sort": "up",
-            "align": "center",
-            "width": 100,
-        })
-
-        return columns
-
     @staticmethod
     def replace_unvalid_json_value_with_key(source, key, value):
         """
