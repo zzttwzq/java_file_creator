@@ -25,16 +25,16 @@ class AdminCreator:
         adminCreator.pagePath = tableInfo["path"] + tableInfo["admin"]["pagePath"]
         adminCreator.requestPath = tableInfo["path"] + tableInfo["admin"]["requestPath"]
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
-        if not os.path.exists(adminCreator.pagePath):
+        if not FileUtil.path_exists(adminCreator.pagePath):
             Log.error("admin", "源目录不存在，请指定源目录")
             return 0
-
-        # 备份目录
-        CreateUtil.pack_dir(tableInfo["path"] + tableInfo["admin"]["adminSrcPath"], tableInfo["admin"]["backupPath"])
 
         Log.blank()
         Log.info(
             "admin", "================ 正在为`{0}`生成admin文件 ================".format(names))
+
+        # 备份目录
+        FileUtil.pack_dir(tableInfo["path"] + tableInfo["admin"]["adminSrcPath"], tableInfo["admin"]["backupPath"])
 
         # ------------ 执行操作
         tableList = CreateUtil.get_tableInfo_width_names(tableInfo, names)
@@ -76,7 +76,7 @@ class AdminCreator:
             className = CreateUtil.camelize(tableName)
 
             # 创建 文件夹
-            CreateUtil.check_path(self.pagePath + className)
+            FileUtil.check_path(self.pagePath + className)
 
             # 字段属性列表
             columnList = copy.deepcopy(tableInfo["columns"])
@@ -343,8 +343,8 @@ class AdminCreator:
             mixin += "  },\r\n"
             mixin += "};\r\n"
             
-            self._generate_file(self.pagePath + className + "/index.vue", "", content, override=False)
             self._generate_file(self.pagePath + className + "/mixin.js", "", mixin)
+            self._generate_file(self.pagePath + className + "/index.vue", "", content, override=False)
 
     def create_routers(self, tableInfos):
         Log.blank()
@@ -434,13 +434,18 @@ class AdminCreator:
 
             # 对应的类名称
             className = CreateUtil.camelize(tableName)
+            
+            # 实例名称
+            instance_name = CreateUtil.instance_name(tableName)
 
             # 常量名称
             constName = tableName.upper()
+            
+            # 登录功能
+            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1
 
             # 字段属性列表
             columnLists = tableInfo["columns"]
-            columnLists2 = copy.deepcopy(columnLists)
 
             columnNames = ""
             for columnInfo in columnLists:
@@ -453,7 +458,8 @@ class AdminCreator:
 
             apis += "\r\n    {0}, // {1}".format(constName, classDes)
 
-            requests += "\r\n\r\n//************************ {0}\r\n".format(
+            requests += "\r\n"
+            requests += "\r\n//************************ {0}\r\n".format(
                 tableTitle)
 
             requests += "/**\r\n"
@@ -467,7 +473,8 @@ class AdminCreator:
                 className + "(params) {\r\n"
             requests += "    return request(" + constName + \
                 ", METHOD.GET, params ? params : {}, null)\r\n"
-            requests += "}\r\n\r\n"
+            requests += "}\r\n"
+            requests += "\r\n"
 
             requests += "/**\r\n"
             requests += " * 添加或修改{0}\r\n".format(tableTitle)
@@ -477,7 +484,8 @@ class AdminCreator:
                 className + "(params) {\r\n"
             requests += "    return request(" + constName + \
                 ", METHOD.POST, params ? params : { }, null)\r\n"
-            requests += "}\r\n\r\n"
+            requests += "}\r\n"
+            requests += "\r\n"
 
             requests += "/**\r\n"
             requests += " * 获取{0}对应的详情\r\n".format(tableTitle)
@@ -491,7 +499,8 @@ class AdminCreator:
                 className + "ByID(id) {\r\n"
             requests += "    return request(" + constName + \
                 ' + "/" + ' + "id, METHOD.GET, {id : id}, null)\r\n"
-            requests += "}\r\n\r\n"
+            requests += "}\r\n"
+            requests += "\r\n"
 
             requests += "/**\r\n"
             requests += " * 删除{0}\r\n".format(tableTitle)
@@ -502,7 +511,20 @@ class AdminCreator:
                 className + "ByID(id) {\r\n"
             requests += "    return request(" + constName + \
                 ' + "/delete/" + ' + "id, METHOD.GET, {}, null)\r\n"
-            requests += "}\r\n\r\n"
+            requests += "}\r\n"
+            requests += "\r\n"
+            
+            if addUserLogin:
+                requests += "/**\r\n"
+                requests += " * {}登录接口\r\n".format(tableTitle)
+                requests += " * @param name 用户名 \r\n"
+                requests += " * @param password 密码 \r\n"
+                requests += " \r\n"
+                requests += " */\r\n"
+                requests += "export async function " + instance_name + "Login(name, password) {\r\n"
+                requests += '    return request(' + tableName.upper() + ' + "/login", METHOD.POST, {"name": name, "password":password, }, null)'
+                requests += "}\r\n"
+                requests += "\r\n"
 
             Log.success("AmdinRequest", "创建："+className)
 
@@ -521,9 +543,9 @@ class AdminCreator:
         fileDir = filePath.split("/")
         fileDir[len(fileDir) - 1] = ""
         fileDir = "/".join(fileDir)
-        CreateUtil.check_path(fileDir)
+        FileUtil.check_path(fileDir)
         
-        if CreateUtil.path_exists(filePath) :
+        if FileUtil.path_exists(filePath) :
             f1 = open(filePath, "r")
             content = f1.readlines()
             content = "".join(content)
@@ -537,16 +559,15 @@ class AdminCreator:
         else:
             content = totalString
                 
-        if override or CreateUtil.path_exists(filePath) == False:
+        if override or FileUtil.path_exists(filePath) == False:
             # 创建文件
             if log_type == 1:
                 Log.success(log_prefix, "生成："+filePath)
             elif log_type == 2:
                 Log.success(log_prefix, log_txt)
-                
-            f = FileManager(filePath)
-            f.write(content)
-            f.close()
+            
+            FileUtil.write_file(content=content, file_path=filePath)
+
 
     @staticmethod
     def _cmd_error():

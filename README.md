@@ -342,6 +342,13 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.0.6
+1. java_creator 
+   1. 修复登录jwtbug
+2. admin_creator
+   1. 登录和过期功能
+   2. 修复登录bug
+
 #### 1.0.5
 1. Core/ 文件夹内容转移到 Utils/ 中
 2. db_creator 
@@ -351,7 +358,6 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 3. java_creator
    1. split_string 改成 // "    // ### 自动生成 ###"
    2. User类自动添加登录代码
-   3. * 添加swagger doc文档
 
 #### 1.0.4
 1. create_util 工具类方法修改成下划线

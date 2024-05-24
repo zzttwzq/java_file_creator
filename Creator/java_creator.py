@@ -468,11 +468,12 @@ class JavaCreator:
                 contentString += "            return map;\r\n"
                 contentString += "        } else {\r\n"
                 contentString += "\r\n"
+                contentString += "            {} findUser = findUsers.get(0);\r\n".format(className)
+                contentString += "\r\n"
                 contentString += "            // 更新用户\r\n"
                 contentString += "            Timestamp t = new Timestamp((new Date()).getTime());\r\n"
-                contentString += "            String token = JWTUtils.getToken({}.getId(), {}.getName(), {}.getPassword());\r\n".format(instance_name, instance_name, instance_name)
+                contentString += "            String token = JWTUtils.getToken(findUser.getId(), findUser.getName(), findUser.getPassword());\r\n".format(instance_name, instance_name, instance_name)
                 contentString += "\r\n"
-                contentString += "            {} findUser = findUsers.get(0);\r\n".format(className)
                 contentString += "            findUser.setToken(token);\r\n"
                 contentString += "            findUser.setUpdateAt(t);\r\n"
                 contentString += "            Boolean status = {}Mapper.update(findUser);\r\n".format(instance_name)
