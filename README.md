@@ -44,7 +44,7 @@
                 "city:凭证:varchar(20)",
                 "address:凭证:varchar(200)",
                 "role_id:角色ID:int",
-                "type:角色类型-0 管理用户 1 普通用户:int(2)"
+                "type:角色类型-0_管理用户 1_普通用户:int(2)"
             ],
         },
         "tableSeed": {
@@ -74,98 +74,23 @@
                         "required": 0
                     },
                     {
-                        "name": "phone",
-                        "des": "手机号",
-                        "columnProperty": "varchar(15)",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "text",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
-                        "name": "email",
-                        "des": "邮箱",
-                        "columnProperty": "varchar(20)",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "text",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
-                        "name": "token",
-                        "des": "凭证",
-                        "columnProperty": "varchar(20)",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "text",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
-                        "name": "province",
-                        "des": "凭证",
-                        "columnProperty": "varchar(10)",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "text",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
-                        "name": "city",
-                        "des": "凭证",
-                        "columnProperty": "varchar(20)",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "text",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
-                        "name": "address",
-                        "des": "凭证",
-                        "columnProperty": "varchar(200)",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "text",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
-                        "name": "role_id",
-                        "des": "角色ID",
-                        "columnProperty": "int",
-                        "sort": "up",
-                        "align": "left",
-                        "width": 100,
-                        "formType": "number",
-                        "showInSearch": 1,
-                        "required": 0
-                    },
-                    {
                         "name": "type",
-                        "des": "角色类型-0 管理用户 1 普通用户",
-                        "columnProperty": "int(2)",
+                        "des": "角色类型",
+                        "columnProperty": "varchar(20)",
                         "sort": "up",
                         "align": "left",
                         "width": 100,
-                        "formType": "number",
+                        "formType": "select",
                         "showInSearch": 1,
                         "required": 0
-                    }
+                    },
+                    ...
                 ]
             },
         ]
     },
     "admin": {
+        "port": 7701,
         "backupPath": "/Users/xxx/Documents/GitHub/java_file_creator/Backup/admin/",
         "adminSrcPath": "admin/src/",
         "routerPath": "admin/src/router/local.js",
@@ -174,6 +99,7 @@
         "pagePath": "admin/src/pages/"
     },
     "java": {
+        "port": 7700,
         "backupPath": "/Users/xxx/Documents/GitHub/java_file_creator/Backup/java/",
         "packageName": "com.qlzw.smartwc",
         "packagePath": "java/src/main/java/com/qlzw/smartwc/",
@@ -341,6 +267,17 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 
 ## 更新内容
+
+#### 1.0.7
+1. db_creator
+   1. create_seed 功能
+   2. schema 添加 tableName, className, instanceName
+2. mysql_util 
+   1. 重构增删改查方法
+3. log_util
+   1. 重构log，添加是否显示字段
+4. datetime_util
+   1. 时间处理工具类
 
 #### 1.0.6
 1. java_creator 

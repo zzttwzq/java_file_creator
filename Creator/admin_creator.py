@@ -348,7 +348,7 @@ class AdminCreator:
 
     def create_routers(self, tableInfos):
         Log.blank()
-        Log.info("admin", "创建 routers")
+        Log.info("AdminRouters", "创建 routers")
 
         string = ''
         for tableInfo in tableInfos:
@@ -385,11 +385,11 @@ class AdminCreator:
                 className)
             string += "            },\r\n"
 
-            self._generate_file(self.routerPath, "\r\n" + string, "", log_type=2, log_prefix="AdminRouters", log_txt="创建："+instance_name)
+            self._generate_file(self.routerPath, "\r\n" + string, "", log_type=3, log_prefix="router", log_txt="创建："+instance_name)
 
     def create_apis(self, info, tableInfos):
         Log.blank()
-        Log.info("admin", "创建 api")
+        Log.info("AmdinApi", "创建 api")
 
         appName = info["name"]
 
@@ -412,13 +412,13 @@ class AdminCreator:
                 "/{0}/{1}`, \r\n".format(appName,
                                          instance_name
                                          )
-            Log.success("api", "创建："+instance_name)
+            Log.info("api", "创建："+instance_name)
 
-        self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+instance_name)
+        self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+appName)
 
     def create_requests(self, tableInfos):
         Log.blank()
-        Log.info("admin", "创建 request")
+        Log.info("AmdinRequest", "创建 request")
 
         requests = ""
         apis = ""
@@ -526,7 +526,7 @@ class AdminCreator:
                 requests += "}\r\n"
                 requests += "\r\n"
 
-            Log.success("AmdinRequest", "创建："+className)
+            Log.info("AmdinRequest", "创建："+className)
 
         string = 'import { METHOD, request } from "../utils/request.js"\r\n'
         string += 'import {'
@@ -535,7 +535,7 @@ class AdminCreator:
         string += '\r\n'
         string += requests
 
-        self._generate_file(self.requestPath, "", string, log_prefix="AmdinRequest")
+        self._generate_file(self.requestPath, "", string, log_type=2, log_prefix="request", log_txt="生成："+self.requestPath)
 
     # 生成文件或替换文件内容
     def _generate_file(self, filePath, replaceString, totalString, override=True, log_type=1, log_prefix="admin", log_txt=""):
@@ -562,12 +562,13 @@ class AdminCreator:
         if override or FileUtil.path_exists(filePath) == False:
             # 创建文件
             if log_type == 1:
-                Log.success(log_prefix, "生成："+filePath)
+                Log.info(log_prefix, "生成："+filePath)
             elif log_type == 2:
                 Log.success(log_prefix, log_txt)
+            elif log_type == 3:
+                Log.info(log_prefix, log_txt)
             
             FileUtil.write_file(content=content, file_path=filePath)
-
 
     @staticmethod
     def _cmd_error():

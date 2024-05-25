@@ -7,6 +7,7 @@ sys.path.append("..//")
 from Utils.mysql_util import MySqlUtil
 from Utils.log_util import Log
 from Utils.create_util import CreateUtil
+from Utils.datetime_util import DateTimeUtil
 
 class DBCreator:
     dirs = ["back"]
@@ -177,9 +178,12 @@ class DBCreator:
         
                 tableList.append({
                     "name": tableTitle[0],
+                    "dbName": tableTitle[2],
+                    "tableName": tableTitle[0],
+                    "className": CreateUtil.camelize(tableTitle[0]),
+                    "instanceName": CreateUtil.instance_name(tableTitle[0]),
                     "title": tableTitle[1],
                     "des": tableTitle[1],
-                    "dbName": tableTitle[2],
                     "columns": colums
                 })
 
@@ -198,8 +202,10 @@ class DBCreator:
         
         for name in dbNameList:
             res = self.sqlConnection.create_db(name)
-            if res >= 0:
-                Log.info(self.logPrefix, "数据库：'{0}' 创建成功或已存在".format(name))
+            if res == 0:
+                Log.info(self.logPrefix, "数据库：'{0}' 已存在".format(name))
+            elif res > 0:
+                Log.success(self.logPrefix, "数据库：'{0}' 创建成功".format(name))
                 
     def create_or_update_table(self, info, names):
         Log.blank()
@@ -214,31 +220,44 @@ class DBCreator:
         
         for tableInfo in tableList:
             res = self.sqlConnection.create_table_from_table_info(tableInfo)
-            if res >= 0:
-                Log.info(self.logPrefix, "数据表：'{0}' 创建成功或已存在".format(tableInfo["name"]))
+            if res == 0:
+                Log.info(self.logPrefix, "数据表：'{0}' 已存在".format(tableInfo["name"]))
+            elif res > 0:
+                Log.info(self.logPrefix, "数据表：'{0}' 创建成功".format(tableInfo["name"]))
 
     def create_seed(self, info, names):
+        log_tag = "create_seed"
+        
         Log.blank()
         Log.info(
             self.logPrefix, "================ 正在创建数据集 ================".format(names))
-
-        # my = MySqlConn(config= CreateUtil.get_mysql_config())
-        # tableList = CreateUtil.get_tableInfo_width_names(info, names)
-        # if len(tableList) == 0:
-        #     Log.error(self.logPrefix,
-        #               "{0} 在tableinfo.json 中未找到！".format(names))
-        #     return
         
-        # for seed in info["dbSeeds"]:
-        #     try:
-        #         my.insert_one(seed)
-        #         Log.success(
-        #             self.pathPrefix, "数据集：`{0}`创建成功".format(tableInfo["name"]))
-
-        #     except Exception as e:
-        #         Log.error(self.logPrefix, str(e))
-
-        # my.dispose()
+        tableList = tableList = CreateUtil.get_tables(info, names)
+        tableInfoList = {}
+        
+        tableSeeds = info["db"]["tableSeed"]
+        
+        for it in tableList:
+            if it["name"] in tableSeeds:
+                tableInfoList[it["name"]] = it
+                
+        for key, value in tableSeeds.items():
+            Log.blank()
+            Log.info(log_tag, "新增seed：{}".format(key))
+            
+            for it in value:
+                
+                db_name = tableInfoList[key]["dbName"]
+                table_name = tableInfoList[key]["name"]
+                self.sqlConnection.use_db(db_name)
+                
+                it["createAt"] = DateTimeUtil.now_datetime()
+                
+                res = self.sqlConnection.insert(table_name, it)
+                if res == 0:
+                    Log.info(log_tag, "seed已存在：{}".format(it))
+                elif res > 0:
+                    Log.success(log_tag, "seed添加成功：{}".format(it))
 
     @staticmethod
     def _cmd_error():

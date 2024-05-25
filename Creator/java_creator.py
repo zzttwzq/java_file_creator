@@ -664,7 +664,7 @@ class JavaCreator:
             content = totalString
                 
         # 创建文件
-        Log.success("java", "生成："+filePath)
+        Log.info("java", "生成："+filePath)
         FileUtil.write_file(content=content, file_path=filePath)
 
     def CreateUtil(self):

@@ -51,73 +51,88 @@ class MySqlUtil:
         self._cursor.close()
         self._conn.close()
 
-    def __getInsertId(self):
-        """
-        获取当前连接最后一次插入操作生成的id,如果没有则为０
-        """
-        self._cursor.execute("SELECT @@IDENTITY AS id")
-        result = self._cursor.fetchall()
-        return result[0]['id']
-
-    def __query(self, sql, param=None):
-        if param is None:
-            count = self._cursor.execute(sql)
-        else:
-            count = self._cursor.execute(sql, param)
-        return count
-
-    def exec_sql(self, sql):
+    def exec_sql(self, sql, value_list=()):
         """
         @summary: 执行sql操作
         @param sql: sql
         @return: count 受影响的行数
         """
         
+        err = ""
         try:
-            count = self._cursor.execute(sql)
-            err = ""
+            if len(value_list) > 0:
+                count = self._cursor.execute(sql, value_list)
+            else:
+                count = self._cursor.execute(sql)
+                
         except Exception as e:
-            count = -1
-            Log.error("exec_sql", "{}".format(str(e)))
+            
             err = str(e)
+            if "Duplicate entry" in err:
+                count = 0
+            else:
+                count = -1
+            Log.warn("DB", "\r\n    -> " + sql + "\r\n    -> " + str(value_list) + "\r\n    -> " +err)
         
-        SqlLog.record(sql, msg=err)
+        SqlLog.record("\r\n    -> " + sql + "\r\n    -> " + str(value_list) + "\r\n    -> " +err)
             
         return count
 
-    def begin(self):
-        """
-        @summary: 开启事务
-        """
-        self._conn.autocommit(0)
-
-    def end(self, option='commit'):
-        """
-        @summary: 结束事务
-        """
-        if option == 'commit':
-            self._conn.commit()
-        else:
-            self._conn.rollback()
+    #-------- 现成方法
     
-    def use_db(self, name):
-        sql = "USE {}".format(name)
-        self.exec_sql(sql=sql)
-        
-    def create_table_from_dict(self, db_name, table_name, dictData):
+    def create_db(self, name) -> int:
         """
-        @summary: 创建新的表；字段直接用内部的
-        @param db_name: 数据库名称
-        @param dict: 表字段信息
+        创建新的数据库
+        
+        参数:
+            name(string): 数据库名称
+        
+        返回:
+            int: 影响行数
+        
+        引发:
+        """
+        
+        sql = "CREATE DATABASE IF NOT EXISTS {} CHARACTER SET utf8 COLLATE utf8_general_ci".format(name)
+        res = self.exec_sql(sql)
+        return res
+
+    def use_db(self, name) -> int:
+        """
+        使用数据库
+        
+        参数:
+            db_name(string): 数据库名称
+        
+        返回:
+            int: 影响行数
+        
+        引发:
+        """
+        
+        sql = "USE {}".format(name)
+        res = self.exec_sql(sql)
+        return res
+        
+    def create_table_from_dict(self, db_name, table_name, dict_data) -> int:
+        """
+        创建新的表
+        
+        参数:
+            db_name(string): 数据库名称
+            table_name(string): 数据表
+            dict_data(string): 带有数据表信息的dict
+        
+        返回:
+            int: 影响行数
+        
+        引发:
         """
 
         values = ""
-
-        Log.info("create_table_from_dict", "开始创建数据表: {0}".format(table_name))
-
-        for key in dictData:
+        for key in dict_data:
             p_name = key
-            p_value = dictData[key]
+            p_value = dict_data[key]
             p_des = ""
             arr = p_name.split("#")
             if "#" in key and len(arr) == 2:
@@ -130,20 +145,25 @@ class MySqlUtil:
         sql = "CREATE TABLE IF NOT EXISTS {0}.{1} ( {2} ) ENGINE=InnoDB DEFAULT CHARSET='utf8'".format(
             db_name, table_name, values)
         
-        i = self.exec_sql(sql)
-        if i >= 0:
-            Log.success("create_table_from_dict", "{0} 创建成功！".format(table_name))
+        return self.exec_sql(sql)
 
-    def create_table_from_table_info(self, tableInfo):
+    def create_table_from_table_info(self, table_info)-> int:
         """
-        @summary: 创建新的表；注意，字段会改成驼峰，首字母小写
-        @param info: 表信息
+        创建新的表；使用project.json里面的配置
+        
+        参数:
+            table_info(string): 数据表信息的dict
+        
+        返回:
+            int: 影响行数
+        
+        引发:
         """
 
         values = ""
-        dbName = tableInfo["dbName"]
-        tableName = tableInfo["name"]
-        columnList = tableInfo["columns"]
+        dbName = table_info["dbName"]
+        tableName = table_info["name"]
+        columnList = table_info["columns"]
 
         for columnInfo in columnList:
             cName = columnInfo["name"]
@@ -157,11 +177,22 @@ class MySqlUtil:
         
         return self.exec_sql(sql)
 
-    def create_db(self, dbName):
-        return self.exec_sql(
-            "CREATE DATABASE IF NOT EXISTS {0} CHARACTER SET utf8 COLLATE utf8_general_ci".format(dbName))
+    def begin(self):
+        """
+        开启事务
+        """
+        
+        self._conn.autocommit(0)
 
-    #-------- 后期使用
+    def end(self, option='commit'):
+        """
+        结束事务
+        """
+        if option == 'commit':
+            self._conn.commit()
+        else:
+            self._conn.rollback()
+    
     def get_all(self, sql, param=None):
         """
         @summary: 执行查询，并取出所有结果集
@@ -169,87 +200,126 @@ class MySqlUtil:
         @param param: 可选参数，条件列表值（元组/列表）
         @return: result list(字典对象)/boolean 查询到的结果集
         """
-        if param is None:
-            count = self._cursor.execute(sql)
-        else:
-            count = self._cursor.execute(sql, param)
-        if count > 0:
-            result = self._cursor.fetchall()
-        else:
+
+        errorString = ""
+        try:
+            if param is None:
+                count = self._cursor.execute(sql)
+            else:
+                count = self._cursor.execute(sql, param)
+            if count > 0:
+                result = self._cursor.fetchall()
+            else:
+                result = []
+                
+        except Exception as e:
             result = []
-        return result
+            errorString = str(e)
+            Log.error("DB", "\r\n    -> " + sql + "\r\n    -> " + str(param) + "\r\n    -> " +errorString)
+            
+        SqlLog.record("\r\n    -> " + sql + "\r\n    -> " + str(param) + "\r\n    -> " +errorString)
 
-    def get_one(self, sql, param=None):
-        """
-        @summary: 执行查询，并取出第一条
-        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
-        @param param: 可选参数，条件列表值（元组/列表）
-        @return: result list/boolean 查询到的结果集
-        """
-        if param is None:
-            count = self._cursor.execute(sql)
-        else:
-            count = self._cursor.execute(sql, param)
-        if count > 0:
-            result = self._cursor.fetchone()
-        else:
-            result = False
         return result
-
-    def get_many(self, sql, num, param=None):
+    
+    def get_many(self, table_name, condition="", value_list=[], columns = "*", num=0):
         """
         @summary: 执行查询，并取出num条结果
-        @param sql:查询ＳＱＬ，如果有查询条件，请只指定条件列表，并将条件值使用参数[param]传递进来
-        @param num:取得的结果条数
-        @param param: 可选参数，条件列表值（元组/列表）
+        @param table_name: 表名称
+        @param condition: ＳＱＬ格式及条件，使用(%s,%s)；比如：id = %s
+        @param value_list: 条件值对应的数组；比如：[10]
+        @param columns: 对应的字段；比如：name, age
         @return: result list/boolean 查询到的结果集
         """
-        if param is None:
-            count = self._cursor.execute(sql)
+        
+        sql = ""        
+        if len(condition) == 0:
+            sql = "SELECT {} FROM {};".format(columns, table_name)
         else:
-            count = self._cursor.execute(sql, param)
+            sql = "SELECT {} FROM {} {};".format(columns, table_name, condition)
+        self.exec_sql(sql, value_list)
             
-        if count > 0:
-            result = self._cursor.fetchmany(num)
+        result = []
+        if num == 0:
+            result = self._cursor.fetchall()
         else:
-            result = False
+            result = self._cursor.fetchmany(num)
+                
         return result
-
-    def insert_one(self, sql):
+    
+    def __getInsertId(self):
         """
-        @summary: 向数据表插入一条记录
-        @param sql:要插入的ＳＱＬ格式
-        @param value:要插入的记录数据tuple/list
-        @return: insertId 受影响的行数
+        获取当前连接最后一次插入操作生成的id,如果没有则为０
         """
         
-        self._cursor.execute(sql)
-        return self.__getInsertId()
-
-    def insert_many(self, sql, values):
+        self._cursor.execute("SELECT @@IDENTITY AS id")
+        result = self._cursor.fetchall()
+        return result[0]['id']
+    
+    def insert(self, table_name, dict) -> int:
         """
-        @summary: 向数据表插入多条记录
-        @param sql:要插入的ＳＱＬ格式
-        @param values:要插入的记录数据tuple(tuple)/list[list]
-        @return: count 受影响的行数
+        @summary: 插入数据表记录
+        @param table_name: 表名称
+        @param dict: 键值对
+        @return: id值
         """
-        count = self._cursor.executemany(sql, values)
-        return count
-
-    def update(self, sql, param=None):
+        
+        keys = ""
+        values = ""
+        param_list = []
+        for k in dict:
+            keys += "{}, ".format(k)
+            values += "{}, ".format("%s")
+            param_list.append(dict[k])
+                    
+        keys = keys[0: len(keys) - 2]
+        values = values[0: len(values) - 2]
+        sql = "INSERT INTO {} ({}) VALUES ({})".format(table_name, keys, values)
+        
+        res = self.exec_sql(sql, param_list) >= 0
+        if res:
+            return self.__getInsertId()
+        else:
+            return -1
+    
+    def update(self, table_name, dict, condition, value_list) -> bool:
         """
         @summary: 更新数据表记录
-        @param sql: ＳＱＬ格式及条件，使用(%s,%s)
-        @param param: 要更新的  值 tuple/list
-        @return: count 受影响的行数
+        @param table_name: 表名称
+        @param dict: 键值对
+        @param condition: WHERE 后面的ＳＱＬ格式及条件，使用(%s,%s)；比如：id = %s
+        @param value_list: 条件值对应的数组；比如：[10]
+        @return: 是否成功
         """
-        return self.__query(sql, param)
+        
+        kvs = ""
+        param_list = []
+        for k in dict:
+            kvs += "{} = %s, ".format(k)
+            param_list.append(dict[k])
+            
+        for it in value_list:
+            param_list.append(it)
+                    
+        kvs = kvs[0: len(kvs) - 2]
+        sql = "UPDATE {} SET {} WHERE {}".format(table_name, kvs, condition)
+        
+        res = self.exec_sql(sql, param_list) >= 0
+        return res
 
-    def delete(self, sql, param=None):
+    def delete(self, table_name, condition, value_list) -> bool:
         """
         @summary: 删除数据表记录
-        @param sql: ＳＱＬ格式及条件，使用(%s,%s)
-        @param param: 要删除的条件 值 tuple/list
-        @return: count 受影响的行数
+        @param table_name: 表名称
+        @param condition: WHERE 后面的ＳＱＬ格式及条件，使用(%s,%s)；比如：id = %s
+        @param value_list: 条件值对应的数组；比如：[10]
+        @return: 是否成功
         """
-        return self.__query(sql, param)
+        
+        param_list = value_list
+                    
+        kvs = kvs[0: len(kvs) - 2]
+        values1 = values1[0: len(values1) - 2]
+        sql = "DELETE FROM {} WHERE {}".format(table_name, condition)
+        
+        res = self.exec_sql(sql, param_list) >= 0
+        return res
