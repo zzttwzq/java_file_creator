@@ -55,36 +55,36 @@ class Log:
         if types == 'DEBUG':
             logStr = "[{0}] [{2}] [{3}] {4} \r\n    callpath: \r\n{1}\r\n".format(
                 times, retStr, types, title, msg)
-            console_str = "\033[1;40;30m[{0}] \033[1;40;37m[{1}] {2} \033[1;40;36m\r\n    callpath: \r\n{3} \033[0m".format(
+            console_str = "\033[1;30m[{0}] \033[1;37m[{1}] {2} \033[1;36m\r\n    callpath: \r\n{3} \033[0m".format(
                 times, title, msg, retStr)
 
         elif types == 'INFO':
             logStr = "[{0}] [{1}] [{2}] {3}\r\n".format(
                 times, types, title, msg)
-            console_str = "\033[1;40;30m[{0}] \033[1;40;36m[{1}] {2} \033[0m".format(
+            console_str = "\033[1;30m[{0}] \033[1;36m[{1}] {2} \033[0m".format(
                 times, title, msg)
 
         elif types == "SUCCESS":
             logStr = "[{0}] [{1}] [{2}] {3}\r\n".format(
                 times, types, title, msg)
-            console_str = "\033[1;40;30m[{0}] \033[1;42;37m[{1}] {2} \033[0m".format(
+            console_str = "\033[1;30m[{0}] \033[1;32m[{1}] {2} \033[0m".format(
                 times, title, msg)
 
         elif types == 'WARN':
             logStr = "[{0}] [{2}] [{3}] {4} \r\n    callpath: \r\n{1}\r\n".format(
                 times, retStr, types, title, msg)
-            console_str = "\033[1;40;30m[{0}] \033[1;40;33m[{1}] {2} \033[0m".format(
+            console_str = "\033[1;30m[{0}] \033[1;33m[{1}] {2} \033[0m".format(
                 times, title, msg, retStr)
 
         elif types == 'ERROR':
             logStr = "[{0}] [{2}] [{3}] {4} \r\n    callpath: \r\n{1}\r\n".format(
                 times, retStr, types, title, msg)
-            console_str = "\033[1;40;30m[{0}] \033[1;40;31m[{1}] {2} \033[1;40;33m\r\n    callpath: \r\n{3} \033[0m".format(
+            console_str = "\033[1;30m[{0}] \033[1;31m[{1}] {2} \033[1;33m\r\n    callpath: \r\n{3} \033[0m".format(
                 times, title, msg, retStr)
 
         elif types == 'BLANK':
             logStr = "[{0}] \r\n".format(times)
-            console_str = "\033[1;40;30m[{0}] \033[0m".format(times)
+            console_str = "\033[1;30m[{0}] \033[0m".format(times)
             
         if show:
             print(console_str)
@@ -109,7 +109,7 @@ class SqlLog:
         file_path = FileUtil.getCurrentDir()+"/Log/{}.sql".format(date_time.split(" ")[0])
         f = open(file_path, mode='a+', encoding='utf8')
         
-        message = "\033[1;40;30m[{}] \033[1;40;33m[ SQL ] {} \033[1;40;31m{} \033[0m".format(date_time, sql, msg)
+        message = "\033[1;30m[{}] \033[1;33m[ SQL ] {} \033[1;31m{} \033[0m".format(date_time, sql, msg)
         # print(message)
         
         content = "[{}] {}\r\n".format(date_time, sql, msg)

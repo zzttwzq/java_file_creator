@@ -41,7 +41,7 @@ class AdminCreator:
 
         if len(tableList) == 0:
             Log.error(
-                "java", "字段 `{0}` 不存在".format(names))
+                "admin", "字段 `{0}` 不存在".format(names))
             return
         
         if len(names) == 0:
@@ -88,12 +88,13 @@ class AdminCreator:
             relateApi = ""
             relateData = ""
             relateMethod = ""
+            relateMethod2 = ""
             relateMethodCall = ""
 
             for columnInfo in columnList:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
-                columnName = CreateUtil.instance_name(columnInfo['name'])
+                columnName = columnInfo['name']
 
                 columns += "        {\r\n"
                 columns += "          title: '{0}',//{1}\r\n".format(
@@ -111,6 +112,7 @@ class AdminCreator:
                     relateData += "      {0}List: [], \r\n".format(relateInstanceName)
                     relateMethodCall += "\r\n      this.get{0}List(); ".format(relateClassName)
                     
+                    relateMethod += '    // 获取列表数据\r\n'
                     relateMethod += '    async get{0}List() {1} \r\n'.format(relateClassName, '{')
                     relateMethod += '      let data = await get{0}({1} "page": 0, "size": 100000 {2});\r\n'.format(relateClassName, '{', '}')
                     relateMethod += '      // 转换select options 数据\r\n'
@@ -120,15 +122,29 @@ class AdminCreator:
                     relateMethod += '          "value": v["id"],\r\n'
                     relateMethod += '        };\r\n'
                     relateMethod += '      })\r\n'
+                    # relateMethod += '      console.log(">>>> {0}List", data); \r\n'.format(relateInstanceName)
                     relateMethod += '      this.{0}List = data; \r\n'.format(relateInstanceName)
-                    relateMethod += '      console.log(">>>> {0}List", data); \r\n'.format(relateInstanceName)
                     relateMethod += '      // 给formlist里的`{0}`.options 重新赋值\r\n'.format(columnName)
                     relateMethod += '      this.formList.map(it => {0}\r\n'.format("{")
                     relateMethod += '        if (it["name"] == "{0}") {1}\r\n'.format(columnName, "{")
                     relateMethod += '          it["options"] = this.{0}List;\r\n'.format(relateInstanceName)
                     relateMethod += '        }\r\n'
-                    relateMethod += '      })\r\n'
+                    relateMethod += '      });\r\n'
+                    relateMethod += '      this.searchList.map(it => {0}\r\n'.format("{")
+                    relateMethod += '        if (it["name"] == "{0}") {1}\r\n'.format(columnName, "{")
+                    relateMethod += '          it["options"] = this.{0}List;\r\n'.format(relateInstanceName)
+                    relateMethod += '        }\r\n'
+                    relateMethod += '      });\r\n'
                     relateMethod += '    },\r\n'
+                    
+                    relateMethod2 += '      data.map(d => {\r\n'
+                    relateMethod2 += '        this.{}List.map(t => '.format(relateInstanceName) + '{\r\n'
+                    relateMethod2 += '          if (d["{}"] == t.value) '.format(columnName) + '{\r\n'
+                    relateMethod2 += '            d["{}"] = t.label;\r\n'.format(columnName)
+                    relateMethod2 += '          }\r\n'
+                    relateMethod2 += '        })\r\n'
+                    relateMethod2 += '      })\r\n'
+                    relateMethod2 += '      \r\n'
                     
                     columnDes = columnDes.split("#")[0]
                     columnInfo['formType'] = "select"
@@ -232,25 +248,48 @@ class AdminCreator:
 
             content += "<template>\r\n"
             content += "  <div>\r\n"
-            content += "    <FastTable\r\n"
-            content += "      title=\"{0}\"\r\n".format(tableTitle)
-            content += "      :columns=\"columns\"\r\n"
-            content += "      :searchList=\"searchList\"\r\n"
-            content += "      :formList=\"formList\"\r\n"
-            content += "      :listRequest=\"listRequest\"\r\n"
-            content += "      :addRequest=\"addRequest\"\r\n"
-            content += "      :editRequest=\"editRequest\"\r\n"
-            content += "      :editDetailRequest=\"editDetailRequest\"\r\n"
-            content += "      :deleteRequest=\"deleteRequest\"\r\n"
-            content += "      :handleListData=\"handleListData\"\r\n"
-            content += "      :handleModifyData=\"handleModifyData\"\r\n"
-            content += "      :handleWillAdd=\"handleWillAdd\"\r\n"
-            content += "      :handleWillEdit=\"handleWillEdit\"\r\n"
-            content += "      pageNumKey=\"page\"\r\n"
-            content += "      pageSizeKey=\"size\"\r\n"
-            content += "      :pageStart=\"0\"\r\n"
-            content += "      >\r\n"
-            content += "    </FastTable>\r\n"
+            content += '    <FastTable\r\n'
+            content += '      title="{}"\r\n'.format(classDes)
+            content += '      :tableHeaderList="columns"\r\n'
+            content += '      :tableSearchList="searchList"\r\n'
+            content += '      :tableFormList="formList"\r\n'
+            content += '      pageNumKey="page"\r\n'
+            content += '      pageSizeKey="size"\r\n'
+            content += '      :pageStart="0"\r\n'
+            content += '      :tableFormWidth="500"\r\n'
+            content += '      :listRequest="listRequest"\r\n'
+            content += '      :addRequest="addRequest"\r\n'
+            content += '      :editRequest="editRequest"\r\n'
+            content += '      :detailRequest="detailRequest"\r\n'
+            content += '      :deleteRequest="deleteRequest"\r\n'
+            content += '      :showLog="true"\r\n'
+            content += '      :handleListRequestParams="handleListRequestParams"\r\n'
+            content += '      @onWillSearch="onWillSearch"\r\n'
+            content += '      @onWillSearchReqeust="onWillSearchReqeust"\r\n'
+            content += '      @onDidSearch="onDidSearch"\r\n'
+            content += '      @onWillGetList="onWillGetList"\r\n'
+            content += '      @onWillGetListRequest="onWillGetListRequest"\r\n'
+            content += '      @onGetListSuccess="onGetListSuccess"\r\n'
+            content += '      @onGetListError="onGetListError"\r\n'
+            content += '      @onWillAdd="onWillAdd"\r\n'
+            content += '      @onAddSuccess="onAddSuccess"\r\n'
+            content += '      @onAddError="onAddError"\r\n'
+            content += '      @onWillEdit="onWillEdit"\r\n'
+            content += '      @onEditSuccess="onEditSuccess"\r\n'
+            content += '      @onEditError="onEditError"\r\n'
+            content += '      @onWillSaveReqeust="onWillSaveReqeust"\r\n'
+            content += '      @onWillDelete="onWillDelete"\r\n'
+            content += '      @onWillDeleteReqeust="onWillDeleteReqeust"\r\n'
+            content += '      @onDeleteSuccess="onDeleteSuccess"\r\n'
+            content += '      @onDeleteError="onDeleteError"\r\n'
+            content += '      @onFormPrefixClick="onFormPrefixClick"\r\n'
+            content += '      @onFormSuffixClick="onFormSuffixClick"\r\n'
+            content += '    >\r\n'
+            content += '      <template slot="tableCustomForm">\r\n'
+            content += '        <div>\r\n'
+            content += '        </div>\r\n'
+            content += '      </template>\r\n'
+            content += '    </FastTable>\r\n'
             content += "  </div>\r\n"
             content += "</template>\r\n"
             content += "\r\n"
@@ -309,37 +348,139 @@ class AdminCreator:
             mixin += "      listRequest: get{0},\r\n".format(className)
             mixin += "      addRequest: post{0},\r\n".format(className)
             mixin += "      editRequest: post{0},\r\n".format(className)
-            mixin += "      editDetailRequest: get{0}ByID,\r\n".format(
+            mixin += "      detailRequest: get{0}ByID,\r\n".format(
                 className)
             mixin += "      deleteRequest: delete{0}ByID,\r\n".format(
                 className)
             mixin += "    };\r\n"
             mixin += "  },\r\n"
             mixin += "  methods: {\r\n"
-            mixin += "{0}".format(relateMethod)
             mixin += "    async init() {"
             mixin += "{0}\r\n".format(relateMethodCall)
-            mixin += "\r\n"
-            mixin += "      // 绑定方法，避免传入的this指向不正确。\r\n"
-            mixin += "      this.handleListData.bind(this);\r\n"
-            mixin += "      this.handleModifyData.bind(this);\r\n"
-            mixin += "      this.handleWillAdd.bind(this);\r\n"
-            mixin += "      this.handleWillEdit.bind(this);\r\n"
             mixin += "    },\r\n"
-            mixin += "    handleListData(data) {\r\n"
-            mixin += "      data.map((it) => {\r\n"
-            mixin += "        console.log(it)\r\n"
-            mixin += "      })\r\n"
-            mixin += "    },\r\n"
-            mixin += '    handleModifyData(values) {\r\n'
-            mixin += '      console.log("handleModifyData", values);\r\n'
+            mixin += "{0}".format(relateMethod)
+            mixin += '    //===================== 处理请求参数\r\n'
+            mixin += '    // 列表请求参数\r\n'
+            mixin += '    async handleListRequestParams(params) {\r\n'
+            mixin += '      this.log("handleListRequestParams", params);\r\n'
+            mixin += '      return params;\r\n'
             mixin += '    },\r\n'
-            mixin += '    handleWillAdd() {\r\n'
-            mixin += '      console.log("handleWillAdd");\r\n'
+            mixin += '    // 新增或者修改保存参数\r\n'
+            mixin += '    async handleSaveRequestParams(params) {\r\n'
+            mixin += '      this.log("handleSaveRequestParams", params);\r\n'
+            mixin += '      return params;\r\n'
             mixin += '    },\r\n'
-            mixin += '    handleWillEdit(values) {\r\n'
-            mixin += '      console.log("handleWillEdit", values);\r\n'
+            mixin += '    // 请求详情接口参数\r\n'
+            mixin += '    async handleDetailRequestParams(params) {\r\n'
+            mixin += '      this.log("handleDetailRequestParams", params);\r\n'
+            mixin += '      return params;\r\n'
             mixin += '    },\r\n'
+            mixin += '    // 删除列表参数\r\n'
+            mixin += '    async handleDeleteRequestParams(params) {\r\n'
+            mixin += '      this.log("handleDeleteRequestParams", params);\r\n'
+            mixin += '      return params;\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 处理列表返回数据\r\n'
+            mixin += '    // async handleListData(data) {\r\n'
+            mixin += '    //  this.log("handleListData", data);\r\n'
+            mixin += '    //  return data;\r\n'
+            mixin += '    // },\r\n'
+            mixin += '    //===================== search\r\n'
+            mixin += '    // 准备搜索回调\r\n'
+            mixin += '    onWillSearch(params) {\r\n'
+            mixin += '      this.log("onWillSearch", params);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 准备搜索回调\r\n'
+            mixin += '    onWillSearchReqeust(params, pagination) {\r\n'
+            mixin += '      this.log("onWillSearchReqeust", params, pagination);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 完成搜索回调\r\n'
+            mixin += '    onDidSearch() {\r\n'
+            mixin += '      this.log("onDidSearch");\r\n'
+            mixin += '    },\r\n'
+            mixin += '\r\n'
+            mixin += '    //===================== 列表\r\n'
+            mixin += '    // 准备调用列表接口\r\n'
+            mixin += '    onWillGetList() {\r\n'
+            mixin += '      this.log("onWillGetList");\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 即将开始请求列表接口\r\n'
+            mixin += '    onWillGetListRequest(params) {\r\n'
+            mixin += '      this.log("onWillGetListRequest", params);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 列表请求成功\r\n'
+            mixin += '    onGetListSuccess(data) {\r\n'
+            mixin += relateMethod2
+            mixin += '      this.log("onGetListSuccess", data);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 列表请求失败\r\n'
+            mixin += '    onGetListError(error) {\r\n'
+            mixin += '      this.log("onGetListError", error);\r\n'
+            mixin += '    },\r\n'
+            mixin += '\r\n'
+            mixin += '    //===================== 新增\r\n'
+            mixin += '    // 准备新增\r\n'
+            mixin += '    onWillAdd() {\r\n'
+            mixin += '      this.log("onWillAdd");\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 新增成功\r\n'
+            mixin += '    onAddSuccess(data) {\r\n'
+            mixin += '      this.log("onAddSuccess", data);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 新增失败\r\n'
+            mixin += '    onAddError(error) {\r\n'
+            mixin += '      this.log("onAddError", error);\r\n'
+            mixin += '    },\r\n'
+            mixin += '\r\n'
+            mixin += '    //===================== 更新\r\n'
+            mixin += '    // 准备更新\r\n'
+            mixin += '    onWillEdit(data) {\r\n'
+            mixin += '      this.log("onWillEdit", data);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 更新成功\r\n'
+            mixin += '    onEditSuccess(data) {\r\n'
+            mixin += '      this.log("onEditSuccess", data);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 更新失败\r\n'
+            mixin += '    onEditError(error) {\r\n'
+            mixin += '      this.log("onEditError", error);\r\n'
+            mixin += '    },\r\n'
+            mixin += '\r\n'
+            mixin += '    // 准备调用新增或者修改接口\r\n'
+            mixin += '    onWillSaveReqeust(params) {\r\n'
+            mixin += '      this.log("onWillSaveReqeust", params);\r\n'
+            mixin += '    },\r\n'
+            mixin += '\r\n'
+            mixin += '    //===================== 删除\r\n'
+            mixin += '    // 准备删除\r\n'
+            mixin += '    onWillDelete(id) {\r\n'
+            mixin += '      this.log("onWillDelete", id);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 即将开始请求删除接口\r\n'
+            mixin += '    onWillDeleteReqeust(params) {\r\n'
+            mixin += '      this.log("onWillDeleteReqeust", params);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 删除成功\r\n'
+            mixin += '    onDeleteSuccess(data) {\r\n'
+            mixin += '      this.log("onDeleteSuccess", data);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // 删除失败\r\n'
+            mixin += '    onDeleteError(error) {\r\n'
+            mixin += '      this.log("onDeleteError", error);\r\n'
+            mixin += '    },\r\n'
+            mixin += '\r\n'
+            mixin += '    //===================== 其他\r\n'
+            mixin += '    // form表单前缀内容点击\r\n'
+            mixin += '    onFormPrefixClick(error) {\r\n'
+            mixin += '      this.log("onFormPrefixClick", error);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    // form表单后缀内容点击\r\n'
+            mixin += '    onFormSuffixClick(error) {\r\n'
+            mixin += '      this.log("onFormSuffixClick", error);\r\n'
+            mixin += '    },\r\n'
+            mixin += '    log(title, msg) {\r\n'
+            mixin += '      console.log(`[' + className + '->${title}]`, msg ?? "");\r\n'
+            mixin += '    }\r\n'
             mixin += "  },\r\n"
             mixin += "};\r\n"
             
@@ -408,11 +549,8 @@ class AdminCreator:
             instance_name = CreateUtil.instance_name(tableName)
 
             string += "\r\n    // {0} \r\n".format(classDes)
-            string += "    {0}: `$".format(constName) + '{BASE_URL}' + \
-                "/{0}/{1}`, \r\n".format(appName,
-                                         instance_name
-                                         )
-            Log.info("api", "创建："+instance_name)
+            string += "    {0}: `/$".format(constName) + '{BASE_URL}' + "{}`, \r\n".format(tableName)
+            Log.info("api", "创建："+tableName)
 
         self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+appName)
 
@@ -442,7 +580,7 @@ class AdminCreator:
             constName = tableName.upper()
             
             # 登录功能
-            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1
+            addUserLogin = tableName.find("user") > -1 or tableName.find("User") > -1
 
             # 字段属性列表
             columnLists = tableInfo["columns"]
@@ -472,7 +610,7 @@ class AdminCreator:
             requests += "export async function get" + \
                 className + "(params) {\r\n"
             requests += "    return request(" + constName + \
-                ", METHOD.GET, params ? params : {}, null)\r\n"
+                ", METHOD.GET, params ? params : {})\r\n"
             requests += "}\r\n"
             requests += "\r\n"
 
@@ -483,7 +621,7 @@ class AdminCreator:
             requests += "export async function post" + \
                 className + "(params) {\r\n"
             requests += "    return request(" + constName + \
-                ", METHOD.POST, params ? params : { }, null)\r\n"
+                ", METHOD.POST, params ? params : { })\r\n"
             requests += "}\r\n"
             requests += "\r\n"
 
@@ -498,7 +636,7 @@ class AdminCreator:
             requests += "export async function get" + \
                 className + "ByID(id) {\r\n"
             requests += "    return request(" + constName + \
-                ' + "/" + ' + "id, METHOD.GET, {id : id}, null)\r\n"
+                ' + "/" + ' + "id, METHOD.GET, {id : id})\r\n"
             requests += "}\r\n"
             requests += "\r\n"
 
@@ -510,7 +648,7 @@ class AdminCreator:
             requests += "export async function delete" + \
                 className + "ByID(id) {\r\n"
             requests += "    return request(" + constName + \
-                ' + "/delete/" + ' + "id, METHOD.GET, {}, null)\r\n"
+                ' + "/delete/" + ' + "id, METHOD.GET, {})\r\n"
             requests += "}\r\n"
             requests += "\r\n"
             
@@ -522,7 +660,7 @@ class AdminCreator:
                 requests += " \r\n"
                 requests += " */\r\n"
                 requests += "export async function " + instance_name + "Login(name, password) {\r\n"
-                requests += '    return request(' + tableName.upper() + ' + "/login", METHOD.POST, {"name": name, "password":password, }, null)'
+                requests += '    return request(' + tableName.upper() + ' + "/login", METHOD.POST, {"name": name, "password":password, })\r\n'
                 requests += "}\r\n"
                 requests += "\r\n"
 

@@ -120,14 +120,13 @@ class CreateUtil:
 
         tableInfoList = []
         nameList = names.split(",")
-
         if names == "-all":
             nameList = []
-
+        
         # 获取数据表列表
         tableList = projectInfo["db"]["tableList"]
         for t in tableList:
-            if len(nameList) == 0:
+            if names == "-all":
                 tableInfoList.append(t)
             else:
                 if t["name"] in nameList:

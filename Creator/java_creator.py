@@ -12,7 +12,7 @@ class JavaCreator:
     java_temp_path = os.getcwd()+"/dist/java/"
     package_path = ""
     package_name = ""
-    split_string = "    // ### 自动生成 ###"
+    split_string = "// ############ 自动生成 ############"
 
     @staticmethod
     def create(talbe_info, mode, names):
@@ -87,7 +87,8 @@ class JavaCreator:
             columns = copy.deepcopy(tableInfo["columns"])
             
             # 文件信息
-            string = "package " + self.package_name + "." + className + ";\r\n\r\n"
+            string = self.split_string+ "\r\n"
+            string += "package " + self.package_name + "." + className + ";\r\n\r\n"
             string += "import java.util.Map;\r\n"
             string += "import java.sql.Timestamp;\r\n\r\n"
             string += "import lombok.Getter;\r\n"
@@ -195,10 +196,13 @@ class JavaCreator:
             tostring_string = ""+tostring_string
             tostring_string += " \"}\";\r\n    }"
 
-            string += prop_string + const_string + const_string3 + json_string + tostring_string + "\r\n}"
+            string += prop_string + const_string + const_string3 + json_string + tostring_string
+            string += "\r\n"
+            string += "}\r\n"
+            string += self.split_string + "\r\n"
 
             # 生成文件
-            self._generate_file(tableName, ".java", "", string)
+            self._generate_file(tableName, className+".java", string)
 
     def create_mapper(self, table_info_list):
         """
@@ -220,47 +224,56 @@ class JavaCreator:
             instance_name = CreateUtil.instance_name(tableName)     
 
             # 登录功能
-            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1  
+            addUserLogin = tableName.find("user") > -1 or tableName.find("User") > -1  
 
-            string = "package " + self.package_name + "." + className + ";\r\n"
+            string = self.split_string+ "\r\n"
+            string += "package " + self.package_name + "." + className + ";\r\n"
             string += "import org.apache.ibatis.annotations.*;\r\n\r\n"
             string += "import java.util.List;\r\n"
             string += "import org.springframework.stereotype.Component;\r\n\r\n"
-            string += "@Component(value = \"" + className + "Mapper\")\r\n"
+            string += "@Component(value = \"Api" + className + "Mapper\")\r\n"
             string += "@Mapper\r\n"
-            string += "public interface " + className + "Mapper {\r\n\r\n"
-            string += format(self.split_string)
+            string += "public interface Api" + className + "Mapper {\r\n"
             
-            contentString = "\r\n"
+            contentString = ""
             if addUserLogin:
                 contentString += "\r\n"
-                contentString += '    @SelectProvider(type = {}Provider.class, method = "getUserByName")\r\n'.format(className)
+                contentString += '    @SelectProvider(type = {}Provider.class, method = "getUserByName")\r\n'.format("Api"+className)
                 contentString += '    public List<{}> getUserByName(@Param("name") String name, @Param("password") String password);\r\n'.format(className)
                 
             contentString += "\r\n"
-            contentString += "     @SelectProvider(type = " + className + "Provider.class, method = \"selectAll\")\r\n"
+            contentString += "    @SelectProvider(type = Api" + className + "Provider.class, method = \"selectAll\")\r\n"
             contentString += "    public List<" + className + "> list(@Param(\"page\") Integer page, @Param(\"size\") Integer size);\r\n"
             contentString += "\r\n"
-            contentString += "    @SelectProvider(type = " + className + "Provider.class, method = \"selectOne\")\r\n"
+            contentString += "    @SelectProvider(type = Api" + className + "Provider.class, method = \"selectOne\")\r\n"
             contentString += "    public " + className + " show(@Param(\"id\") Long id);\r\n"
             contentString += "\r\n"
-            contentString += "    @InsertProvider(type = " + className + "Provider.class, method = \"insertOne\")\r\n"
+            contentString += "    @InsertProvider(type = Api" + className + "Provider.class, method = \"insertOne\")\r\n"
             contentString += "    @Options(useGeneratedKeys = true, keyProperty = \"id\", keyColumn = \"id\")//加入该注解可以保持对象后，查看对象插入id\r\n"
             contentString += "    public Boolean insert(" + className + " " + instance_name + ");\r\n"
             contentString += "\r\n"
-            contentString += "    @DeleteProvider(type = " + className + "Provider.class, method = \"deleteOne\")\r\n"
+            contentString += "    @DeleteProvider(type = Api" + className + "Provider.class, method = \"deleteOne\")\r\n"
             contentString += "    public Boolean delete(@Param(\"id\") Long id);\r\n"
             contentString += "\r\n"
-            contentString += "    @UpdateProvider(type = " + className + "Provider.class, method = \"updateOne\")\r\n"
+            contentString += "    @UpdateProvider(type = Api" + className + "Provider.class, method = \"updateOne\")\r\n"
             contentString += "    public Boolean update(" + className + " " + instance_name + ");\r\n"
             contentString += "\r\n"
             
             string += contentString
-            string += "{0}\r\n".format(self.split_string)
             string += "}\r\n"
+            string += "{0}\r\n".format(self.split_string)
+            
+            string2 = "package " + self.package_name + "." + className + ";\r\n"
+            string2 += "import org.apache.ibatis.annotations.*;\r\n\r\n"
+            string2 += "import org.springframework.stereotype.Component;\r\n\r\n"
+            string2 += "@Component(value = \"Custom" + className + "Mapper\")\r\n"
+            string2 += "@Mapper\r\n"
+            string2 += "public interface Custom" + className + "Mapper {\r\n\r\n"
+            string2 += "}\r\n"
             
             # 生成文件
-            self._generate_file(tableName, "Mapper.java", contentString, string)
+            self._generate_file(tableName, "Api" + className + "Mapper.java", string, force=True)
+            self._generate_file(tableName, "Custom" + className + "Mapper.java", string2)
 
     def create_provider(self, table_info_list):
         """
@@ -282,16 +295,17 @@ class JavaCreator:
             instance_name = CreateUtil.instance_name(tableName)
 
             # 登录功能
-            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1 
+            addUserLogin = tableName.find("user") > -1 or tableName.find("User") > -1 
 
             # 字段属性列表
             columns = tableInfo["columns"] 
 
-            string = "package " + self.package_name + "." + className + ";\r\n"
+            string = self.split_string+ "\r\n"
+            string += "package " + self.package_name + "." + className + ";\r\n"
             string += "\r\n"
             string += "import java.util.Map;\r\n"
             string += "\r\n"
-            string += "public class " + className + "Provider {\r\n"
+            string += "public class Api" + className + "Provider {\r\n"
             string += "\r\n"
             string += self.split_string
 
@@ -403,11 +417,18 @@ class JavaCreator:
             contentString += "    }\r\n"
             
             string += contentString
-            string += "{0}\r\n".format(self.split_string)
             string += "}\r\n"
+            string += "{0}\r\n".format(self.split_string)
+            
+            string2 = "package " + self.package_name + "." + className + ";\r\n"
+            string2 += "\r\n"
+            string2 += "public class Custom" + className + "Provider {\r\n"
+            string2 += "\r\n"
+            string2 += "}\r\n"
             
             # 生成文件
-            self._generate_file(tableName, "Provider.java", contentString, string)
+            self._generate_file(tableName, "Api" + className + "Provider.java", string, force=True)
+            self._generate_file(tableName, "Custom" + className + "Provider.java", string2)
 
     def create_service(self, table_info_list):
         """
@@ -429,9 +450,10 @@ class JavaCreator:
             instance_name = CreateUtil.instance_name(tableName)      
 
             # 登录功能
-            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1
+            addUserLogin = tableName.find("user") > -1 or tableName.find("User") > -1
 
-            string = "package " + self.package_name + "." + className + ";\r\n"
+            string = self.split_string+ "\r\n"
+            string += "package " + self.package_name + "." + className + ";\r\n"
             string += "\r\n"
             string += "import java.sql.Timestamp;\r\n"
             string += "import java.util.*;\r\n"
@@ -440,25 +462,28 @@ class JavaCreator:
             string += "import org.springframework.web.bind.annotation.*;\r\n"
             string += "import org.springframework.stereotype.Service;\r\n"
             string += "\r\n"
-            string += "import " + self.package_name + ".Utils.JWTUtils;\r\n"
+            if addUserLogin:
+                string += "import " + self.package_name + ".Utils.JWTUtils;\r\n"
+            string += "import " + self.package_name + ".DBUtil.DbService;\r\n"
             string += "import " + self.package_name + ".Utils.ResponseService;\r\n"
             string += "import " + self.package_name + ".Utils.ResponseStatus;\r\n"
             string += "@Service\r\n"
-            string += "public class " + className + "Service {\r\n"
+            string += "public class Api" + className + "Service {\r\n"
             string += "\r\n"
             string += "    @Autowired\r\n"
-            string += "    private " + className + "Mapper " + instance_name + "Mapper; \r\n"
+            string += "    private DbService dbService; \r\n"
+            string += "\r\n"
+            string += "    @Autowired\r\n"
+            string += "    private Api" + className + "Mapper api" + className + "Mapper; \r\n"
             string += "\r\n"
             string += "    @Autowired\r\n"
             string += "    private ResponseService responseService; \r\n"
-            string += "\r\n"
-            string += self.split_string
             
             contentString = ""
             if addUserLogin:
-                contentString += "\r\n    // 登录接口\r\n"
+                contentString += "    // 登录接口\r\n"
                 contentString += "    public HashMap<String, Object> login(" + className + " " + instance_name + ") {\r\n"
-                contentString += "        List<{}> findUsers = {}Mapper.getUserByName({}.getName(), {}.getPassword());\r\n".format(className, instance_name, instance_name, instance_name)
+                contentString += "        List<{}> findUsers = {}Mapper.getUserByName({}.getName(), {}.getPassword());\r\n".format(className, "api" + className, instance_name, instance_name)
                 contentString += "\r\n"
                 contentString += "        if (findUsers.size() == 0) {\r\n"
                 contentString += "            ResponseService responseService = new ResponseService();\r\n"
@@ -472,11 +497,11 @@ class JavaCreator:
                 contentString += "\r\n"
                 contentString += "            // 更新用户\r\n"
                 contentString += "            Timestamp t = new Timestamp((new Date()).getTime());\r\n"
-                contentString += "            String token = JWTUtils.getToken(findUser.getId(), findUser.getName(), findUser.getPassword());\r\n".format(instance_name, instance_name, instance_name)
+                contentString += "            String token = JWTUtils.getToken(findUser.getId(), findUser.getName(), findUser.getPassword());\r\n"
                 contentString += "\r\n"
                 contentString += "            findUser.setToken(token);\r\n"
                 contentString += "            findUser.setUpdateAt(t);\r\n"
-                contentString += "            Boolean status = {}Mapper.update(findUser);\r\n".format(instance_name)
+                contentString += "            Boolean status = {}Mapper.update(findUser);\r\n".format("api" + className)
                 contentString += "            findUser.setPassword(null);\r\n"
                 contentString += "\r\n"
                 contentString += "            HashMap<String, Object> map = responseService.getReturnResponse(status ? ResponseStatus.success : ResponseStatus.error, findUser);\r\n"
@@ -486,29 +511,43 @@ class JavaCreator:
                 contentString += "\r\n"
                 
             contentString += "\r\n    // 获取列表\r\n"
-            contentString += "    public HashMap<String, Object> list(int page, int size, @Validated " + className + " " + instance_name + ") {\r\n"
+            contentString += "    public HashMap<String, Object> list(Map<String, Object> param) {\r\n"
             contentString += "        \r\n"
-            contentString += "        List<" + className + "> list = " + instance_name + "Mapper.list(page, size);\r\n"
+            contentString += "        // 获取总数量\r\n"
+            contentString += "        int total = 0;//dbService.getCount(\"" + tableName + "\");\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success,list);\r\n"
+            contentString += "        int page = 0;\r\n"
+            contentString += "        int size = 10;\r\n"
+            contentString += "        if (param.get(\"page\") != null) {\r\n"
+            contentString += "            page = Integer.parseInt((String) param.get(\"page\"));\r\n"
+            contentString += "        }\r\n"
+            contentString += "        if (param.get(\"size\") != null) {\r\n"
+            contentString += "            size = Integer.parseInt((String) param.get(\"size\"));\r\n"
+            contentString += "        }\r\n"
+            contentString += "        \r\n"
+            contentString += "        " + className + " " + instance_name + " = new " + className + "();\r\n"
+            contentString += "        " + instance_name + ".fromMap(param);\r\n"
+            contentString += "        \r\n"
+            contentString += "        List<" + className + "> list = api" + className + "Mapper.list(page, size);\r\n"
+            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success, list, total);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n"
             contentString += "\r\n"
             contentString += "    // 删除\r\n"
             contentString += "    public HashMap<String, Object> delete(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        " + instance_name + "Mapper.delete(id);\r\n"
+            contentString += "        Boolean status = api" + className + "Mapper.delete(id);\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success,null);\r\n"
+            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(status ? ResponseStatus.success : ResponseStatus.error, null);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n"
             contentString += "\r\n"
             contentString += "    // 查看详情\r\n"
             contentString += "    public HashMap<String, Object> show(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        " + className + " " + instance_name + " = " + instance_name + "Mapper.show(id);\r\n"
+            contentString += "        " + className + " " + instance_name + " = api" + className + "Mapper.show(id);\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success," + instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(ResponseStatus.success, " + instance_name + ");\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n"
             contentString += "\r\n"
@@ -522,11 +561,11 @@ class JavaCreator:
             contentString += "        if (id != null && id > 0) {\r\n"
             contentString += "            // * 修改 */\r\n"
             contentString += "            " + instance_name + ".setUpdateAt(t);\r\n"
-            contentString += "            status = " + instance_name + "Mapper.update(" + instance_name + ");\r\n"
+            contentString += "            status = api" + className + "Mapper.update(" + instance_name + ");\r\n"
             contentString += "        } else {\r\n"
             contentString += "            // * 添加 */\r\n"
             contentString += "            " + instance_name + ".setCreateAt(t);\r\n"
-            contentString += "            status = " + instance_name + "Mapper.insert(" + instance_name + ");\r\n"
+            contentString += "            status = api" + className + "Mapper.insert(" + instance_name + ");\r\n"
             contentString += "        }\r\n"
             contentString += "        \r\n"
             contentString += "        HashMap<String, Object> map = responseService.getReturnResponse(status ? ResponseStatus.success : ResponseStatus.error," + instance_name + ");\r\n"
@@ -535,11 +574,34 @@ class JavaCreator:
             contentString += "\r\n"
             
             string += contentString
-            string += "{0}\r\n".format(self.split_string)
             string += "}\r\n"
+            string += "{0}\r\n".format(self.split_string)
+            
+            string2 = "package " + self.package_name + "." + className + ";\r\n"
+            string2 += "\r\n"
+            string2 += "import java.sql.Timestamp;\r\n"
+            string2 += "import java.util.*;\r\n"
+            string2 += "import org.springframework.beans.factory.annotation.Autowired;\r\n"
+            string2 += "import org.springframework.validation.annotation.Validated;\r\n"
+            string2 += "import org.springframework.web.bind.annotation.*;\r\n"
+            string2 += "import org.springframework.stereotype.Service;\r\n"
+            string2 += "\r\n"
+            string2 += "import " + self.package_name + ".Utils.ResponseService;\r\n"
+            string2 += "import " + self.package_name + ".Utils.ResponseStatus;\r\n"
+            string2 += "@Service\r\n"
+            string2 += "public class Custom" + className + "Service {\r\n"
+            string2 += "\r\n"
+            string2 += "    @Autowired\r\n"
+            string2 += "    private Custom" + className + "Mapper Custom" + className + "Mapper; \r\n"
+            string2 += "\r\n"
+            string2 += "    @Autowired\r\n"
+            string2 += "    private ResponseService responseService; \r\n"
+            string2 += "\r\n"
+            string2 += "}\r\n"
 
             # 生成文件
-            self._generate_file(tableName, "Service.java", contentString, string)
+            self._generate_file(tableName, "Api" + className + "Service.java", string, force=True)
+            self._generate_file(tableName, "Custom" + className + "Service.java", string2)
 
     def create_controller(self, table_info_list):
         """
@@ -561,7 +623,7 @@ class JavaCreator:
             instance_name = CreateUtil.instance_name(tableName)    
 
             # 登录功能
-            addUserLogin = tableName.find("u") > -1 or tableName.find("User") > -1
+            addUserLogin = tableName.find("user") > -1 or tableName.find("User") > -1
 
             string = "package " + self.package_name + "." + className + ";\r\n\r\n"
             string += "import java.util.*;\r\n"
@@ -570,12 +632,15 @@ class JavaCreator:
             string += "import org.springframework.validation.annotation.Validated;\r\n"
             string += "import org.springframework.web.bind.annotation.*;\r\n"
             string += "\r\n"
-            string += "@RequestMapping(\"/" + instance_name + "\")\r\n"
+            string += "@RequestMapping(\"/" + tableName + "\")\r\n"
             string += "@RestController\r\n"
             string += "public class " + className + "Controller {\r\n"
             string += "\r\n"
             string += "    @Autowired\r\n"
-            string += "    private " + className + "Service " + instance_name + "Service; \r\n"
+            string += "    private Api" + className + "Service api" + className + "Service; \r\n"
+            string += "\r\n"
+            string += "    @Autowired\r\n"
+            string += "    private Custom" + className + "Service custom" + className + "Service; \r\n"
             string += "\r\n"
             string += self.split_string
                 
@@ -585,7 +650,7 @@ class JavaCreator:
                 contentString += "    @PostMapping(\"/login\")\r\n"
                 contentString += "    public HashMap<String, Object> login(@RequestBody " + className + " " + instance_name + ") {\r\n"
                 contentString += "\r\n"
-                contentString += "        HashMap<String, Object> map = {}Service.login({});\r\n".format(instance_name, instance_name)
+                contentString += "        HashMap<String, Object> map = api{}Service.login({});\r\n".format(className, instance_name)
                 contentString += "        return map;\r\n"
                 contentString += "    }\r\n"
                 
@@ -593,33 +658,21 @@ class JavaCreator:
             contentString += "    @GetMapping\r\n"
             contentString += "    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n"
             contentString += "        \r\n"
-            contentString += "        int page = 0;\r\n"
-            contentString += "        int size = 10;\r\n"
-            contentString += "        if (param.get(\"page\") != null) {\r\n"
-            contentString += "            page = Integer.parseInt((String) param.get(\"page\"));\r\n"
-            contentString += "        }\r\n"
-            contentString += "        if (param.get(\"size\") != null) {\r\n"
-            contentString += "            size = Integer.parseInt((String) param.get(\"size\"));\r\n"
-            contentString += "        }\r\n"
-            contentString += "        \r\n"
-            contentString += "        " + className + " " + instance_name + " = new " + className + "();\r\n"
-            contentString += "        " + instance_name + ".fromMap(param);\r\n"
-            contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.list(page, size, " + instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = api" + className + "Service.list(param);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n\r\n"
             contentString += "    // 删除\r\n"
             contentString += "    @GetMapping(\"/delete/{id}\")\r\n"
             contentString += "    public HashMap<String, Object> delete(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.delete(id);\r\n"
+            contentString += "        HashMap<String, Object> map = api" + className + "Service.delete(id);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n\r\n"
             contentString += "    // 查看详情\r\n"
             contentString += "    @GetMapping(\"/{id}\")\r\n"
             contentString += "    public HashMap<String, Object> show(@PathVariable(\"id\") Long id) {\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.show(id);\r\n"
+            contentString += "        HashMap<String, Object> map = api" + className + "Service.show(id);\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n\r\n"
             contentString += "    // 插入，保存\r\n"
@@ -627,19 +680,39 @@ class JavaCreator:
             contentString += "    @Validated\r\n"
             contentString += "    public HashMap<String, Object> store(@RequestBody " + className + " " + instance_name + ") {\r\n"
             contentString += "        \r\n"
-            contentString += "        HashMap<String, Object> map = " + instance_name + "Service.store(" + instance_name + ");\r\n"
+            contentString += "        HashMap<String, Object> map = api" + className + "Service.store(" + instance_name + ");\r\n"
             contentString += "        return map;\r\n"
             contentString += "    }\r\n"
 
             string += contentString
-            string += "{0}\r\n".format(self.split_string)
+            string += "{0}\r\n\r\n".format(self.split_string)
             string += "}\r\n"
             
             # 生成文件
-            self._generate_file(tableName, "Controller.java", contentString, string)
-
+            self._generate_file1(tableName, "Controller.java", contentString, string)
+            
     # 生成文件或替换文件内容
-    def _generate_file(self, tableName, fileName, replaceString, totalString):
+    def _generate_file(self, tableName, fileName, totalString, force=False):
+        
+        # 产生的类名称
+        className = CreateUtil.camelize(tableName)
+        
+        # 检查文件路径
+        fileDir = self.package_path + className + "/"
+        FileUtil.check_path(fileDir)
+        filePath = fileDir + fileName
+        
+        # 创建文件
+        if force:
+            Log.info("java", "生成："+filePath)
+            FileUtil.write_file(content=totalString, file_path=filePath)
+        else:
+            if FileUtil.path_exists(filePath) == False:
+                Log.info("java", "生成："+filePath)
+                FileUtil.write_file(content=totalString, file_path=filePath)
+        
+    # 生成文件或替换文件内容
+    def _generate_file1(self, tableName, fileName, replaceString, totalString):
         
         # 产生的类名称
         className = CreateUtil.camelize(tableName)

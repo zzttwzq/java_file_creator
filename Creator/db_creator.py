@@ -75,6 +75,7 @@ class DBCreator:
                     "formType": "number",
                     "showTime": 0,
                     "showInSearch": 0,
+                    "showInForm": 0,
                     "required": 0,
                     "sort": "up",
                     "align": "center",
@@ -86,6 +87,7 @@ class DBCreator:
 
                     width = 100
                     showInSearch = 1
+                    showInForm = 1
                     required = 0
                     formType = "text"
                     columnProperty = columInfo[2]
@@ -126,17 +128,22 @@ class DBCreator:
 
                     if len(columInfo) >= 6:
                         required = columInfo[5]
+
+                    if len(columInfo) >= 7:
+                        showInForm = columInfo[6]
                         
                     colums.append({
                         "name": CreateUtil.instance_name(columInfo[0]),
                         "des": columInfo[1],
                         "columnProperty": columInfo[2],
+                        "formType": formType,
+                        "showTime": 0,
+                        "showInSearch": showInSearch,
+                        "showInForm": showInForm,
+                        "required": required,
                         "sort": "up",
                         "align": "left",
                         "width": width,
-                        "formType": formType,
-                        "showInSearch": showInSearch,
-                        "required": required,
                     })
 
                 colums.append({
@@ -146,6 +153,7 @@ class DBCreator:
                     "formType": "date",
                     "showTime": 1,
                     "showInSearch": 1,
+                    "showInForm": 0,
                     "required": 0,
                     "sort": "up",
                     "align": "center",
@@ -157,7 +165,8 @@ class DBCreator:
                     "columnProperty": "DATETIME",
                     "formType": "date",
                     "showTime": 1,
-                    "showInSearch": 0,
+                    "showInSearch": 1,
+                    "showInForm": 0,
                     "required": 0,
                     "sort": "up",
                     "align": "center",
@@ -170,6 +179,7 @@ class DBCreator:
                     "formType": "date",
                     "showTime": 1,
                     "showInSearch": 0,
+                    "showInForm": 0,
                     "required": 0,
                     "sort": "up",
                     "align": "center",

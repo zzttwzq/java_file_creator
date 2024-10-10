@@ -268,6 +268,10 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.0.8
+1. db_creator
+   1. 
+
 #### 1.0.7
 1. db_creator
    1. create_seed 功能
@@ -282,7 +286,7 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 #### 1.0.6
 1. java_creator 
    1. 修复登录jwtbug
-2. admin_creator
+2. admin_creatorasdf
    1. 登录和过期功能
    2. 修复登录bug
 

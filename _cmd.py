@@ -35,6 +35,8 @@ from Creator.uni_creator import UniCreator
 
 # 项目配置文件
 projectEnvPath = "/Users/wuzhiqiang/Documents/GitHub/blog/project.json"
+# projectEnvPath = "/Users/wuzhiqiang/Desktop/mock/project.json"
+# projectEnvPath = "/Users/wuzhiqiang/Documents/GitHub/itest/project.json"
 
 class cmds:
 

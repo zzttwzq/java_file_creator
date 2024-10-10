@@ -80,7 +80,7 @@ class FileUtil:
         @summary: 读取文件内容
         """
         f = open(file_path, 'r', encoding="utf-8")
-        c = f.readlines()
+        c = f.read()
         f.close()
         
         return c
@@ -104,3 +104,8 @@ class FileUtil:
         with open(file_name, 'a') as file:
             file.write(content)
         
+    @staticmethod
+    def delete_file(file_path):
+        sta = FileUtil.path_exists(file_path)
+        if sta:
+            os.remove(file_path)
