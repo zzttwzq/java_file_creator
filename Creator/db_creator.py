@@ -89,6 +89,7 @@ class DBCreator:
                     showInSearch = 1
                     showInForm = 1
                     required = 0
+                    showTime = 0
                     formType = "text"
                     columnProperty = columInfo[2]
 
@@ -109,8 +110,8 @@ class DBCreator:
                         "LONGTEXT": "textArea",
                         "BOOL": "number",
                         "BOOLEAN": "number",
-                        "DATETIME": "time",
-                        "DATE": "time",
+                        "DATETIME": "date",
+                        "DATE": "date",
                         "TIME": "time",
                         "TIMESTAMP": "time",
                     }
@@ -132,12 +133,15 @@ class DBCreator:
                     if len(columInfo) >= 7:
                         showInForm = columInfo[6]
                         
+                    if formType == "date" or formType == "time":
+                        showTime = 1
+                        
                     colums.append({
                         "name": CreateUtil.instance_name(columInfo[0]),
                         "des": columInfo[1],
                         "columnProperty": columInfo[2],
                         "formType": formType,
-                        "showTime": 0,
+                        "showTime": showTime,
                         "showInSearch": showInSearch,
                         "showInForm": showInForm,
                         "required": required,
@@ -186,6 +190,9 @@ class DBCreator:
                     "width": 100,
                 })
         
+                if tableTitle[0][0:1] == "-":
+                    tableTitle[0] = tableTitle[0].replace("-", "")
+        
                 tableList.append({
                     "name": tableTitle[0],
                     "dbName": tableTitle[2],
@@ -194,6 +201,7 @@ class DBCreator:
                     "instanceName": CreateUtil.instance_name(tableTitle[0]),
                     "title": tableTitle[1],
                     "des": tableTitle[1],
+                    "showPage": "",
                     "columns": colums
                 })
 
@@ -263,11 +271,15 @@ class DBCreator:
                 
                 it["createAt"] = DateTimeUtil.now_datetime()
                 
-                res = self.sqlConnection.insert(table_name, it)
+                new_data = {}
+                for k, v in it.items():
+                    new_data[CreateUtil.instance_name(k)] = v
+                
+                res = self.sqlConnection.insert(table_name, new_data)
                 if res == 0:
-                    Log.info(log_tag, "seed已存在：{}".format(it))
+                    Log.info(log_tag, "seed已存在：{}".format(new_data))
                 elif res > 0:
-                    Log.success(log_tag, "seed添加成功：{}".format(it))
+                    Log.success(log_tag, "seed添加成功：{}".format(new_data))
 
     @staticmethod
     def _cmd_error():

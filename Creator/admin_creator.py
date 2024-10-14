@@ -256,6 +256,7 @@ class AdminCreator:
             content += '      pageNumKey="page"\r\n'
             content += '      pageSizeKey="size"\r\n'
             content += '      :pageStart="0"\r\n'
+            content += '      :useCustomForm="false"\r\n'
             content += '      :tableFormWidth="500"\r\n'
             content += '      :listRequest="listRequest"\r\n'
             content += '      :addRequest="addRequest"\r\n'
@@ -549,7 +550,7 @@ class AdminCreator:
             instance_name = CreateUtil.instance_name(tableName)
 
             string += "\r\n    // {0} \r\n".format(classDes)
-            string += "    {0}: `/$".format(constName) + '{BASE_URL}' + "{}`, \r\n".format(tableName)
+            string += "    {0}: `/$".format(constName) + '{BASE_URL}' + "{}`, \r\n".format(instance_name)
             Log.info("api", "创建："+tableName)
 
         self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+appName)

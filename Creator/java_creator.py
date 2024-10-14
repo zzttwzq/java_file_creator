@@ -202,7 +202,7 @@ class JavaCreator:
             string += self.split_string + "\r\n"
 
             # 生成文件
-            self._generate_file(tableName, className+".java", string)
+            self._generate_file(tableName, className+".java", string, force=True)
 
     def create_mapper(self, table_info_list):
         """
@@ -592,7 +592,7 @@ class JavaCreator:
             string2 += "public class Custom" + className + "Service {\r\n"
             string2 += "\r\n"
             string2 += "    @Autowired\r\n"
-            string2 += "    private Custom" + className + "Mapper Custom" + className + "Mapper; \r\n"
+            string2 += "    private Custom" + className + "Mapper custom" + instance_name + "Mapper; \r\n"
             string2 += "\r\n"
             string2 += "    @Autowired\r\n"
             string2 += "    private ResponseService responseService; \r\n"
@@ -632,7 +632,7 @@ class JavaCreator:
             string += "import org.springframework.validation.annotation.Validated;\r\n"
             string += "import org.springframework.web.bind.annotation.*;\r\n"
             string += "\r\n"
-            string += "@RequestMapping(\"/" + tableName + "\")\r\n"
+            string += "@RequestMapping(\"/" + instance_name + "\")\r\n"
             string += "@RestController\r\n"
             string += "public class " + className + "Controller {\r\n"
             string += "\r\n"
