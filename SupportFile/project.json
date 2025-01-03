@@ -695,6 +695,7 @@
                 ]
             }
         ],
+        "tableGroups": [],
         "tableListOld": [
             {
                 "name": "user",

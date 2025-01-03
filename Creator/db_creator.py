@@ -192,6 +192,8 @@ class DBCreator:
         
                 if tableTitle[0][0:1] == "-":
                     tableTitle[0] = tableTitle[0].replace("-", "")
+                if tableTitle[0][0:1] == "+":
+                    tableTitle[0] = tableTitle[0].replace("+", "")
         
                 tableList.append({
                     "name": tableTitle[0],

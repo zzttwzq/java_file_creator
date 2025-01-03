@@ -265,8 +265,9 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 ## uni 目录中的配置
 #### 
 
-
 ## 更新内容
+#### 1.1.1
+1. 更新 admin_creator page方法
 
 #### 1.1.0
 1. JavaCreator 类名错误

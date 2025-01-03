@@ -693,9 +693,10 @@ class JavaCreator:
             
     # 生成文件或替换文件内容
     def _generate_file(self, tableName, fileName, totalString, force=False):
-        
+
         # 产生的类名称
         className = CreateUtil.camelize(tableName)
+        # print(">>> {}".format(className))
         
         # 检查文件路径
         fileDir = self.package_path + className + "/"
