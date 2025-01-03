@@ -266,6 +266,12 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 #### 
 
 ## 更新内容
+
+#### 1.1.2
+1. 修复查询 java page错误
+2. 添加 java total 计数
+3. admin 路由不重复添加
+
 #### 1.1.1
 1. 更新 admin_creator page方法
 

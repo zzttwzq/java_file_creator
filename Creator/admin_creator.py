@@ -256,7 +256,7 @@ class AdminCreator:
             content += '      :tableFormList="formList"\r\n'
             content += '      pageNumKey="page"\r\n'
             content += '      pageSizeKey="size"\r\n'
-            content += '      :pageStart="0"\r\n'
+            content += '      :pageStart="1"\r\n'
             content += '      :tableFormWidth="500"\r\n'
             content += '      :listRequest="listRequest"\r\n'
             content += '      :addRequest="addRequest"\r\n'
@@ -366,8 +366,8 @@ class AdminCreator:
             mixin += "    },\r\n"
             mixin += "{0}".format(relateMethod)
             mixin += '    onRequestSuccess(type, res, refreshList) {\r\n'
-            mixin += '      console.log(this.TableRequestType.onList == type);\r\n'
-            mixin += '      console.log(">onRequestSuccess", type, res);\r\n'
+            mixin += '      this.log(this.TableRequestType.onList == type);\r\n'
+            mixin += '      this.log(">onRequestSuccess", type, res);\r\n'
             mixin += '      switch (type) {\r\n'
             mixin += '        case this.TableRequestType.onList:\r\n'
             mixin += '          // res.map((it) => {\r\n'
@@ -390,7 +390,7 @@ class AdminCreator:
             mixin += '      }\r\n'
             mixin += '    },\r\n'
             mixin += '    onRequestError(type, res) {\r\n'
-            mixin += '      console.log(">onRequestError", type, res);\r\n'
+            mixin += '      this.log(">onRequestError", type, res);\r\n'
             mixin += '      switch (type) {\r\n'
             mixin += '        case this.TableRequestType.onList:\r\n'
             mixin += '          break;\r\n'
@@ -408,77 +408,76 @@ class AdminCreator:
             mixin += '      }\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillSearch(params, pagenation) {\r\n'
-            mixin += '      console.log(">onWillSearch", params, pagenation);\r\n'
+            mixin += '      this.log(">onWillSearch", params, pagenation);\r\n'
             mixin += '    },\r\n'
             mixin += '    onSearch(params) {\r\n'
-            mixin += '      console.log(">onSearch", params);\r\n'
+            mixin += '      this.log(">onSearch", params);\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onDidSearch() {\r\n'
-            mixin += '      console.log(">onDidSearch");\r\n'
+            mixin += '      this.log(">onDidSearch");\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillGetList(params) {\r\n'
-            mixin += '      params["test"] = 10;\r\n'
-            mixin += '      console.log(">onWillGetList", params);\r\n'
+            mixin += '      this.log(">onWillGetList", params);\r\n'
             mixin += '    },\r\n'
             mixin += '    onGetList(params) {\r\n'
-            mixin += '      console.log(">onGetList", params);\r\n'
+            mixin += '      this.log(">onGetList", params);\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onDidGetList() {\r\n'
-            mixin += '      console.log(">onDidGetList");\r\n'
+            mixin += '      this.log(">onDidGetList");\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillPopAdd() {\r\n'
-            mixin += '      console.log(">onWillPopAdd");\r\n'
+            mixin += '      this.log(">onWillPopAdd");\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillAdd(params) {\r\n'
-            mixin += '      console.log("onWillAdd", params);\r\n'
+            mixin += '      this.log("onWillAdd", params);\r\n'
             mixin += '    },\r\n'
             mixin += '    onAdd(params) {\r\n'
-            mixin += '      console.log(">onAdd", params);\r\n'
+            mixin += '      this.log(">onAdd", params);\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onDidAdd() {\r\n'
-            mixin += '      console.log(">onDidAdd");\r\n'
+            mixin += '      this.log(">onDidAdd");\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillPopEdit() {\r\n'
-            mixin += '      console.log(">onWillPopEdit");\r\n'
+            mixin += '      this.log(">onWillPopEdit");\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillEditDetail(params) {\r\n'
-            mixin += '      console.log(">onWillEditDetail", params);\r\n'
+            mixin += '      this.log(">onWillEditDetail", params);\r\n'
             mixin += '    },\r\n'
             mixin += '    onEditDetail(params) {\r\n'
-            mixin += '      console.log(">onEditDetail", params);\r\n'
+            mixin += '      this.log(">onEditDetail", params);\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onDidEditDetail() {\r\n'
-            mixin += '      console.log(">onDidEditDetail");\r\n'
+            mixin += '      this.log(">onDidEditDetail");\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillEdit(params) {\r\n'
-            mixin += '      console.log(">onWillEdit", params);\r\n'
+            mixin += '      this.log(">onWillEdit", params);\r\n'
             mixin += '    },\r\n'
             mixin += '    onEdit(params) {\r\n'
-            mixin += '      console.log(">onEdit", params);\r\n'
+            mixin += '      this.log(">onEdit", params);\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onDidEdit() {\r\n'
-            mixin += '      console.log(">onDidEdit");\r\n'
+            mixin += '      this.log(">onDidEdit");\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillPopDelete() {\r\n'
-            mixin += '      console.log(">onWillPopDelete");\r\n'
+            mixin += '      this.log(">onWillPopDelete");\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onWillDelete(params) {\r\n'
-            mixin += '      console.log(">onWillDelete", params);\r\n'
+            mixin += '      this.log(">onWillDelete", params);\r\n'
             mixin += '    },\r\n'
             mixin += '    onDelete(params) {\r\n'
-            mixin += '      console.log(">onDelete", params);\r\n'
+            mixin += '      this.log(">onDelete", params);\r\n'
             mixin += '      return true;\r\n'
             mixin += '    },\r\n'
             mixin += '    onDidDelete() {\r\n'
-            mixin += '      console.log("onDidDelete");\r\n'
+            mixin += '      this.log("onDidDelete");\r\n'
             mixin += '    },\r\n'
             mixin += '    onFormPrefixClick() {\r\n'
             mixin += '\r\n'
@@ -487,7 +486,7 @@ class AdminCreator:
             mixin += '\r\n'
             mixin += '    },\r\n'
             mixin += '    log(title, msg) {\r\n'
-            mixin += '      console.log(`[ProjectCategory->${title}]`, msg ?? "");\r\n'
+            mixin += '       0 == 0 && console.log(`(*)[' + className + '->${title}]`, msg ?? "");\r\n'
             mixin += '    },\r\n'
             mixin += "  },\r\n"
             mixin += "};\r\n"
@@ -498,6 +497,10 @@ class AdminCreator:
     def create_routers(self, tableInfos):
         Log.blank()
         Log.info("AdminRouters", "创建 routers")
+
+        f1 = open(self.routerPath, "r")
+        content = f1.readlines()
+        content = "".join(content)
 
         string = ''
         for tableInfo in tableInfos:
@@ -518,21 +521,23 @@ class AdminCreator:
 
             tableKeys = tableInfo.keys()
 
-            string += "            {\r\n"
-            string += "                path: \"/{0}\",\r\n".format(
-                instance_name)
-            string += "                name: \"{0}\",\r\n".format(tableTitle)
-            string += "                des: \"{0}\",\r\n".format(classDes)
-            string += "                meta: {\r\n"
-            if "icon" in tableKeys:
-                string += "                    icon: \"{0}\"\r\n".format(
-                    tableInfo["icon"])
-            else:
-                string += "                    icon: \"user\"\r\n"
-            string += "                },\r\n"
-            string += "                component: () => import (\"@/pages/{0}/\"),\r\n".format(
-                className)
-            string += "            },\r\n"
+            route = 'path: "/{}",'.format(instance_name)
+            if content.find(route) == -1:
+                string += "      {\r\n"
+                string += "        path: \"/{0}\",\r\n".format(
+                    instance_name)
+                string += "        name: \"{0}\",\r\n".format(tableTitle)
+                string += "        des: \"{0}\",\r\n".format(classDes)
+                string += "        meta: {\r\n"
+                if "icon" in tableKeys:
+                    string += "          icon: \"{0}\"\r\n".format(
+                        tableInfo["icon"])
+                else:
+                    string += "          icon: \"user\"\r\n"
+                string += "        },\r\n"
+                string += "        component: () => import (\"@/pages/{0}/\"),\r\n".format(
+                    className)
+                string += "      },\r\n"
 
             self._generate_file(self.routerPath, "\r\n" + string, "", log_type=3, log_prefix="router", log_txt="创建："+instance_name)
 
