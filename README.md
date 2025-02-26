@@ -267,6 +267,10 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.1.3
+1. admin page 修改为 1 开始
+2. 修复查询 java page错误 忘记加上 page * size
+
 #### 1.1.2
 1. 修复查询 java page错误
 2. 添加 java total 计数

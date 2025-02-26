@@ -116,7 +116,7 @@ class AdminCreator:
                     relateMethod += '    async get{0}List() {1} \r\n'.format(relateClassName, '{')
                     relateMethod += '      let data = await get{0}({1} "page": 0, "size": 100000 {2});\r\n'.format(relateClassName, '{', '}')
                     relateMethod += '      // 转换select options 数据\r\n'
-                    relateMethod += '      data = data.map(v => {\r\n'
+                    relateMethod += '      data = data.data.map(v => {\r\n'
                     relateMethod += '        return {\r\n'
                     relateMethod += '          "label": v["name"] != undefined ? v["name"] : v["title"],\r\n'
                     relateMethod += '          "value": v["id"],\r\n'

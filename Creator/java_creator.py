@@ -547,6 +547,7 @@ class JavaCreator:
             contentString += "        if (param.get(\"size\") != null) {\r\n"
             contentString += "            size = Integer.parseInt((String) param.get(\"size\"));\r\n"
             contentString += "        }\r\n"
+            contentString += "        page = page * size;\r\n"
             contentString += "        \r\n"
             contentString += "        " + className + " " + instance_name + " = new " + className + "();\r\n"
             contentString += "        " + instance_name + ".fromMap(param);\r\n"
