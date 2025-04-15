@@ -4,6 +4,10 @@ Log/*
 dist/*
 Core/__pycache__/*
 Creator/__pycache__/*
+__init__.py
+
 Core/.DS_Store
 Creator/.DS_Store
 Backup/*
+*.pyc
+/SupportFile/*
