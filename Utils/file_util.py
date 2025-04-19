@@ -51,6 +51,26 @@ class FileUtil:
             return True
         else:
             return False
+        
+    @staticmethod
+    def rename(old, new):
+        """
+        @summary: 重新命名文件
+        @param old: 旧文件路径
+        @param new: 新文件路径
+        """
+        
+        os.rename(old, new)
+    
+    @staticmethod
+    def create_dir(path):
+        """
+        @summary: 生成文件夹
+        @param path: 文件夹路径
+        """
+        
+        if os.path.exists(path) == False:
+            os.makedirs(path)
     
     @staticmethod
     def pack_dir(sourcePath, storePath):

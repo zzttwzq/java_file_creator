@@ -1,8 +1,29 @@
 import json
 
 from Utils.mysql_util import MySqlConfig
+from Utils.file_util import FileUtil
+from Utils.log_util import Log
 
 class CreateUtil:
+    @staticmethod
+    def get_work_config():
+        """
+        @summary: 获取creator工作信息
+        @return: map 对应的数据
+        """
+
+        path = ".work.json"
+        if FileUtil.path_exists(path):
+            f = open(path, encoding='utf-8')
+            c = f.readlines()
+            f.close()
+            c = ''.join(c)
+            d = json.loads(c)
+
+            return d
+        else:
+            FileUtil.check_path(path)
+            return {}
     
     @staticmethod
     def get_config_info(path="project.json"):
@@ -12,42 +33,23 @@ class CreateUtil:
         @return: list 对应的表信息数组
         """
 
-        f = open(path, encoding='utf-8')
-        c = f.readlines()
-        f.close()
-        c = ''.join(c)
-        d = json.loads(c)
+        if FileUtil.path_exists(path):
+            try:
+                f = open(path, encoding='utf-8')
+                c = f.readlines()
+                f.close()
+                c = ''.join(c)
+                d = json.loads(c)
+                return d
+            except e:
+                Log.error("create_util",f"{e}")
+                return {}
 
-        return d
+        else:
+            return {}
     
     @staticmethod
-    def get_tableInfo_width_names(tableInfo, names):
-        """
-        @summary: 根据输入的表名字符串，获取对应的表信息数组
-        @param tableInfo: 配置信息
-        @param names: 输入的表名字符串
-        @return: list 对应的表信息数组
-        """
-
-        tableInfoList = []
-        nameList = names.split(",")
-
-        if names == "-all":
-            nameList = []
-
-        # 获取数据表列表
-        tableList = tableInfo["db"]["tableList"]
-        for tableInfo in tableList:
-            if len(nameList) == 0:
-                tableInfoList.append(tableInfo)
-            else:
-                if tableInfo["name"] in nameList:
-                    tableInfoList.append(tableInfo)
-
-        return tableInfoList
-    
-    @staticmethod
-    def get_mysql_config(projectInfo):
+    def get_mysql_config(projectInfo, isLocal=True):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param projectInfo: 配置信息
@@ -55,10 +57,16 @@ class CreateUtil:
         """
         
         config = MySqlConfig()
-        config.host = projectInfo["db"]["host"]
-        config.port = projectInfo["db"]["port"]
-        config.user = projectInfo["db"]["user"]
-        config.passwd = projectInfo["db"]["password"]
+        if isLocal:
+            config.host = projectInfo["db"]["local_host"]
+            config.port = projectInfo["db"]["local_port"]
+            config.user = projectInfo["db"]["local_user"]
+            config.passwd = projectInfo["db"]["local_password"]
+        else:
+            config.host = projectInfo["db"]["server_host"]
+            config.port = projectInfo["db"]["server_port"]
+            config.user = projectInfo["db"]["server_user"]
+            config.passwd = projectInfo["db"]["server_password"]
         config.char_set = projectInfo["db"]["charSet"]
         
         return config
@@ -110,7 +118,7 @@ class CreateUtil:
         return className[:1].lower() + className[1:]
 
     @staticmethod
-    def get_tables(projectInfo, names):
+    def get_tableInfo_width_names(projectInfo, names):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param tableInfo: 配置信息
@@ -124,7 +132,10 @@ class CreateUtil:
             nameList = []
         
         # 获取数据表列表
-        tableList = projectInfo["db"]["tableList"]
+        tableListPath = projectInfo["path"] + "_Temp" + "/tableList.json"
+        tableList = FileUtil.read_file(tableListPath)
+        tableList = json.loads(tableList)
+
         for t in tableList:
             if names == "-all":
                 tableInfoList.append(t)

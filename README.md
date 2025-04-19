@@ -1,6 +1,31 @@
 # java_file_creator
 快速生成 springboot下的java curd文件，admin文件，uniapp文件
 
+# 初始化准备
+## 1. 安装brew
+```sh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+## 2. 安装python
+```sh
+# 安装python
+brew reinstall python@3.13  
+
+# 创建虚拟环境
+python3 -m venv myenv
+source myenv/bin/activate # 激活环境（提示符前显示 (myenv)）
+
+# 安装库
+pip3 install -r requirements.txt
+pip3 install pymysql dbutils
+```
+
+## 3. 安装python
+```sh
+```
+
+
 ## 使用
 | 命令头  | 命令1                  | 命令2                                                   | 参数             |
 | ------- | ---------------------- | ------------------------------------------------------- | ---------------- |
@@ -266,6 +291,20 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 #### 
 
 ## 更新内容
+
+#### 1.2.0
+1. 目标目录位置放在 .work.json 文件中 添加 path 路径字段，dbSource 数据库位置字段 local是本地，online线上
+2. 修改结构，在目标目录输出 _BackUp/(备份之前生成内容)、 _Log/(存放log日志，sql日志)、 _Temp/(存放tableinfo内容)；不再存放table_info_old内容
+3. 数据库字段采用驼峰首字母小写
+4. java_creator 输出 DAO，Controller，Repository3个文件
+5. admin_creator 修复部分bug
+6. 新增SupportFile 文件夹，后续输出文件可以用这个
+7. 修改Utils支持文件
+
+#### 1.1.4
+1. 日志会到项目文件夹 _Log/ 中
+2. 备份会到项目文件夹 _BackUp/ 中
+2. schema生成的tableList会到项目文件夹 _Temp/ 中
 
 #### 1.1.3
 1. admin page 修改为 1 开始

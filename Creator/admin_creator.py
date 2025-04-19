@@ -16,14 +16,14 @@ class AdminCreator:
     split_string = "    //### 自动生成 ###"
 
     @staticmethod
-    def create(tableInfo, mode, names):
+    def create(info, mode, names):
         adminCreator = AdminCreator()
 
         # ------------ 准备路径信息
-        adminCreator.routerPath = tableInfo["path"] + tableInfo["admin"]["routerPath"]
-        adminCreator.apiPath = tableInfo["path"] + tableInfo["admin"]["apiPath"]
-        adminCreator.pagePath = tableInfo["path"] + tableInfo["admin"]["pagePath"]
-        adminCreator.requestPath = tableInfo["path"] + tableInfo["admin"]["requestPath"]
+        adminCreator.routerPath = info["path"] + info["admin"]["routerPath"]
+        adminCreator.apiPath = info["path"] + info["admin"]["apiPath"]
+        adminCreator.pagePath = info["path"] + info["admin"]["pagePath"]
+        adminCreator.requestPath = info["path"] + info["admin"]["requestPath"]
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
         if not FileUtil.path_exists(adminCreator.pagePath):
             Log.error("admin", "源目录不存在，请指定源目录")
@@ -34,10 +34,10 @@ class AdminCreator:
             "admin", "================ 正在为`{0}`生成admin文件 ================".format(names))
 
         # 备份目录
-        FileUtil.pack_dir(tableInfo["path"] + tableInfo["admin"]["adminSrcPath"], tableInfo["admin"]["backupPath"])
+        FileUtil.pack_dir(info["path"] + info["admin"]["srcPath"], info["path"] + info["backUpPath"] + "/admin")
 
         # ------------ 执行操作
-        tableList = CreateUtil.get_tableInfo_width_names(tableInfo, names)
+        tableList = CreateUtil.get_tableInfo_width_names(info, names)
 
         if len(tableList) == 0:
             Log.error(
@@ -54,7 +54,7 @@ class AdminCreator:
             adminCreator.clearDir()
         elif mode == "-n" or mode == "-all":
             adminCreator.create_routers(tableList)
-            adminCreator.create_apis(tableInfo, tableList)
+            adminCreator.create_apis(info, tableList)
             adminCreator.create_requests(tableList)
             adminCreator.create_page(tableList)
                     
@@ -249,7 +249,7 @@ class AdminCreator:
             content += '<template>\r\n'
             content += '  <div>\r\n'
             content += '    <FastTable\r\n'
-            content += '      title="项目分类"\r\n'
+            content += '      title="{}"\r\n'.format(tableTitle)
             content += '      :logLevel="TableLogLevel.debug"\r\n'
             content += '      :tableHeaderList="columns"\r\n'
             content += '      :tableSearchList="searchList"\r\n'
@@ -497,6 +497,7 @@ class AdminCreator:
     def create_routers(self, tableInfos):
         Log.blank()
         Log.info("AdminRouters", "创建 routers")
+        return
 
         f1 = open(self.routerPath, "r")
         content = f1.readlines()
@@ -521,23 +522,39 @@ class AdminCreator:
 
             tableKeys = tableInfo.keys()
 
-            route = 'path: "/{}",'.format(instance_name)
-            if content.find(route) == -1:
+            menus = tableInfo["db"]["seeds"]["menu"]
+            for menu in menus:
                 string += "      {\r\n"
-                string += "        path: \"/{0}\",\r\n".format(
-                    instance_name)
-                string += "        name: \"{0}\",\r\n".format(tableTitle)
-                string += "        des: \"{0}\",\r\n".format(classDes)
+                string += f"        path: \"/{menu['path']}\",\r\n"
+                string += f"        name: \"{menu['path']}\",\r\n"
+                string += f"        des: \"{menu['path']}\",\r\n"
                 string += "        meta: {\r\n"
                 if "icon" in tableKeys:
-                    string += "          icon: \"{0}\"\r\n".format(
-                        tableInfo["icon"])
+                    string += f"          icon: \"{menu['icon']}\"\r\n"
                 else:
-                    string += "          icon: \"user\"\r\n"
+                    string += f"          icon: \"user\"\r\n"
                 string += "        },\r\n"
-                string += "        component: () => import (\"@/pages/{0}/\"),\r\n".format(
-                    className)
+                string += f"        component: () => import (\"{menu['component']}\"),\r\n"
                 string += "      },\r\n"
+
+            route = 'path: "/{}",'.format(instance_name)
+            if content.find(route) == -1:
+                # string += "      {\r\n"
+                # string += "        path: \"/{0}\",\r\n".format(
+                #     instance_name)
+                # string += "        name: \"{0}\",\r\n".format(tableTitle)
+                # string += "        des: \"{0}\",\r\n".format(classDes)
+                # string += "        meta: {\r\n"
+                # if "icon" in tableKeys:
+                #     string += "          icon: \"{0}\"\r\n".format(
+                #         tableInfo["icon"])
+                # else:
+                #     string += "          icon: \"user\"\r\n"
+                # string += "        },\r\n"
+                # string += "        component: () => import (\"@/pages/{0}/\"),\r\n".format(
+                #     className)
+                # string += "      },\r\n"
+                pass
 
             self._generate_file(self.routerPath, "\r\n" + string, "", log_type=3, log_prefix="router", log_txt="创建："+instance_name)
 
@@ -615,10 +632,10 @@ class AdminCreator:
 
             requests += "/**\r\n"
             requests += " * 获取{0}列表\r\n".format(tableTitle)
-            requests += " \r\n"
-            requests += "* @returns { "
-            requests += "\r\n" + columnNames
-            requests += "  }\r\n"
+            # requests += " \r\n"
+            # requests += "* @returns { "
+            # requests += "\r\n" + columnNames
+            # requests += "  }\r\n"
             requests += " */\r\n"
             requests += "export async function get" + \
                 className + "(params) {\r\n"
@@ -629,7 +646,7 @@ class AdminCreator:
 
             requests += "/**\r\n"
             requests += " * 添加或修改{0}\r\n".format(tableTitle)
-            requests += " \r\n"
+            # requests += " \r\n"
             requests += " */\r\n"
             requests += "export async function post" + \
                 className + "(params) {\r\n"
@@ -641,10 +658,10 @@ class AdminCreator:
             requests += "/**\r\n"
             requests += " * 获取{0}对应的详情\r\n".format(tableTitle)
             requests += " * @param id 详情id \r\n"
-            requests += " \r\n"
-            requests += "* @returns { "
-            requests += "\r\n" + columnNames
-            requests += "  }\r\n"
+            # requests += " \r\n"
+            # requests += "* @returns { "
+            # requests += "\r\n" + columnNames
+            # requests += "  }\r\n"
             requests += " */\r\n"
             requests += "export async function get" + \
                 className + "ByID(id) {\r\n"

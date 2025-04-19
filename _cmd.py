@@ -25,29 +25,59 @@ import json
 #     "checkboxGroup",
 # ]
 
+import sys
+
+#添加上级目录
+sys.path.append("..//")
+
 from Utils.log_util import Log
 from Utils.create_util import CreateUtil
+from Utils.file_util import FileUtil
 
 from Creator.db_creator import DBCreator
 from Creator.java_creator import JavaCreator
 from Creator.admin_creator import AdminCreator
 from Creator.uni_creator import UniCreator
 
-# 项目配置文件
-projectEnvPath = "/Users/wuzhiqiang/Documents/GitHub/blog/project.json"
-# projectEnvPath = "/Users/wuzhiqiang/Desktop/mock/project.json"
-# projectEnvPath = "/Users/wuzhiqiang/Documents/GitHub/itest/project.json"
-
 class cmds:
-
     @staticmethod
     def checkCMD():
         if len(sys.argv) == 1:
             cmds._cmd_error("")
             return
+        
+        m = CreateUtil.get_work_config()
 
-        info = CreateUtil.get_config_info(path=projectEnvPath)
+        env_path = m['path'] + "project.json"
+        if not FileUtil.path_exists(env_path):
+            Log.error("sys", f"目录位置错误：{env_path}")
+            return
+
+        info = CreateUtil.get_config_info(path=env_path)
         cmd = sys.argv[1]
+
+        # 提示路径
+        Log.warn("sys", f"<<<<<<<< 工作目录：{env_path} >>>>>>> ")
+        
+        # 创建目录
+        lpath = info["path" ] + info["logPath" ]
+        if not FileUtil.path_exists(lpath):
+            FileUtil.create_dir(lpath)
+            Log.info("log", "创建日志目录：{0}".format(lpath))
+
+        tpath = info["path" ] + "_Temp"
+        if not FileUtil.path_exists(tpath):
+            FileUtil.create_dir(tpath)
+            Log.info("log", "创建临时目录：{0}".format(lpath))
+
+        bpath = info["path" ] + info["backUpPath" ]
+        if not FileUtil.path_exists(bpath):
+            FileUtil.create_dir(bpath + "/admin")
+            FileUtil.create_dir(bpath + "/home")
+            FileUtil.create_dir(bpath + "/java")
+            FileUtil.create_dir(bpath + "/uni")
+            FileUtil.create_dir(bpath + "/flutter")
+            Log.info("backUp", "创建备份目录：{0}".format(bpath))
 
         if cmd == "-all":
             DBCreator.create(info, "-all")
@@ -67,7 +97,7 @@ class cmds:
                 DBCreator._cmd_error()
 
         elif cmd == "schema":
-            DBCreator.schema(info, projectEnvPath)
+            DBCreator.schema(info, info["path"])
 
         elif cmd == "java":
             if len(sys.argv) > 2:

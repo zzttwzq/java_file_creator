@@ -1,11 +1,52 @@
+import json
 import os
 import time
 import sys
 
 from Utils.file_util import FileUtil
 
-class Log:
+def getConfig():
+    path = ".work.json"
+    if FileUtil.path_exists(path):
+        f = open(path, encoding='utf-8')
+        c = f.readlines()
+        f.close()
+        c = ''.join(c)
+        d = json.loads(c)
 
+        return d
+    else:
+        FileUtil.check_path(path)
+        return {}
+    
+def getLogPath():
+    times = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    m = getConfig()
+    if "path" in m:
+        dir_path = m["path"]
+        log_path = FileUtil.getCurrentDir()+"/_Log/"
+        if FileUtil.path_exists(dir_path):
+            log_path = m["path"] + "_Log/"
+            return log_path
+   
+    console_str = "\033[1;30m[{0}] \033[1;31m[{1}] {2} \033[1;33m\r\n    callpath: \r\n{3} \033[0m".format(
+                times, "sys", "请创建.work.json 并写入path=xxx", "")
+    print(console_str)
+
+    return ""
+
+def getLogFile(name):
+    date_time = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    log_path = getLogPath()
+    fileName = date_time.split(" ")[0]
+    file_path = log_path + fileName + name
+    f = open(file_path, mode='a+', encoding='utf8')
+
+    return f
+
+class Log:
     @staticmethod
     def debug(title='', msg='', show=True):
         Log.log("DEBUG", title, msg, show)
@@ -89,14 +130,7 @@ class Log:
         if show:
             print(console_str)
 
-        log_path = FileUtil.getCurrentDir()+"/Log/"
-        if not os.path.exists(log_path):
-            os.makedirs(log_path)
-
-        fileName = times.split(" ")[0]
-        file_path = log_path + fileName + ".log"
-
-        f = open(file_path, mode='a+', encoding='utf8')
+        f = getLogFile(".log")
         f.write(logStr)
         f.close()
 
@@ -105,14 +139,10 @@ class SqlLog:
     @staticmethod
     def record(sql, msg=""):
         date_time = time.strftime("%Y-%m-%d %H:%M:%S")
-
-        file_path = FileUtil.getCurrentDir()+"/Log/{}.sql".format(date_time.split(" ")[0])
-        f = open(file_path, mode='a+', encoding='utf8')
-        
         message = "\033[1;30m[{}] \033[1;33m[ SQL ] {} \033[1;31m{} \033[0m".format(date_time, sql, msg)
         # print(message)
         
         content = "[{}] {}\r\n".format(date_time, sql, msg)
+        f = getLogFile(".sql")
         f.write(content)
-        
         f.close()

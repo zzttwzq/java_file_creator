@@ -5,10 +5,10 @@ from pymysql.cursors import DictCursor
 from Utils.log_util import Log, SqlLog
 
 class MySqlConfig:
-    host = "localhost"
+    host = "127.0.0.1"
     port = 3306
-    user = "root"
-    passwd = "123"
+    user = ""
+    passwd = ""
     name = ""
     char_set = "utf8"
  
@@ -24,7 +24,6 @@ class MySqlUtil:
 
     @staticmethod
     def __getConn(mysqlConfig):
-
         if MySqlUtil.__pool is None:
             MySqlUtil.__pool = PooledDB(creator=pymysql, 
                                         mincached=1, 
@@ -70,9 +69,11 @@ class MySqlUtil:
             err = str(e)
             if "Duplicate entry" in err:
                 count = 0
+                Log.warn("DB", "\r\n    -> " + sql + "\r\n    -> " + str(value_list) + "\r\n    -> " +err)
             else:
                 count = -1
-            Log.warn("DB", "\r\n    -> " + sql + "\r\n    -> " + str(value_list) + "\r\n    -> " +err)
+                Log.error("DB", "\r\n    -> " + sql + "\r\n    -> " + str(value_list) + "\r\n    -> " +err)
+            
         
         SqlLog.record("\r\n    -> " + sql + "\r\n    -> " + str(value_list) + "\r\n    -> " +err)
             
@@ -263,7 +264,7 @@ class MySqlUtil:
         @return: id值
         """
         
-        keys = ""
+        keys = "" 
         values = ""
         param_list = []
         for k in dict:

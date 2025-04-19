@@ -1,5 +1,6 @@
 import json
 import os
+import time
 import sys
 
 #添加上级目录
@@ -8,6 +9,7 @@ from Utils.mysql_util import MySqlUtil
 from Utils.log_util import Log
 from Utils.create_util import CreateUtil
 from Utils.datetime_util import DateTimeUtil
+from Utils.file_util import FileUtil
 
 class DBCreator:
     dirs = ["back"]
@@ -20,7 +22,11 @@ class DBCreator:
     def create(info, mode, names):
         dbCreator = DBCreator()
         # 数据库
-        mysqlConfig=CreateUtil.get_mysql_config(info)
+        m = CreateUtil.get_work_config()
+        isLocal = m["dbSource"] == "local"
+        Log.warn("db", f"<<<<<<<<<<<<<<<< 数据库是否为本地：{isLocal} >>>>>>>>>>>>>>>>")
+
+        mysqlConfig=CreateUtil.get_mysql_config(info, isLocal=isLocal)
         dbCreator.sqlConnection = MySqlUtil(mysqlConfig)
 
         # 执行操作
@@ -38,12 +44,16 @@ class DBCreator:
                 Log.error(dbCreator.logPrefix, "创建数据表时未指定表名！")
             else:
                 dbCreator.create_or_update_table(info, names)
-        # 数据种子
+        # 数据种子 
         elif mode == "-seed":
             if len(names) == 0:
                 Log.error(dbCreator.logPrefix, "创建数据集时未指定表名！")
             else:
                 dbCreator.create_seed(info, names)
+        # 数据种子
+        elif mode == "-sql":
+            sql = ""
+            dbCreator.run_sql(info, sql)
         # 创建所有
         elif mode == "-all":
             dbCreator.create_db()
@@ -56,7 +66,9 @@ class DBCreator:
         dbCreator.sqlConnection.dispose()
 
     @staticmethod
-    def schema(info, projectEnvPath):
+    def schema(info, projectPath):
+        Log.info("schema", "================ 开始生成schema内容 ================")
+
         schemas = info["db"]["tableSchema"]
         liKeys = schemas.keys()
         tableList = []
@@ -64,6 +76,11 @@ class DBCreator:
         for key in liKeys:
             tableProps = schemas[key]
             tableTitle = key.split(":")
+
+            arr = tableTitle[0].split("{m<")
+            tableTitle[0] = arr[0]
+            text = arr[1]
+            menu_id = text.split(">m}")[0]
                 
             if tableTitle[0][0:1] == "*":
                 Log.info("schema", "自动跳过：{0}".format(tableTitle))
@@ -137,7 +154,7 @@ class DBCreator:
                         showTime = 1
                         
                     colums.append({
-                        "name": CreateUtil.instance_name(columInfo[0]),
+                        "name": columInfo[0],
                         "des": columInfo[1],
                         "columnProperty": columInfo[2],
                         "formType": formType,
@@ -151,7 +168,7 @@ class DBCreator:
                     })
 
                 colums.append({
-                    "name": "createAt",
+                    "name": "create_at",
                     "des": "创建于",
                     "columnProperty": "DATETIME",
                     "formType": "date",
@@ -164,7 +181,7 @@ class DBCreator:
                     "width": 100,
                 })
                 colums.append({
-                    "name": "updateAt",
+                    "name": "update_at",
                     "des": "更新于",
                     "columnProperty": "DATETIME",
                     "formType": "date",
@@ -177,7 +194,7 @@ class DBCreator:
                     "width": 100,
                 })
                 colums.append({
-                    "name": "deleteAt",
+                    "name": "delete_at",
                     "des": "删除于",
                     "columnProperty": "DATETIME",
                     "formType": "date",
@@ -194,7 +211,19 @@ class DBCreator:
                     tableTitle[0] = tableTitle[0].replace("-", "")
                 if tableTitle[0][0:1] == "+":
                     tableTitle[0] = tableTitle[0].replace("+", "")
-        
+
+                # admin_menu = {}
+                # admin_menu_seed = info["db"]["tableSeed"]
+                # admin_menu_seed_keys = admin_menu_seed.keys()
+                # for key in admin_menu_seed_keys:
+                #     if key == tableTitle[0]:
+                #         for it in admin_menu_seed[key]:
+                #             print(it)
+                #             if it["id"] == menu_id:
+                #                 admin_menu = it
+                #                 break
+                # print("admin_menu", admin_menu)
+
                 tableList.append({
                     "name": tableTitle[0],
                     "dbName": tableTitle[2],
@@ -203,17 +232,22 @@ class DBCreator:
                     "instanceName": CreateUtil.instance_name(tableTitle[0]),
                     "title": tableTitle[1],
                     "des": tableTitle[1],
+                    # "admin_menu": admin_menu,
                     "showPage": "",
                     "columns": colums
                 })
 
-        info["db"]["tableListOld"] = info["db"]["tableList"]
-        info["db"]["tableList"] = tableList
-            
-        with open(projectEnvPath, "w") as f:
-            json.dump(info, f, ensure_ascii=False)
+        # 写入到文件
+        times = time.strftime("%Y-%m%d_%H_%M_%S")
+        file_name_old = f"{projectPath}_Temp/tableList_{times}.json"
+        file_name = f"{projectPath}_Temp/tableList.json"
+        if os.path.exists(file_name):
+            FileUtil.rename(file_name, file_name_old)
 
-        Log.success("schema", "tableList，生成成功")
+        with open(file_name, "w") as f:
+            json.dump(tableList, f, indent=2, ensure_ascii=False)  # indent 实现格式化缩进
+
+        Log.success("schema", "===============> 生成成功 ")
 
     def create_db(self, dbNameList):
         Log.blank()
@@ -231,8 +265,8 @@ class DBCreator:
         Log.blank()
         Log.info(
             self.logPrefix, "================ 正在生成数据表 ================".format(names))
-        
-        tableList = CreateUtil.get_tables(info, names)
+         
+        tableList = CreateUtil.get_tableInfo_width_names(info, names)
         if len(tableList) == 0:
             Log.error(self.logPrefix,
                       "{0} 在tableinfo.json 中未找到！".format(names))
@@ -252,7 +286,7 @@ class DBCreator:
         Log.info(
             self.logPrefix, "================ 正在创建数据集 ================".format(names))
         
-        tableList = tableList = CreateUtil.get_tables(info, names)
+        tableList = tableList = CreateUtil.get_tableInfo_width_names(info, names)
         tableInfoList = {}
         
         tableSeeds = info["db"]["tableSeed"]
@@ -271,11 +305,13 @@ class DBCreator:
                 table_name = tableInfoList[key]["name"]
                 self.sqlConnection.use_db(db_name)
                 
-                it["createAt"] = DateTimeUtil.now_datetime()
+                # if "create_at" in it.keys():
+                it["create_at"] = DateTimeUtil.now_datetime()
                 
                 new_data = {}
                 for k, v in it.items():
-                    new_data[CreateUtil.instance_name(k)] = v
+                    if k != "@":
+                        new_data[k] = v
                 
                 res = self.sqlConnection.insert(table_name, new_data)
                 if res == 0:
@@ -283,10 +319,19 @@ class DBCreator:
                 elif res > 0:
                     Log.success(log_tag, "seed添加成功：{}".format(new_data))
 
+    def run_sql(self, sql):
+        Log.blank()
+        Log.info(self.logPrefix, "================ 正在执行SQL ================")
+        # res = self.sqlConnection.exec_sql(sql)
+        # if res == 0:
+        #     Log.success(self.logPrefix, "SQL 执行成功")
+        # else:
+        #     Log.error(self.logPrefix, "SQL 执行失败")
+
     @staticmethod
     def _cmd_error():
         Log.info("db_create", "命令错误：\r\n \
-            尝试以下命令：、\r\n  \
+            尝试以下命令：\r\n \
             db -all 生成所有的数据库，数据表，数据种子。\r\n \
             db -db [names] 生成新的数据库。\r\n \
             db -table [names] 生成新的表。\r\n \
