@@ -95,12 +95,13 @@ class AdminCreator:
                 # ---------- table columns ----------
                 columnDes = columnInfo['des']
                 columnName = columnInfo['name']
+                columnInstanceName = CreateUtil.instance_name(columnName)
 
                 columns += "        {\r\n"
                 columns += "          title: '{0}',//{1}\r\n".format(
                     columnDes.split("-")[0], columnDes)
-                columns += "          dataIndex: '{0}',\r\n".format(columnName)
-                columns += "          key: '{0}',\r\n".format(columnName)
+                columns += "          dataIndex: '{0}',\r\n".format(columnInstanceName)
+                columns += "          key: '{0}',\r\n".format(columnInstanceName)
                 keys = columnInfo.keys()
                 
                 if "#" in columnDes:
@@ -370,7 +371,7 @@ class AdminCreator:
             mixin += '      this.log(">onRequestSuccess", type, res);\r\n'
             mixin += '      switch (type) {\r\n'
             mixin += '        case this.TableRequestType.onList:\r\n'
-            mixin += '          // res.map((it) => {\r\n'
+            mixin += '          // res.data.map((it) => {\r\n'
             mixin += '          //   it["title"] = "name";\r\n'
             mixin += '          // });\r\n'
             mixin += '          break;\r\n'
@@ -581,7 +582,7 @@ class AdminCreator:
             string += "\r\n    // {0} \r\n".format(classDes)
             string += "    {0}: `/$".format(constName) + '{BASE_URL}' + "{}`, \r\n".format(instance_name)
             Log.info("api", "创建："+tableName)
-
+            
         self._generate_file(self.apiPath, "\r\n" + string, "", log_type=2, log_prefix="AmdinApi", log_txt="创建："+appName)
 
     def create_requests(self, tableInfos):

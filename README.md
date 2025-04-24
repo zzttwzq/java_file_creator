@@ -292,6 +292,11 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.2.1
+1. java_creator Controller list 排序修改 page 起始从0
+2. java_creator model生成修改
+3. admin_creator 变量名改成驼峰
+
 #### 1.2.0
 1. 目标目录位置放在 .work.json 文件中 添加 path 路径字段，dbSource 数据库位置字段 local是本地，online线上
 2. 修改结构，在目标目录输出 _BackUp/(备份之前生成内容)、 _Log/(存放log日志，sql日志)、 _Temp/(存放tableinfo内容)；不再存放table_info_old内容

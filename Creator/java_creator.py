@@ -178,6 +178,7 @@ class JavaCreator:
 
                 # 字段类型
                 columType = columnInfo["columnProperty"].split('(')[0]
+                columType = columType.split(' ')[0]
                 columType = columType.strip()
                 columType = columType.upper()
                 dataType = coulumTypeTemp[columType]
@@ -202,7 +203,10 @@ class JavaCreator:
                     dataType, instPropertyName, des)
 
                 json_string += "        if (map.get(\"" +     propertyName + "\") != null) {\r\n"
-                json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "((String) map.get(\"" + instPropertyName + "\"));\r\n"
+                if propertyName == "id":
+                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "((String) map.get(\"" + instPropertyName + "\"));\r\n"
+                else:
+                    json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "((String) map.get(\"" + instPropertyName + "\"));\r\n"
                 json_string += "        }\r\n\r\n"
 
             prop_string +="\r\n"
@@ -367,7 +371,7 @@ class JavaCreator:
             contentString += '    // 获取列表\r\n'
             contentString += '    @GetMapping\r\n'
             contentString += '    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n'
-            contentString += '        int page = 1;\r\n'
+            contentString += '        int page = 0;\r\n'
             contentString += '        int size = 10;\r\n'
             contentString += '        if (param.get("page") != null) {\r\n'
             contentString += '            page = Integer.parseInt((String) param.get("page"));\r\n'
