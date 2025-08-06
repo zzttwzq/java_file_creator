@@ -18,15 +18,16 @@ class DBCreator:
     logPrefix = "DB"
     
     sqlConnection = ""
+    
     @staticmethod
     def create(info, mode, names):
         dbCreator = DBCreator()
         # 数据库
         m = CreateUtil.get_work_config()
-        isLocal = m["dbSource"] == "local"
-        Log.warn("db", f"<<<<<<<<<<<<<<<< 数据库是否为本地：{isLocal} >>>>>>>>>>>>>>>>")
+        # isLocal = m["dbSource"] == "local"
+        Log.warn("db", f"<<<<<<<<<<<<<<<< 数据库是否为本地：{m['dbSource']} >>>>>>>>>>>>>>>>")
 
-        mysqlConfig=CreateUtil.get_mysql_config(info, isLocal=isLocal)
+        mysqlConfig=CreateUtil.get_mysql_config(info, m["dbSource"])
         dbCreator.sqlConnection = MySqlUtil(mysqlConfig)
 
         # 执行操作
@@ -81,14 +82,14 @@ class DBCreator:
             tableTitle[0] = arr[0]
             text = arr[1]
             menu_id = text.split(">m}")[0]
-                
+            
             if tableTitle[0][0:1] == "*":
                 Log.info("schema", "自动跳过：{0}".format(tableTitle))
             else: 
                 colums = [{
                     "name": "id",
                     "des": "记录id",
-                    "columnProperty": "INT NOT NULL AUTO_INCREMENT PRIMARY KEY",
+                    "columnProperty": "BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY",
                     "formType": "number",
                     "showTime": 0,
                     "showInSearch": 0,
@@ -102,7 +103,7 @@ class DBCreator:
                 for li in tableProps:
                     columInfo = li.split(":")
 
-                    width = 100
+                    width = "auto"
                     showInSearch = 1
                     showInForm = 1
                     required = 0
@@ -164,7 +165,7 @@ class DBCreator:
                         "required": required,
                         "sort": "up",
                         "align": "left",
-                        "width": width,
+                        "width": width
                     })
 
                 colums.append({
@@ -178,7 +179,7 @@ class DBCreator:
                     "required": 0,
                     "sort": "up",
                     "align": "center",
-                    "width": 100,
+                    "width": "auto",
                 })
                 colums.append({
                     "name": "update_at",
@@ -191,7 +192,7 @@ class DBCreator:
                     "required": 0,
                     "sort": "up",
                     "align": "center",
-                    "width": 100,
+                    "width": "auto",
                 })
                 colums.append({
                     "name": "delete_at",
@@ -204,7 +205,7 @@ class DBCreator:
                     "required": 0,
                     "sort": "up",
                     "align": "center",
-                    "width": 100,
+                    "width": "auto",
                 })
         
                 if tableTitle[0][0:1] == "-":
@@ -300,7 +301,8 @@ class DBCreator:
             Log.info(log_tag, "新增seed：{}".format(key))
             
             for it in value:
-                
+                # print(tableInfoList)
+                # print(tableInfoList[key])
                 db_name = tableInfoList[key]["dbName"]
                 table_name = tableInfoList[key]["name"]
                 self.sqlConnection.use_db(db_name)

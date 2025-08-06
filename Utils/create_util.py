@@ -49,7 +49,7 @@ class CreateUtil:
             return {}
     
     @staticmethod
-    def get_mysql_config(projectInfo, isLocal=True):
+    def get_mysql_config(projectInfo, serverType="local"):
         """
         @summary: 根据输入的表名字符串，获取对应的表信息数组
         @param projectInfo: 配置信息
@@ -57,18 +57,25 @@ class CreateUtil:
         """
         
         config = MySqlConfig()
-        if isLocal:
+        if serverType == "local":
             config.host = projectInfo["db"]["local_host"]
             config.port = projectInfo["db"]["local_port"]
             config.user = projectInfo["db"]["local_user"]
             config.passwd = projectInfo["db"]["local_password"]
-        else:
+        elif serverType == "online":
             config.host = projectInfo["db"]["server_host"]
             config.port = projectInfo["db"]["server_port"]
             config.user = projectInfo["db"]["server_user"]
             config.passwd = projectInfo["db"]["server_password"]
-        config.char_set = projectInfo["db"]["charSet"]
-        
+        elif serverType == "test":
+            config.host = projectInfo["db"]["test_host"]
+            config.port = projectInfo["db"]["test_port"]
+            config.user = projectInfo["db"]["test_user"]
+            config.passwd = projectInfo["db"]["test_password"]
+        config.char_set = 'utf8mb4' #projectInfo["db"]["charSet"]
+
+        Log.info(f"数据库配置：{config.user}@{config.host}:{config.port}")
+
         return config
     
     @staticmethod
@@ -133,6 +140,7 @@ class CreateUtil:
         
         # 获取数据表列表
         tableListPath = projectInfo["path"] + "_Temp" + "/tableList.json"
+        Log.info(">>>tableListPath: ", tableListPath)
         tableList = FileUtil.read_file(tableListPath)
         tableList = json.loads(tableList)
 

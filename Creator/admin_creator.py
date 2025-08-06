@@ -22,10 +22,11 @@ class AdminCreator:
         # ------------ 准备路径信息
         adminCreator.routerPath = info["path"] + info["admin"]["routerPath"]
         adminCreator.apiPath = info["path"] + info["admin"]["apiPath"]
-        adminCreator.pagePath = info["path"] + info["admin"]["pagePath"]
+        adminCreator.pagePath = info["path"] + info["admin"]["pagePath"] + "AutoCreate/"
         adminCreator.requestPath = info["path"] + info["admin"]["requestPath"]
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
-        if not FileUtil.path_exists(adminCreator.pagePath):
+        Log.info("admin", "源目录：" + adminCreator.routerPath)
+        if not FileUtil.path_exists(adminCreator.routerPath):
             Log.error("admin", "源目录不存在，请指定源目录")
             return 0
 
@@ -57,7 +58,7 @@ class AdminCreator:
             adminCreator.create_apis(info, tableList)
             adminCreator.create_requests(tableList)
             adminCreator.create_page(tableList)
-                    
+
     def create_page(self, tableInfos):
         Log.blank()
         Log.info("admin", "开始生成 pages")
@@ -161,8 +162,11 @@ class AdminCreator:
                         columnInfo["align"])
 
                 if "width" in keys:
-                    propKeys += "          width: {0},\r\n".format(
-                        columnInfo["width"])
+                    if columnInfo["width"] == "auto":
+                        propKeys += "          width: '',\r\n"
+                    else:
+                        propKeys += "          width: {0},\r\n".format(
+                            columnInfo["width"])
 
                 if "fixed" in keys:
                     propKeys += "          fixed: '{0}',\r\n".format(
@@ -189,12 +193,12 @@ class AdminCreator:
 
                 item = "        {\r\n"
                 item += "          name: '{0}', //{1} \r\n".format(
-                    columnName, columnDes)
+                    columnInstanceName, columnDes)
                 item += "          title: '{0}',\r\n".format(columnDes)
                 item += "          type: '{0}', // text, number, numberRange, select, date, datetime, dateRange\r\n".format(
                     formType)
                 item += "          decorator: [\r\n"
-                item += "            '{0}',\r\n".format(columnName)
+                item += "            '{0}',\r\n".format(columnInstanceName)
                 item += "            {\r\n"
                 item += "              rules: [\r\n"
                 item += "                { required: " + required + \
@@ -237,7 +241,7 @@ class AdminCreator:
                 item += propKeys
                 item += "        },\r\n"
 
-                if columnName != "id" and columnName != "createAt" and columnName != "updateAt" and columnName != "deleteAt":
+                if columnInstanceName != "id" and columnInstanceName != "createAt" and columnInstanceName != "updateAt" and columnInstanceName != "deleteAt":
                     forms += item
 
                 # search

@@ -94,7 +94,7 @@ class MySqlUtil:
         引发:
         """
         
-        sql = "CREATE DATABASE IF NOT EXISTS {} CHARACTER SET utf8 COLLATE utf8_general_ci".format(name)
+        sql = "CREATE DATABASE IF NOT EXISTS {} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(name)
         res = self.exec_sql(sql)
         return res
 
@@ -143,7 +143,7 @@ class MySqlUtil:
             values += "{0} {1} COMMENT '{2}', ".format(p_name, p_value, p_des)
 
         values = values[0: len(values) - 2]
-        sql = "CREATE TABLE IF NOT EXISTS {0}.{1} ( {2} ) ENGINE=InnoDB DEFAULT CHARSET='utf8'".format(
+        sql = "CREATE TABLE IF NOT EXISTS {0}.{1} ( {2} ) ENGINE=InnoDB DEFAULT CHARSET='utf8mb4'".format(
             db_name, table_name, values)
         
         return self.exec_sql(sql)
@@ -173,7 +173,7 @@ class MySqlUtil:
             values += "{0} {1} COMMENT '{2}', ".format(cName, cProperty, cDes)
 
         values = values[0: len(values) - 2]
-        sql = "CREATE TABLE IF NOT EXISTS {0}.{1} ({2}) ENGINE=InnoDB DEFAULT CHARSET='utf8'".format(
+        sql = "CREATE TABLE IF NOT EXISTS {0}.{1} ({2}) ENGINE=InnoDB DEFAULT CHARSET='utf8mb4'".format(
             dbName, tableName, values)
         
         return self.exec_sql(sql)

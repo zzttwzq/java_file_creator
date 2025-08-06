@@ -23,7 +23,7 @@ class JavaCreator:
         p = javaCreator.package_name.split(".")
         p = "/".join(p)
         javaCreator.package_path = info["path"] + "java/src/main/java/" + p + "/"
-
+        Log.info("admin", "源目录：" + javaCreator.package_path)
         if not FileUtil.path_exists(javaCreator.package_path):
             Log.error("java_creator", "源目录不存在，请指定源目录")
             return 0
@@ -75,13 +75,13 @@ class JavaCreator:
 
         parseMap = {
             "REAL": "Long.parseLong",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
+            "INT": "Integer.valueOf",
             "TINYINT": "Integer.valueOf",
             "SMALLINT": "Integer.valueOf",
-            "MEDIUMINT": "Integer.valueOf",
-            "TIMESTAMP": "Integer.valueOf",
-            "INT": "Integer.valueOf",
-            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
-            "BIGINT": "Integer.valueOf",
+            "MEDIUMINT": "Long.valueOf",
+            "BIGINT": "Long.valueOf",
             "FLOAT": "Float.parseFloat",
             "DOUBLE": "Double.parseDouble",
             "CHAR": "",
@@ -92,20 +92,21 @@ class JavaCreator:
             "LONGTEXT": "",
             "BOOL": "Boolean.parseBoolean",
             "BOOLEAN": "Boolean.parseBoolean",
-            "TIMESTAMP": "Timestamp.valueOf",
             "DATETIME": "Timestamp.valueOf",
             "DATE": "Timestamp.valueOf",
             "TIME": "Timestamp.valueOf",
+            "TIMESTAMP": "Timestamp.valueOf",
         }
 
         coulumTypeTemp = {
             "REAL": "Long",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long",
+            "INT": "Integer",
             "TINYINT": "Integer",
             "SMALLINT": "Integer",
-            "MEDIUMINT": "Integer",
-            "INT": "Integer",
-            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
-            "BIGINT": "Integer",
+            "MEDIUMINT": "Long",
+            "BIGINT": "Long",
             "CHAR": "String",
             "VARCHAR": "String",
             "TINYTEXT": "String",
@@ -138,13 +139,13 @@ class JavaCreator:
             string += 'import java.util.Map;\r\n'
             string += 'import java.sql.Timestamp;\r\n'
             string += '\r\n'
-            string += 'import javax.persistence.Column;\r\n'
-            string += 'import javax.persistence.Entity;\r\n'
-            string += 'import javax.persistence.GeneratedValue;\r\n'
-            string += 'import javax.persistence.GenerationType;\r\n'
-            string += 'import javax.persistence.EntityListeners;\r\n'
-            string += 'import javax.persistence.Id;\r\n'
-            string += 'import javax.persistence.Table;\r\n'
+            string += 'import jakarta.persistence.Column;\r\n'
+            string += 'import jakarta.persistence.Entity;\r\n'
+            string += 'import jakarta.persistence.GeneratedValue;\r\n'
+            string += 'import jakarta.persistence.GenerationType;\r\n'
+            string += 'import jakarta.persistence.EntityListeners;\r\n'
+            string += 'import jakarta.persistence.Id;\r\n'
+            string += 'import jakarta.persistence.Table;\r\n'
             string += '\r\n'
             string += 'import org.springframework.data.annotation.CreatedDate;\r\n'
             string += 'import org.springframework.data.annotation.LastModifiedDate;\r\n'
@@ -202,11 +203,11 @@ class JavaCreator:
                 prop_string += "    private {0} {1}; //{2} \r\n".format(
                     dataType, instPropertyName, des)
 
-                json_string += "        if (map.get(\"" +     propertyName + "\") != null) {\r\n"
+                json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
                 if propertyName == "id":
-                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "((String) map.get(\"" + instPropertyName + "\"));\r\n"
+                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
                 else:
-                    json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "((String) map.get(\"" + instPropertyName + "\"));\r\n"
+                    json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
                 json_string += "        }\r\n\r\n"
 
             prop_string +="\r\n"
@@ -254,10 +255,20 @@ class JavaCreator:
 
             # 登录功能
             addUserLogin = tableName == "user"
+
+            # 文件名称
+            fileName = className + "Controller.java"
             
             self.create_empty_controller(tableInfo)
                 
             contentString = "\r\n"
+
+            fileDir = self.package_path + "Controller" + "/"
+            filePath = fileDir + fileName
+            fileContent = FileUtil.read_file(filePath)
+            fileContent = "".join(fileContent)
+            fileContent = fileContent.split(self.split_string)
+            fileContent = fileContent[2]
 
             if addUserLogin:
                 contentString += '    @Autowired\r\n'
@@ -266,8 +277,8 @@ class JavaCreator:
             
             if addUserLogin:
                 contentString += '    // 手机号登录\r\n'
-                contentString += '    @PostMapping("loginWithPhone")\r\n'
-                contentString += '    public HashMap<String, Object> loginWithPhone(@RequestBody Map<String, Object> param) {\r\n'
+                contentString += '    @PostMapping("loginByPhone")\r\n'
+                contentString += '    public HashMap<String, Object> loginByPhone(@RequestBody Map<String, Object> param) {\r\n'
                 contentString += '        String phone = "";\r\n'
                 contentString += '        String smsCode = "";\r\n'
                 contentString += '        if (param.containsKey("phone")) {\r\n'
@@ -284,12 +295,12 @@ class JavaCreator:
                 contentString += '            return ResponseService.error("smsCode 为空！");\r\n'
                 contentString += '        }\r\n'
                 contentString += '\r\n'
-                contentString += '        return userCommonService.loginWithSmsCode(phone, smsCode);\r\n'
+                contentString += '        return userCommonService.loginByPhone(phone, smsCode);\r\n'
                 contentString += '    }\r\n'
                 contentString += '\r\n'
                 contentString += '    // 账号密码登录\r\n'
-                contentString += '    @PostMapping("loginWithPassword")\r\n'
-                contentString += '    public HashMap<String, Object> loginWithPassword(@RequestBody Map<String, Object> param) {\r\n'
+                contentString += '    @PostMapping("loginByPassword")\r\n'
+                contentString += '    public HashMap<String, Object> loginByPassword(@RequestBody Map<String, Object> param) {\r\n'
                 contentString += '        String userName = "";\r\n'
                 contentString += '        String password = "";\r\n'
                 contentString += '        if (param.containsKey("userName")) {\r\n'
@@ -305,12 +316,12 @@ class JavaCreator:
                 contentString += '            return ResponseService.error("password 为空！");\r\n'
                 contentString += '        }\r\n'
                 contentString += '\r\n'
-                contentString += '        return userCommonService.loginWithPassword(userName, password);\r\n'
+                contentString += '        return userCommonService.loginByPassword(userName, password);\r\n'
                 contentString += '    }\r\n'
                 contentString += '\r\n'
                 contentString += '    // 手机号注册\r\n'
-                contentString += '    @PostMapping("registWithPhone")\r\n'
-                contentString += '    public HashMap<String, Object> registWithPhone(@RequestBody Map<String, Object> param) {\r\n'
+                contentString += '    @PostMapping("registerByPhone")\r\n'
+                contentString += '    public HashMap<String, Object> registerByPhone(@RequestBody Map<String, Object> param) throws CustomException {\r\n'
                 contentString += '        String phone = "";\r\n'
                 contentString += '        String smsCode = "";\r\n'
                 contentString += '        String inviteCode = "";\r\n'
@@ -330,17 +341,14 @@ class JavaCreator:
                 contentString += '\r\n'
                 contentString += '        if (param.containsKey("inviteCode")) {\r\n'
                 contentString += '            inviteCode = (String) param.get("inviteCode");\r\n'
-                contentString += '        } else {\r\n'
-                contentString += '\r\n'
-                contentString += '            return ResponseService.error("inviteCode 为空！");\r\n'
                 contentString += '        }\r\n'
                 contentString += '\r\n'
-                contentString += '        return userCommonService.registerPhone(phone, smsCode, inviteCode);\r\n'
+                contentString += '        return userCommonService.registerByPhone(phone, smsCode, inviteCode);\r\n'
                 contentString += '    }\r\n'
                 contentString += '\r\n'
                 contentString += '    // 账号密码注册\r\n'
-                contentString += '    @PostMapping("registWithPassword")\r\n'
-                contentString += '    public HashMap<String, Object> registWithPassword(@RequestBody Map<String, Object> param) {\r\n'
+                contentString += '    @PostMapping("registerByPassword")\r\n'
+                contentString += '    public HashMap<String, Object> registerByPassword(@RequestBody Map<String, Object> param) throws CustomException {\r\n'
                 contentString += '        String userName = "";\r\n'
                 contentString += '        String password = "";\r\n'
                 contentString += '        String inviteCode = "";\r\n'
@@ -359,64 +367,80 @@ class JavaCreator:
                 contentString += '\r\n'
                 contentString += '        if (param.containsKey("inviteCode")) {\r\n'
                 contentString += '            inviteCode = (String) param.get("inviteCode");\r\n'
-                contentString += '        } else {\r\n'
-                contentString += '\r\n'
-                contentString += '            return ResponseService.error("inviteCode 为空！");\r\n'
                 contentString += '        }\r\n'
                 contentString += '\r\n'
-                contentString += '        return userCommonService.registerPhone(userName, password, inviteCode);\r\n'
+                contentString += '        return userCommonService.registerByPassword(userName, password, inviteCode);\r\n'
+                contentString += '    }\r\n'
+                contentString += '\r\n'
+                contentString += '    @GetMapping("/getUserInfo")\r\n'
+                contentString += '    @Validated\r\n'
+                contentString += '    public HashMap<String, Object> getUserInfo() throws CustomException {\r\n'
+                contentString += '\r\n'
+                contentString += '        return userCommonService.getUserInfo();\r\n'
                 contentString += '    }\r\n'
                 contentString += '\r\n'
 
-            contentString += '    // 获取列表\r\n'
-            contentString += '    @GetMapping\r\n'
-            contentString += '    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n'
-            contentString += '        int page = 0;\r\n'
-            contentString += '        int size = 10;\r\n'
-            contentString += '        if (param.get("page") != null) {\r\n'
-            contentString += '            page = Integer.parseInt((String) param.get("page"));\r\n'
-            contentString += '            page = page - 1;\r\n'
-            contentString += '        }\r\n'
-            contentString += '        if (param.get("size") != null) {\r\n'
-            contentString += '            size = Integer.parseInt((String) param.get("size"));\r\n'
-            contentString += '        }\r\n'
-            contentString += '\r\n'
-            contentString += '        Pageable pageable = PageUtil.getPageable(page, size, "createAt", true);\r\n'
-            contentString += f'        Page<{className}> list =  {instanceName}Repository.findAll(pageable);\r\n'
-            contentString += '        return ResponseService.success("成功！", list);\r\n'
-            contentString += '    }\r\n'
-            contentString += '\r\n'
-            contentString += '    // 删除\r\n'
-            contentString += '    @GetMapping("/delete/{id}")\r\n'
-            contentString += '    public HashMap<String, Object> delete(@PathVariable("id") Long id) {\r\n'
-            contentString += f'        {className} temp = new {className}();\r\n'
-            contentString += f'        temp.setId(id);\r\n'
-            contentString += f'        {instanceName}Repository.delete(temp);\r\n'
-            contentString += '        return ResponseService.success("成功！", null);\r\n'
-            contentString += '    }\r\n'
-            contentString += '\r\n'
-            contentString += '    // 查看详情\r\n'
-            contentString += '    @GetMapping("/{id}")\r\n'
-            contentString += '    public HashMap<String, Object> show(@PathVariable("id") Long id) {\r\n'
-            contentString += f'        {className} temp = {instanceName}Repository.findById(id).orElse(null);\r\n'
-            contentString += '\r\n'
-            contentString += '        if (temp == null) {\r\n'
-            contentString += '            return ResponseService.error("数据不存在！");\r\n'
-            contentString += '        }\r\n'
-            contentString += '        return ResponseService.success("成功！", temp);\r\n'
-            contentString += '    }\r\n'
-            contentString += '\r\n'
-            contentString += '    // 插入，保存\r\n'
-            contentString += '    @PostMapping\r\n'
-            contentString += '    @Validated\r\n'
-            contentString += f'    public HashMap<String, Object> store(@RequestBody {className} temp) ' + '{\r\n'
-            contentString += '\r\n'
-            contentString += f'        {className} b = {instanceName}Repository.save(temp);\r\n'
-            contentString += '        return ResponseService.success("成功！", b);\r\n'
-            contentString += '    }\r\n'
+            if 'public HashMap<String, Object> list(@RequestParam Map<String, Object> param)' not in fileContent:
+                contentString += '    // 获取列表\r\n'
+                contentString += '    @GetMapping\r\n'
+                contentString += '    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n'
+                contentString += '\r\n'
+                contentString += '        Pageable pageable = PageUtil.getPageableWitParam(param, "createAt", true);\r\n'
+                contentString += f'        Page<{className}> list =  {instanceName}Repository.findAll(pageable);\r\n'
+                contentString += '        return ResponseService.success("成功！", list);\r\n'
+                contentString += '    }\r\n'
+                contentString += '\r\n'
+
+            if 'public HashMap<String, Object> delete(@PathVariable("id") Long id)' not in fileContent:
+                contentString += '    // 删除\r\n'
+                contentString += '    @GetMapping("/delete/{id}")\r\n'
+                contentString += '    public HashMap<String, Object> delete(@PathVariable("id") Long id) {\r\n'
+                contentString += f'        {className} temp = new {className}();\r\n'
+                contentString += f'        temp.setId(id);\r\n'
+                contentString += f'        {instanceName}Repository.delete(temp);\r\n'
+                contentString += '        return ResponseService.success("成功！", null);\r\n'
+                contentString += '    }\r\n'
+                contentString += '\r\n'
+
+            if 'public HashMap<String, Object> show(@PathVariable("id") Long id)' not in fileContent:
+                contentString += '    // 查看详情\r\n'
+                contentString += '    @GetMapping("/{id}")\r\n'
+                contentString += '    public HashMap<String, Object> show(@PathVariable("id") Long id) {\r\n'
+                contentString += f'        {className} temp = {instanceName}Repository.findById(id).orElse(null);\r\n'
+                contentString += '\r\n'
+                contentString += '        if (temp == null) {\r\n'
+                contentString += '            return ResponseService.error("数据不存在！");\r\n'
+                contentString += '        }\r\n'
+                contentString += '        return ResponseService.success("成功！", temp);\r\n'
+                contentString += '    }\r\n'
+                contentString += '\r\n'
             
-            # 生成文件
-            fileName = className + "Controller.java"
+            if 'public HashMap<String, Object> store(@RequestBody 'not in fileContent:
+                contentString += '    // 插入，保存\r\n'
+                contentString += '    @PostMapping\r\n'
+                contentString += '    @Validated\r\n'
+                contentString += f'    public HashMap<String, Object> store(@RequestBody {className} temp) ' + '{\r\n'
+                contentString += '\r\n'
+                contentString += f'        {className} b = new {className}();\r\n'
+                contentString += '        if (temp.getId() != null) {\r\n'
+                contentString += f'            b = {instanceName}Repository.findById(temp.getId()).orElse(null);\r\n'
+                contentString += '            if (b == null) {\r\n'
+                contentString += '                return ResponseService.error("id不存在");\r\n'
+                contentString += '            }\r\n'
+                contentString += '            else {\r\n'
+                contentString += '                BeanUtils.copyProperties(temp, b, ObjectSerializeUtil.getNullPropertyNames(temp));\r\n'
+                contentString += f'                {instanceName}Repository.save(b);\r\n'
+                contentString += '            }\r\n'
+                contentString += '        }\r\n'
+                contentString += '        else {\r\n'
+                contentString += f'            b = {instanceName}Repository.save(temp);\r\n'
+                contentString += '        }\r\n'
+                contentString += '\r\n'
+                contentString += '        return ResponseService.success("成功！", b);\r\n'
+                contentString += '    }\r\n'
+
+            contentString += '    '
+            
             self._generate_file_with_dir(contentString, "Controller", fileName, force=False)
 
     def create_empty_repository(self, tableInfo):
@@ -435,7 +459,7 @@ class JavaCreator:
             string += "import org.springframework.data.jpa.repository.JpaRepository;\r\n"
             string += "import org.springframework.stereotype.Repository;\r\n"
             string += "\r\n"
-            string += f"import com.qlzw.smartwc.DAO.{className};\r\n"
+            string += "import " + self.package_name + f".DAO.{className};\r\n"
             string += "\r\n"
             string += "@Repository\r\n"
             string += f"public interface {className}Repository extends JpaRepository<{className}, Long>"+"{\r\n"
@@ -464,17 +488,20 @@ class JavaCreator:
             string = f"package {self.package_name}.Controller;\r\n\r\n"
             string += "import java.util.*;\r\n"
             string += "\r\n"
-            string += 'import org.springframework.beans.factory.annotation.Autowired;\r\n'
+            string += 'import org.springframework.beans.BeanUtils;\r\n'
             string += 'import org.springframework.data.domain.Page;\r\n'
+            string += 'import com.qlzw.smartwc.Exception.CustomException;\r\n'
             string += 'import org.springframework.data.domain.Pageable;\r\n'
-            string += 'import org.springframework.validation.annotation.Validated;\r\n'
             string += 'import org.springframework.web.bind.annotation.*;\r\n'
+            string += 'import org.springframework.validation.annotation.Validated;\r\n'
+            string += 'import org.springframework.beans.factory.annotation.Autowired;\r\n'
             string += '\r\n'
-            string += f'import com.qlzw.smartwc.DAO.{className};\r\n'
-            string += f'import com.qlzw.smartwc.Repository.{className}Repository;\r\n'
-            string += 'import com.qlzw.smartwc.Service.UserCommonService;\r\n'
-            string += 'import com.qlzw.smartwc.Utils.PageUtil;\r\n'
-            string += 'import com.qlzw.smartwc.Utils.ResponseService;\r\n'
+            string += f'import {self.package_name}.DAO.{className};\r\n'
+            string += f'import {self.package_name}.Service.UserCommonService;\r\n'
+            string += f'import {self.package_name}.Repository.{className}Repository;\r\n'
+            string += f'import {self.package_name}.Utils.PageUtil;\r\n'
+            string += f'import {self.package_name}.Utils.ResponseService;\r\n'
+            string += f'import {self.package_name}.Utils.ObjectSerializeUtil;\r\n'
             string += "\r\n"
             string += "@RequestMapping(\"/" + instanceName + "\")\r\n"
             string += "@RestController\r\n"
@@ -508,6 +535,7 @@ class JavaCreator:
                 content = changeContent
             else:
                 content[1] = changeContent
+                # content[2] = "\r\n" + content[2]
                 content = (self.split_string).join(content)
         else:
             content = changeContent

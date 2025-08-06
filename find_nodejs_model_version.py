@@ -14,6 +14,7 @@ def list_directory_with_oswalk(root_path, list):
         
         # 输出当前目录下的所有文件和子目录
         indent = '  ' * depth
+        
         # print(f"{indent}├── {Path(dirpath).name}/")
         for file in filenames:
             # print(f"{indent}│   └── {file}")

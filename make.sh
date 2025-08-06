@@ -1,3 +1,5 @@
+source .venv/bin/activate
+
 # 创建名为 myenv 的虚拟环境
 # python3 -m venv myenv      
 # source ./myenv/bin/activate
