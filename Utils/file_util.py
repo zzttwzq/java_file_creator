@@ -71,12 +71,29 @@ class FileUtil:
         
         if os.path.exists(path) == False:
             os.makedirs(path)
+
+
+    # 创建自定义压缩函数
+    @staticmethod
+    def safe_make_archive(source_path, format):
+        with zipfile.ZipFile(
+            f"{source_path}.zip", "w", strict_timestamps=False  # 关键参数
+        ) as zf:
+            for root, dirs, files in os.walk(source_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, source_path)
+                    zf.write(file_path, arcname)
+        return f"{source_path}.zip"
     
     @staticmethod
     def pack_dir(sourcePath, storePath):
         # 检查路径
         FileUtil.check_path(storePath)
         
+        print(">>>" + sourcePath);
+        print(">>>" + storePath);
+
         # 压缩文件
         zip_name = shutil.make_archive(sourcePath, f'zip', sourcePath)
         # print(zip_name)  # 返回文件的最终路径

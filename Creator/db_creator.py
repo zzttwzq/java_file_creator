@@ -45,6 +45,7 @@ class DBCreator:
                 Log.error(dbCreator.logPrefix, "创建数据表时未指定表名！")
             else:
                 dbCreator.create_or_update_table(info, names)
+                dbCreator.create_table_struct(info, "-all")
         # 数据种子 
         elif mode == "-seed":
             if len(names) == 0:
@@ -279,6 +280,35 @@ class DBCreator:
                 Log.info(self.logPrefix, "数据表：'{0}' 已存在".format(tableInfo["name"]))
             elif res > 0:
                 Log.info(self.logPrefix, "数据表：'{0}' 创建成功".format(tableInfo["name"]))
+
+    def create_table_struct(self, info, names):
+        Log.blank()
+        Log.info(
+            self.logPrefix, "================ 正在生成数据表结构 ================".format(names))
+        
+        tableList = CreateUtil.get_tableInfo_width_names(info, names)
+        
+        for tableInfo in tableList:
+            tableInfo
+
+            values = ""
+            dbName = tableInfo["dbName"]
+            tableName = tableInfo["name"]
+            columnList = tableInfo["columns"]
+
+            for columnInfo in columnList:
+                cName = columnInfo["name"]
+                cProperty = columnInfo["columnProperty"]
+                cDes = columnInfo["des"]
+                if cName == "id":
+                    values += "\n  {0} int [primary key]".format(cName, cProperty, cDes)
+                else:
+                    values += "\n  {0} {1}".format(cName, cProperty, cDes)
+
+            values = values[0: len(values) - 2]
+            sql = f"\nTABLE {dbName}.{tableName} " + "{" + f"{values}" + "\n}"
+            # print(sql)
+            Log.info("create_table_struct", sql)
 
     def create_seed(self, info, names):
         log_tag = "create_seed"

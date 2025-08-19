@@ -292,11 +292,17 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.2.3
+1. admin_creator 修复备份路径错误
+2. db_creator 新增 create_table_struct 生成表结构方法
+3. java_creator 修复备份路径错误，user表改成雪花id
+4. file_util safe_make_archive 新增压缩方法
+5. 
+
 #### 1.2.2
 1. admin_creator 增加 AutoCreate/ 文件夹，避免直接覆盖
 2. db_creator 增加local test online 三种环境配置
 3. java_creator 增加id 类型为 BIGINT 可支持雪花id
-4. 
 
 #### 1.2.1
 1. java_creator Controller list 排序修改 page 起始从0

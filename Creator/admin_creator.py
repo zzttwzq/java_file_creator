@@ -35,7 +35,7 @@ class AdminCreator:
             "admin", "================ 正在为`{0}`生成admin文件 ================".format(names))
 
         # 备份目录
-        FileUtil.pack_dir(info["path"] + info["admin"]["srcPath"], info["path"] + info["backUpPath"] + "/admin")
+        FileUtil.pack_dir(info["path"] + info["admin"]["srcPath"], info["path"] + info["backUpPath"] + "/admin/")
 
         # ------------ 执行操作
         tableList = CreateUtil.get_tableInfo_width_names(info, names)

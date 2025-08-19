@@ -1,10 +1,5 @@
 source .venv/bin/activate
 
-# 创建名为 myenv 的虚拟环境
-# python3 -m venv myenv      
-# source ./myenv/bin/activate
-# python3 _cmd.py db -sql '';
-
 python3 _cmd.py schema
 python3 _cmd.py db -db -all
 python3 _cmd.py db -table -all

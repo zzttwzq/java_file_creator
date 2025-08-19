@@ -33,7 +33,7 @@ class JavaCreator:
             "java", "================ 正在为`{0}`生成java文件 ================".format(names))
 
         # 备份目录
-        FileUtil.pack_dir(javaCreator.package_path, info["path"] + info["backUpPath"] + "/java")
+        FileUtil.pack_dir(javaCreator.package_path, info["path"] + info["backUpPath"] + "/java/")
 
         # ------------ 执行操作
         tableList = CreateUtil.get_tableInfo_width_names(info, names)
@@ -187,7 +187,8 @@ class JavaCreator:
                 if propertyName == "id":
                     dataType = "Long"
                     prop_string += "    @Id\r\n"
-                    prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
+                    if tableName != "user":
+                        prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
 
                 if propertyName == "create_at":
                     prop_string += '\r\n    @CreatedDate\r\n'
