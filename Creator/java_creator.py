@@ -48,6 +48,7 @@ class JavaCreator:
             javaCreator.clearDir()
         elif mode == "-all":
             javaCreator.create_model(tableList)
+            javaCreator.create_dto(tableList, info["db"]["dto"])
             javaCreator.create_repository(tableList)
             javaCreator.create_controller(tableList)
         elif mode == "-util":
@@ -63,6 +64,176 @@ class JavaCreator:
                 javaCreator.create_service(tableList)
             if "controller" in mode:
                 javaCreator.create_controller(tableList)
+
+    def create_dto(self, table_info_list, dto_info):
+        """
+        @summary: 创建model实体类
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建model实体类 ================")
+
+        parseMap = {
+            "REAL": "Long.parseLong",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
+            "INT": "Integer.valueOf",
+            "TINYINT": "Integer.valueOf",
+            "SMALLINT": "Integer.valueOf",
+            "MEDIUMINT": "Long.valueOf",
+            "BIGINT": "Long.valueOf",
+            "FLOAT": "Float.parseFloat",
+            "DOUBLE": "Double.parseDouble",
+            "CHAR": "",
+            "VARCHAR": "",
+            "TINYTEXT": "",
+            "TEXT": "",
+            "MEDIUMTEXT": "",
+            "LONGTEXT": "",
+            "BOOL": "Boolean.parseBoolean",
+            "BOOLEAN": "Boolean.parseBoolean",
+            "DATETIME": "Timestamp.valueOf",
+            "DATE": "Timestamp.valueOf",
+            "TIME": "Timestamp.valueOf",
+            "TIMESTAMP": "Timestamp.valueOf",
+        }
+
+        coulumTypeTemp = {
+            "REAL": "Long",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long",
+            "INT": "Integer",
+            "TINYINT": "Integer",
+            "SMALLINT": "Integer",
+            "MEDIUMINT": "Long",
+            "BIGINT": "Long",
+            "CHAR": "String",
+            "VARCHAR": "String",
+            "TINYTEXT": "String",
+            "TEXT": "String",
+            "MEDIUMTEXT": "String",
+            "LONGTEXT": "String",
+            "FLOAT": "Float",
+            "DOUBLE": "Double",
+            "BOOLEAN": "boolean",
+            "BOOL": "boolean",
+            "DATETIME": "Timestamp",
+            "DATE": "Timestamp",
+            "TIME": "Timestamp",
+            "TIMESTAMP": "Timestamp",
+        }
+
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+            
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+            
+            # 字段属性列表
+            columns = copy.deepcopy(tableInfo["columns"])
+            
+            # 文件信息
+            string = self.split_string+ "\r\n"
+            string += "package " + self.package_name + ".DTO;\r\n\r\n"
+            string += 'import java.util.Map;\r\n'
+            string += 'import java.sql.Timestamp;\r\n'
+            string += '\r\n'
+            string += 'import jakarta.persistence.Column;\r\n'
+            string += 'import jakarta.persistence.GeneratedValue;\r\n'
+            string += 'import jakarta.persistence.GenerationType;\r\n'
+            string += 'import jakarta.persistence.EntityListeners;\r\n'
+            string += 'import jakarta.persistence.Id;\r\n'
+            string += '\r\n'
+            string += 'import org.springframework.data.annotation.CreatedDate;\r\n'
+            string += 'import org.springframework.data.annotation.LastModifiedDate;\r\n'
+            string += '\r\n'
+            string += 'import lombok.Data;\r\n'
+            string += 'import lombok.NoArgsConstructor;\r\n'
+            string += 'import lombok.ToString;\r\n'
+            string += 'import lombok.AllArgsConstructor;\r\n'
+            string += '\r\n'
+            string += '@Data\r\n'
+            string += '\r\n'
+            string += '@ToString\r\n'
+            string += '@NoArgsConstructor\r\n'
+            string += '@AllArgsConstructor\r\n'
+            string += "public class " + className + "DTO {\r\n\r\n"
+            
+            prop_string = ""
+            json_string = "    public void fromMap(Map<String, Object> map) {\r\n"
+
+            for columnInfo in columns:
+
+                # 字段名称
+                propertyName = columnInfo["name"]
+
+                # 字段描述
+                des = columnInfo["des"]
+
+                # 字段类型
+                columType = columnInfo["columnProperty"].split('(')[0]
+                columType = columType.split(' ')[0]
+                columType = columType.strip()
+                columType = columType.upper()
+                dataType = coulumTypeTemp[columType]
+                instPropertyName = CreateUtil.instance_name(propertyName)
+                if propertyName == "id":
+                    dataType = "Long"
+                    prop_string += "    @Id\r\n"
+                    if tableName != "user":
+                        prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
+
+                if propertyName == "create_at":
+                    prop_string += '\r\n    @CreatedDate\r\n'
+                    prop_string += '    @Column(name="create_at", updatable=false)\r\n'
+
+                if propertyName == "update_at":
+                    prop_string += '\r\n    @LastModifiedDate\r\n'
+                    prop_string += '    @Column(name="update_at")\r\n'
+
+                if dataType == "":
+                    prop_string += '@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")'
+
+                prop_string += "    private {0} {1}; //{2} \r\n".format(
+                    dataType, instPropertyName, des)
+
+                json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
+                if propertyName == "id":
+                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                else:
+                    json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                json_string += "        }\r\n\r\n"
+
+            # 获取dto下的数据
+            liKeys = dto_info.keys()
+            for key in liKeys:
+                tableProps = dto_info[key]
+                tableTitle = key.split(":")[0]
+
+                if tableTitle == tableName:
+                    for li in tableProps:
+                        columInfo = li.split(":")
+                        columName = columnInfo[0]
+                        columDesc = columnInfo[1]
+                        columProps = columnInfo[2]
+                        columType = columProps.split('(')[0]
+
+                        prop_string += "    private {0} {1}; //{2} \r\n".format(
+                        dataType, instPropertyName, des)
+
+            prop_string +="\r\n"
+
+            json_string = json_string[0:len(json_string)-2]
+            json_string += "    }\r\n"
+
+            string += prop_string
+            string += "}\r\n"
+            string += self.split_string + "\r\n"
+
+            # 生成文件
+            self._generate_file_with_dir(string, "DTO", className + "DTO.java", force=True)
 
     def create_model(self, table_info_list):
         """
@@ -261,7 +432,7 @@ class JavaCreator:
             fileName = className + "Controller.java"
             
             self.create_empty_controller(tableInfo)
-                
+            
             contentString = "\r\n"
 
             fileDir = self.package_path + "Controller" + "/"
@@ -381,7 +552,7 @@ class JavaCreator:
                 contentString += '    }\r\n'
                 contentString += '\r\n'
 
-            if 'public HashMap<String, Object> list(@RequestParam Map<String, Object> param)' not in fileContent:
+            if 'public HashMap<String, Object> list(' not in fileContent:
                 contentString += '    // 获取列表\r\n'
                 contentString += '    @GetMapping\r\n'
                 contentString += '    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n'
@@ -392,7 +563,7 @@ class JavaCreator:
                 contentString += '    }\r\n'
                 contentString += '\r\n'
 
-            if 'public HashMap<String, Object> delete(@PathVariable("id") Long id)' not in fileContent:
+            if 'public HashMap<String, Object> delete(' not in fileContent:
                 contentString += '    // 删除\r\n'
                 contentString += '    @GetMapping("/delete/{id}")\r\n'
                 contentString += '    public HashMap<String, Object> delete(@PathVariable("id") Long id) {\r\n'
@@ -403,7 +574,7 @@ class JavaCreator:
                 contentString += '    }\r\n'
                 contentString += '\r\n'
 
-            if 'public HashMap<String, Object> show(@PathVariable("id") Long id)' not in fileContent:
+            if 'public HashMap<String, Object> show(' not in fileContent:
                 contentString += '    // 查看详情\r\n'
                 contentString += '    @GetMapping("/{id}")\r\n'
                 contentString += '    public HashMap<String, Object> show(@PathVariable("id") Long id) {\r\n'
@@ -416,13 +587,23 @@ class JavaCreator:
                 contentString += '    }\r\n'
                 contentString += '\r\n'
             
-            if 'public HashMap<String, Object> store(@RequestBody 'not in fileContent:
-                contentString += '    // 插入，保存\r\n'
+            if 'public HashMap<String, Object> store('not in fileContent:
+                contentString += '    // 插入，保存功能；这个接口会把数据全都替换掉\r\n'
                 contentString += '    @PostMapping\r\n'
                 contentString += '    @Validated\r\n'
                 contentString += f'    public HashMap<String, Object> store(@RequestBody {className} temp) ' + '{\r\n'
                 contentString += '\r\n'
-                contentString += f'        {className} b = new {className}();\r\n'
+                contentString += f'        temp = {instanceName}Repository.save(temp);\r\n'
+                contentString += '        return ResponseService.success("成功！", temp);\r\n'
+                contentString += '    }\r\n'
+
+            if 'public HashMap<String, Object> save('not in fileContent:
+                contentString += '    // 插入，保存功能；这个接口只会替换有值的数据，null的不替换\r\n'
+                contentString += '    @PostMapping("/save")\r\n'
+                contentString += '    @Validated\r\n'
+                contentString += f'    public HashMap<String, Object> save(@RequestBody {className} temp) ' + '{\r\n'
+                contentString += '\r\n'
+                contentString += f'        {className} b;\r\n'
                 contentString += '        if (temp.getId() != null) {\r\n'
                 contentString += f'            b = {instanceName}Repository.findById(temp.getId()).orElse(null);\r\n'
                 contentString += '            if (b == null) {\r\n'

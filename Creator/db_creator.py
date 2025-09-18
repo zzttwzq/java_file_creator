@@ -55,7 +55,7 @@ class DBCreator:
         # 数据种子
         elif mode == "-sql":
             sql = ""
-            dbCreator.run_sql(info, sql)
+            dbCreator.run_sql()
         # 创建所有
         elif mode == "-all":
             dbCreator.create_db()
@@ -101,6 +101,8 @@ class DBCreator:
                     "width": 100,
                 }]
                 
+                optionMap = "{\n"
+
                 for li in tableProps:
                     columInfo = li.split(":")
 
@@ -140,6 +142,30 @@ class DBCreator:
                     else:
                         formType = columnProperty
 
+                    options = "[\n"
+                    isSelect = False
+                    l = columInfo[1].split(" ")
+                    if len(l) > 1 and "." in columInfo[1]:
+                        l.pop(0)
+                        isSelect = True
+
+                        name = CreateUtil.instance_name(columInfo[0])
+                        optionMap += f"        {name}Map: " + "{\n"
+                        for it in l:
+                            ss = it.split(".")
+                            options += "            {\n"
+                            options += f'              label: "{ss[1]}",\n'
+                            options += f"              value: {ss[0]},\n"
+                            options += "            },\n"
+
+                            optionMap += f'          {ss[0]}: "{ss[1]}",\n'
+                        optionMap += "        },\n"
+
+                    options += "          ],\n"
+
+                    if isSelect:
+                        formType = "select"
+
                     if len(columInfo) >= 4:
                         width = columInfo[3]
 
@@ -154,8 +180,8 @@ class DBCreator:
                         
                     if formType == "date" or formType == "time":
                         showTime = 1
-                        
-                    colums.append({
+                    
+                    obj = {
                         "name": columInfo[0],
                         "des": columInfo[1],
                         "columnProperty": columInfo[2],
@@ -166,8 +192,14 @@ class DBCreator:
                         "required": required,
                         "sort": "up",
                         "align": "left",
-                        "width": width
-                    })
+                        "options": options,
+                    }
+                    if width != "auto":
+                        obj["width"] = int(width)
+                    else:
+                        obj["width"] = width
+
+                    colums.append(obj)
 
                 colums.append({
                     "name": "create_at",
@@ -214,17 +246,7 @@ class DBCreator:
                 if tableTitle[0][0:1] == "+":
                     tableTitle[0] = tableTitle[0].replace("+", "")
 
-                # admin_menu = {}
-                # admin_menu_seed = info["db"]["tableSeed"]
-                # admin_menu_seed_keys = admin_menu_seed.keys()
-                # for key in admin_menu_seed_keys:
-                #     if key == tableTitle[0]:
-                #         for it in admin_menu_seed[key]:
-                #             print(it)
-                #             if it["id"] == menu_id:
-                #                 admin_menu = it
-                #                 break
-                # print("admin_menu", admin_menu)
+                optionMap += "      },\n"
 
                 tableList.append({
                     "name": tableTitle[0],
@@ -236,6 +258,7 @@ class DBCreator:
                     "des": tableTitle[1],
                     # "admin_menu": admin_menu,
                     "showPage": "",
+                    "optionMap": optionMap,
                     "columns": colums
                 })
 
@@ -306,7 +329,7 @@ class DBCreator:
                     values += "\n  {0} {1}".format(cName, cProperty, cDes)
 
             values = values[0: len(values) - 2]
-            sql = f"\nTABLE {dbName}.{tableName} " + "{" + f"{values}" + "\n}"
+            sql = f"\nTABLE `{dbName}`.`{tableName}` " + "{" + f"{values}" + "\n}"
             # print(sql)
             Log.info("create_table_struct", sql)
 
@@ -317,7 +340,7 @@ class DBCreator:
         Log.info(
             self.logPrefix, "================ 正在创建数据集 ================".format(names))
         
-        tableList = tableList = CreateUtil.get_tableInfo_width_names(info, names)
+        tableList = CreateUtil.get_tableInfo_width_names(info, names)
         tableInfoList = {}
         
         tableSeeds = info["db"]["tableSeed"]
@@ -351,14 +374,48 @@ class DBCreator:
                 elif res > 0:
                     Log.success(log_tag, "seed添加成功：{}".format(new_data))
 
-    def run_sql(self, sql):
+    def run_sql(self):
+        dirPath = "/Users/wuzhiqiang/Desktop/生命涌 现/table/"
+        
+        # 获取目录下的所有文件
+        file_list = []
+        if os.path.exists(dirPath):
+            for file_name in os.listdir(dirPath):
+                file_path = os.path.join(dirPath, file_name)
+                if os.path.isfile(file_path):
+                    file_list.append(file_path)
+        
+        # 读取文件内容并通过INSERT分割字符串放到数组里
+        sql_commands = []
+        for file_path in file_list:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    # 通过INSERT分割字符串
+                    insert_statements = content.split('INSERT')
+                    for stmt in insert_statements:
+                        if stmt.strip():  # 跳过空字符串
+                            sql_commands.append('INSERT' + stmt.strip())
+            except Exception as e:
+                Log.error(self.logPrefix, f"读取文件 {file_path} 失败: {e}")
+        
         Log.blank()
-        Log.info(self.logPrefix, "================ 正在执行SQL ================")
-        # res = self.sqlConnection.exec_sql(sql)
-        # if res == 0:
-        #     Log.success(self.logPrefix, "SQL 执行成功")
-        # else:
-        #     Log.error(self.logPrefix, "SQL 执行失败")
+        Log.info(self.logPrefix, f"找到 {len(file_list)} 个文件，提取出 {len(sql_commands)} 条SQL语句")
+        
+        # 执行所有SQL语句
+        success_count = 0
+        for sql in sql_commands:
+            res = self.sqlConnection.exec_sql(sql)
+            if res > 0:
+                success_count += 1
+                Log.info(self.logPrefix, f"SQL执行成功: {sql[:100]}...")
+            else:
+                Log.error(self.logPrefix, f"SQL执行失败: {sql[:100]}...")
+        
+        if success_count == len(sql_commands):
+            Log.success(self.logPrefix, f"所有SQL执行成功，共 {success_count} 条")
+        else:
+            Log.error(self.logPrefix, f"SQL执行完成，成功 {success_count}/{len(sql_commands)} 条")
 
     @staticmethod
     def _cmd_error():

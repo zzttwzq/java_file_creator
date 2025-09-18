@@ -292,6 +292,13 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.2.4
+1. mysqlUtil 更新数据库表等添加``防止内容引起的问题
+2. admin_creator 添加options功能
+3. db_creator 添加run_sql功能
+4. db_creator schema 添加opitons功能，width字段添加auto或者xxpx
+5. java_creator 添加create_dto功能，controller 添加save接口
+
 #### 1.2.3
 1. admin_creator 修复备份路径错误
 2. db_creator 新增 create_table_struct 生成表结构方法

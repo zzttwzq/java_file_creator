@@ -91,6 +91,7 @@ class AdminCreator:
             relateMethod = ""
             relateMethod2 = ""
             relateMethodCall = ""
+            optionString = ""
 
             for columnInfo in columnList:
                 # ---------- table columns ----------
@@ -104,6 +105,9 @@ class AdminCreator:
                 columns += "          dataIndex: '{0}',\r\n".format(columnInstanceName)
                 columns += "          key: '{0}',\r\n".format(columnInstanceName)
                 keys = columnInfo.keys()
+
+                if "formType" in keys and columnInfo["formType"] == "select":
+                    optionString += f'            it["{columnInstanceName}"] = this.optionMap["{columnInstanceName}Map"][it["{columnInstanceName}"]];\r\n'
                 
                 if "#" in columnDes:
                     relateName = columnDes.split("#")[1]
@@ -225,18 +229,7 @@ class AdminCreator:
                     item += "          precision: 0,\r\n"
 
                 if formType == 'select':
-                    option_string = ''
-                    for value3 in columnInfo['options']:
-                        option_string += "            {\r\n"
-                        option_string += "              'label': '{0}',\r\n".format(
-                            value3['label'])
-                        option_string += "              'value': {1}\r\n".format(
-                            value3['value'])
-                        option_string += "            },\r\n"
-
-                    item += "          options: [\r\n"
-                    item += option_string
-                    item += "          ],\r\n"
+                    item += "          options: " + columnInfo['options']
 
                 item += propKeys
                 item += "        },\r\n"
@@ -356,6 +349,8 @@ class AdminCreator:
             mixin += forms
             mixin += "      ],\r\n"
             mixin += "\r\n"
+            mixin += "      optionMap: " + tableInfo['optionMap']
+            mixin += "\r\n"
             mixin += "      listRequest: get{0},\r\n".format(className)
             mixin += "      addRequest: post{0},\r\n".format(className)
             mixin += "      editRequest: post{0},\r\n".format(className)
@@ -375,9 +370,10 @@ class AdminCreator:
             mixin += '      this.log(">onRequestSuccess", type, res);\r\n'
             mixin += '      switch (type) {\r\n'
             mixin += '        case this.TableRequestType.onList:\r\n'
-            mixin += '          // res.data.map((it) => {\r\n'
-            mixin += '          //   it["title"] = "name";\r\n'
-            mixin += '          // });\r\n'
+            mixin += '          res.data.map((it) => {\r\n'
+            mixin += '              console.log(it)\r\n'
+            mixin += optionString
+            mixin += '          });\r\n'
             mixin += '          break;\r\n'
             mixin += '        case this.TableRequestType.onAdd:\r\n'
             mixin += '          refreshList(); // 刷新列表\r\n'
