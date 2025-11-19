@@ -311,6 +311,7 @@ class DBCreator:
         
         tableList = CreateUtil.get_tableInfo_width_names(info, names)
         
+        sql1 = ""
         for tableInfo in tableList:
             tableInfo
 
@@ -323,16 +324,17 @@ class DBCreator:
                 cName = columnInfo["name"]
                 cProperty = columnInfo["columnProperty"]
                 cDes = columnInfo["des"]
-                if cName == "id":
-                    values += "\n  {0} int [primary key]".format(cName, cProperty, cDes)
-                else:
-                    values += "\n  {0} {1}".format(cName, cProperty, cDes)
+                values += "\n  {0} {1}".format(cName, cProperty, cDes)
 
-            values = values[0: len(values) - 2]
+            # values = values[0: len(values) - 2]
             sql = f"\nTABLE `{dbName}`.`{tableName}` " + "{" + f"{values}" + "\n}"
-            # print(sql)
-            Log.info("create_table_struct", sql)
+            # Log.info("create_table_struct", sql)
+            sql1 += sql; 
 
+        Log.info(self.logPath + "table.txt")
+        # Log.info(sql1)
+        FileUtil.write_file(sql1, self.logPath + "table.txt");
+    
     def create_seed(self, info, names):
         log_tag = "create_seed"
         

@@ -90,9 +90,6 @@ class FileUtil:
     def pack_dir(sourcePath, storePath):
         # 检查路径
         FileUtil.check_path(storePath)
-        
-        print(">>>" + sourcePath);
-        print(">>>" + storePath);
 
         # 压缩文件
         zip_name = shutil.make_archive(sourcePath, f'zip', sourcePath)

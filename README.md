@@ -292,6 +292,15 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 ## 更新内容
 
+#### 1.2.6
+1. db_creator 生成table_struce 在log下
+2. java_creator 可以更改java目录名称
+3. java_creator 可以排除 dao dto controller 等的生成规则
+
+#### 1.2.5
+1. java_creator model 可以忽略id自动生成
+2. java_creator controller 可以指定生成
+
 #### 1.2.4
 1. mysqlUtil 更新数据库表等添加``防止内容引起的问题
 2. admin_creator 添加options功能

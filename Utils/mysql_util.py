@@ -11,7 +11,7 @@ class MySqlConfig:
     passwd = ""
     name = ""
     char_set = "utf8"
- 
+
 class MySqlUtil:
     _conn = None
     _cursor = None

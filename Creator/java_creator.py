@@ -12,6 +12,11 @@ class JavaCreator:
     java_temp_path = os.getcwd()+"/dist/java/"
     package_path = ""
     package_name = ""
+    javaPath = ""
+    visible_controllers = []
+    modelIgnoreAutoId = []
+    modelDtoIgnore = []
+    modelIgnore = []
     split_string = "// ############ 自动生成 ############"
 
     @staticmethod
@@ -20,10 +25,18 @@ class JavaCreator:
 
         # ------------ 准备路径信息
         javaCreator.package_name = info["java"]["packageName"]
+        javaCreator.visible_controllers = info["java"]["visibleControllers"]
+        javaCreator.modelIgnoreAutoId = info["java"]["modelIgnoreAutoId"]
+        javaCreator.modelDtoIgnore = info["java"]["modelDtoIgnore"]
+        javaCreator.modelIgnore = info["java"]["modelIgnore"]
+        javaCreator.javaPath = info["path"] + info["java"]["javaPath"]
+        
         p = javaCreator.package_name.split(".")
         p = "/".join(p)
-        javaCreator.package_path = info["path"] + "java/src/main/java/" + p + "/"
+        javaCreator.package_path = javaCreator.javaPath + "/src/main/java/" + p + "/"
+        
         Log.info("admin", "源目录：" + javaCreator.package_path)
+
         if not FileUtil.path_exists(javaCreator.package_path):
             Log.error("java_creator", "源目录不存在，请指定源目录")
             return 0
@@ -51,6 +64,8 @@ class JavaCreator:
             javaCreator.create_dto(tableList, info["db"]["dto"])
             javaCreator.create_repository(tableList)
             javaCreator.create_controller(tableList)
+            # javaCreator.create_mapper(tableList)
+            # javaCreator.create_provider(tableList)
         elif mode == "-util":
             javaCreator.CreateUtil()
         else:
@@ -75,7 +90,7 @@ class JavaCreator:
         Log.info("java", "================ 创建model实体类 ================")
 
         parseMap = {
-            "REAL": "Long.parseLong",
+            "REAL": "Long.valueOf",
             'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
             'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
             "INT": "Integer.valueOf",
@@ -83,16 +98,16 @@ class JavaCreator:
             "SMALLINT": "Integer.valueOf",
             "MEDIUMINT": "Long.valueOf",
             "BIGINT": "Long.valueOf",
-            "FLOAT": "Float.parseFloat",
-            "DOUBLE": "Double.parseDouble",
+            "FLOAT": "Float.valueOf",
+            "DOUBLE": "Double.valueOf",
             "CHAR": "",
             "VARCHAR": "",
             "TINYTEXT": "",
             "TEXT": "",
             "MEDIUMTEXT": "",
             "LONGTEXT": "",
-            "BOOL": "Boolean.parseBoolean",
-            "BOOLEAN": "Boolean.parseBoolean",
+            "BOOL": "Boolean.valueOf",
+            "BOOLEAN": "Boolean.valueOf",
             "DATETIME": "Timestamp.valueOf",
             "DATE": "Timestamp.valueOf",
             "TIME": "Timestamp.valueOf",
@@ -127,6 +142,10 @@ class JavaCreator:
         for tableInfo in table_info_list:
             # 表名称
             tableName = tableInfo["name"]
+
+            if (tableName in self.modelDtoIgnore) == True:
+                Log.warn(f"!!! table_name: {tableName} modelDtoIgnore 中，所以忽略")
+                continue
             
             # 产生的类名称
             className = CreateUtil.camelize(tableName)
@@ -136,7 +155,7 @@ class JavaCreator:
             
             # 文件信息
             string = self.split_string+ "\r\n"
-            string += "package " + self.package_name + ".DTO;\r\n\r\n"
+            string += "package " + self.package_name + ".dto;\r\n\r\n"
             string += 'import java.util.Map;\r\n'
             string += 'import java.sql.Timestamp;\r\n'
             string += '\r\n'
@@ -203,7 +222,10 @@ class JavaCreator:
                 if propertyName == "id":
                     json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
                 else:
-                    json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                    if columType in "CHAR,VARCHAR,TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT":
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "map.get(\"" + instPropertyName + "\").toString();\r\n"
+                    else:
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
                 json_string += "        }\r\n\r\n"
 
             # 获取dto下的数据
@@ -233,7 +255,7 @@ class JavaCreator:
             string += self.split_string + "\r\n"
 
             # 生成文件
-            self._generate_file_with_dir(string, "DTO", className + "DTO.java", force=True)
+            self._generate_file_with_dir(string, "dto", className + "DTO.java", force=True)
 
     def create_model(self, table_info_list):
         """
@@ -245,7 +267,7 @@ class JavaCreator:
         Log.info("java", "================ 创建model实体类 ================")
 
         parseMap = {
-            "REAL": "Long.parseLong",
+            "REAL": "Long.valueOf",
             'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
             'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
             "INT": "Integer.valueOf",
@@ -253,16 +275,16 @@ class JavaCreator:
             "SMALLINT": "Integer.valueOf",
             "MEDIUMINT": "Long.valueOf",
             "BIGINT": "Long.valueOf",
-            "FLOAT": "Float.parseFloat",
-            "DOUBLE": "Double.parseDouble",
+            "FLOAT": "Float.valueOf",
+            "DOUBLE": "Double.valueOf",
             "CHAR": "",
             "VARCHAR": "",
             "TINYTEXT": "",
             "TEXT": "",
             "MEDIUMTEXT": "",
             "LONGTEXT": "",
-            "BOOL": "Boolean.parseBoolean",
-            "BOOLEAN": "Boolean.parseBoolean",
+            "BOOL": "Boolean.valueOf",
+            "BOOLEAN": "Boolean.valueOf",
             "DATETIME": "Timestamp.valueOf",
             "DATE": "Timestamp.valueOf",
             "TIME": "Timestamp.valueOf",
@@ -297,6 +319,10 @@ class JavaCreator:
         for tableInfo in table_info_list:
             # 表名称
             tableName = tableInfo["name"]
+
+            if (tableName in self.modelIgnore) == True:
+                Log.warn(f"!!! table_name: {tableName} modelIgnore 中，所以忽略")
+                continue
             
             # 产生的类名称
             className = CreateUtil.camelize(tableName)
@@ -306,7 +332,7 @@ class JavaCreator:
             
             # 文件信息
             string = self.split_string+ "\r\n"
-            string += "package " + self.package_name + ".DAO;\r\n\r\n"
+            string += "package " + self.package_name + ".dao;\r\n\r\n"
             string += 'import java.util.Map;\r\n'
             string += 'import java.sql.Timestamp;\r\n'
             string += '\r\n'
@@ -358,7 +384,8 @@ class JavaCreator:
                 if propertyName == "id":
                     dataType = "Long"
                     prop_string += "    @Id\r\n"
-                    if tableName != "user":
+
+                    if (tableName in self.modelIgnoreAutoId) == False:
                         prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
 
                 if propertyName == "create_at":
@@ -379,7 +406,10 @@ class JavaCreator:
                 if propertyName == "id":
                     json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
                 else:
-                    json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                    if columType in "CHAR,VARCHAR,TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT":
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "map.get(\"" + instPropertyName + "\").toString();\r\n"
+                    else:
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
                 json_string += "        }\r\n\r\n"
 
             prop_string +="\r\n"
@@ -392,7 +422,7 @@ class JavaCreator:
             string += self.split_string + "\r\n"
 
             # 生成文件
-            self._generate_file_with_dir(string, "DAO", className + ".java", force=True)
+            self._generate_file_with_dir(string, "dao", className + ".java", force=True)
 
     def create_repository(self, table_info_list):
         """
@@ -419,6 +449,11 @@ class JavaCreator:
             # 表名称
             tableName = tableInfo["name"]
 
+            if self.visible_controllers != None and self.visible_controllers.count() > 0:
+                if (tableName in self.visible_controllers) == False:
+                    Log.warn(f"!!! table_name: {tableName} 存在在visible_controllers 中，所以忽略")
+                    continue
+
             # 对应的类名称
             className = CreateUtil.camelize(tableName)
 
@@ -435,7 +470,7 @@ class JavaCreator:
             
             contentString = "\r\n"
 
-            fileDir = self.package_path + "Controller" + "/"
+            fileDir = self.package_path + "controller" + "/"
             filePath = fileDir + fileName
             fileContent = FileUtil.read_file(filePath)
             fileContent = "".join(fileContent)
@@ -557,7 +592,7 @@ class JavaCreator:
                 contentString += '    @GetMapping\r\n'
                 contentString += '    public HashMap<String, Object> list(@RequestParam Map<String, Object> param) {\r\n'
                 contentString += '\r\n'
-                contentString += '        Pageable pageable = PageUtil.getPageableWitParam(param, "createAt", true);\r\n'
+                contentString += '        Pageable pageable = PageUtil.getPageableWitParam(param, "createAt", false);\r\n'
                 contentString += f'        Page<{className}> list =  {instanceName}Repository.findAll(pageable);\r\n'
                 contentString += '        return ResponseService.success("成功！", list);\r\n'
                 contentString += '    }\r\n'
@@ -598,7 +633,7 @@ class JavaCreator:
                 contentString += '    }\r\n'
 
             if 'public HashMap<String, Object> save('not in fileContent:
-                contentString += '    // 插入，保存功能；这个接口只会替换有值的数据，null的不替换\r\n'
+                contentString += '\r\n    // 插入，保存功能；这个接口只会替换有值的数据，null的不替换\r\n'
                 contentString += '    @PostMapping("/save")\r\n'
                 contentString += '    @Validated\r\n'
                 contentString += f'    public HashMap<String, Object> save(@RequestBody {className} temp) ' + '{\r\n'
@@ -623,7 +658,201 @@ class JavaCreator:
 
             contentString += '    '
             
-            self._generate_file_with_dir(contentString, "Controller", fileName, force=False)
+            self._generate_file_with_dir(contentString, "controller", fileName, force=False)
+
+    def create_mapper(self, tableInfo):
+
+        for tableInfo in tableInfo:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的实例名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            filepath = self.package_path + "mapper/" + className + "Mapper.java"
+
+            # if file_manager.checkFilePath(filepath):
+
+            string = "package " + self.package_name + ".mapper;\r\n"
+            string += "import org.apache.ibatis.annotations.*;\r\n\r\n"
+            string += "import java.util.List;\r\n"
+            string += "import com.qlzw.smartwc.dao." + className + ";\r\n\r\n"
+            string += "import com.qlzw.smartwc.Mapper." + className + "Mapper;\r\n"
+            string += "import com.qlzw.smartwc.Provider." + className + "Provider;\r\n"
+
+            string += "import org.springframework.stereotype.Component;\r\n\r\n"
+            string += "@Component(value = \"" + className + "Mapper\")\r\n"
+            string += "@Mapper\r\n"
+            string += "public interface " + className + "Mapper {\r\n\r\n"
+            string += "    //### 自动生成 ###\r\n"
+            string += "    @SelectProvider(type = " + className + \
+                "Provider.class, method = \"selectAll\")\r\n"
+            string += "    public List<" + className + \
+                "> list(@Param(\"page\") Integer page, @Param(\"size\") Integer size);\r\n\r\n"
+            string += "    @SelectProvider(type = " + className + \
+                "Provider.class, method = \"selectOne\")\r\n"
+            string += "    public " + className + \
+                " show(@Param(\"id\") Long id);\r\n\r\n"
+            string += "    @InsertProvider(type = " + className + \
+                "Provider.class, method = \"insertOne\")\r\n"
+            string += "    @Options(useGeneratedKeys = true, keyProperty = \"id\", keyColumn = \"id\")//加入该注解可以保持对象后，查看对象插入id\r\n"
+            string += "    public Boolean insert(" + \
+                className + " " + instanceName + ");\r\n\r\n"
+            string += "    @DeleteProvider(type = " + className + \
+                "Provider.class, method = \"deleteOne\")\r\n"
+            string += "    public Boolean delete(@Param(\"id\") Long id);\r\n\r\n"
+            string += "    @UpdateProvider(type = " + className + \
+                "Provider.class, method = \"updateOne\")\r\n"
+            string += "    public Boolean update(" + \
+                className + " " + instanceName + ");\r\n\r\n"
+            string += "    //### 自动生成 ###\r\n"
+            string += "}"
+
+            Log.success("Mapper", "生成："+filepath)
+            f = open(filepath, mode='w+')
+            f.write(string)
+            f.close()
+
+    def create_provider(self, tableInfo):
+
+        for tableInfo in tableInfo:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的实例名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            # 字段属性列表
+            columns = tableInfo["columns"]
+            # columns = TableUtil.addModelDefaultProperty(columns)
+
+            string = "package " + self.package_name + ".provider;\r\n\r\n"
+            string += "import com.qlzw.smartwc.dao." + className + ";\r\n\r\n"
+            string += "import java.util.Map;\r\n\r\n"
+            string += "public class " + className + "Provider {\r\n\r\n"
+
+            if_string = ""
+            insert_string = "        String key = \"\";\r\n        String value = \"\";\r\n"
+            update_string = "        String sql = \"\";\r\n"
+
+            colum_string = ""
+            for columnInfo in columns:
+                # 字段名称
+                propertyName = CreateUtil.instance_name(columnInfo["name"])
+                propClassName = CreateUtil.camelize(columnInfo["name"])
+
+                # 字段类型
+                columType = columnInfo["columnProperty"].split('(')[0]
+                columType = columType.strip()
+                columType = columType.upper()
+
+                if (propertyName == 'id' or columType == 'REAL'):
+                    if_string = "        if (" + instanceName + ".get" + propClassName + \
+                        "() != null && " + instanceName + \
+                        ".get" + propClassName + "() > 0) {\r\n"
+
+                elif (columType == 'TINYINT' or
+                    columType == 'SMALLINT' or
+                    columType == 'MEDIUMINT' or
+                    columType == 'INT' or
+                    columType == 'BIGINT' or
+                    columType == 'TIMESTAMP'):
+                    if_string = "        if (" + instanceName + ".get" + propClassName + \
+                        "() != null && " + instanceName + \
+                        ".get" + propClassName + "() >= 0) {\r\n"
+
+                elif (columType == 'CHAR' or
+                    columType == 'VARCHAR' or
+                    columType == 'TINYTEXT' or
+                    columType == 'TEXT' or
+                    columType == 'MEDIUMTEXT' or
+                    columType == 'LONGTEXT'):
+                    if_string = "        if (" + instanceName + ".get" + propClassName + \
+                        "() != null && !" + instanceName + ".get" + \
+                        propClassName + "().isEmpty()) {\r\n"
+
+                elif (columType == 'FLOAT'):
+                    if_string = "        if (" + instanceName + ".get" + propClassName + \
+                        "() != null && " + instanceName + \
+                        ".get" + propClassName + "() > 0) {\r\n"
+
+                elif (columType == 'DOUBLE'):
+                    if_string = "        if (" + instanceName + ".get" + propClassName + \
+                        "() != null && " + instanceName + \
+                        ".get" + propClassName + "() > 0) {\r\n"
+
+                elif (columType == 'BOOLEAN'):
+                    if_string = "        if (" + instanceName + ".get" + propClassName + \
+                        "() != null && " + instanceName + ".get" + \
+                        propClassName + "() == true) {\r\n"
+
+                elif (columType == 'DATETIME' or
+                    columType == 'DATE' or
+                    columType == 'TIME'):
+                    if_string = "        if (" + instanceName + \
+                        ".get" + propClassName + "() != null) {\r\n"
+
+                else:
+                    Log.info("pojo", "未知字段类型: " + columType)
+                    pass
+
+                colum_string += " " + tableName + "." + propertyName + ","
+
+                insert_string += if_string
+                insert_string += "           key += \"" + propertyName + ",\";\r\n"
+                insert_string += "           value += \"#{" + \
+                    propertyName + "},\";\r\n"
+                insert_string += "        }\r\n\r\n"
+
+                update_string += if_string
+                update_string += "           sql += \"" + \
+                    propertyName + " = #{" + propertyName + "},\";\r\n"
+                update_string += "        }\r\n\r\n"
+
+            colum_string = colum_string[0:len(colum_string)-1]
+
+            string += "    //### 自动生成 ###\r\n"
+            string += "    public String selectAll(Map<String, Object> parm) {\r\n\r\n"
+            string += "        return \"select " + colum_string + \
+                " from " + tableName + " limit #{page},#{size}\";\r\n"
+            string += "    }\r\n\r\n"
+            string += "    public String selectOne() {\r\n\r\n"
+            string += "        return \"select " + colum_string + " from " + \
+                tableName + " where " + tableName + ".id=#{id}\";\r\n"
+            string += "    }\r\n\r\n"
+            string += "    public String deleteOne() {\r\n\r\n"
+            string += "        return \"delete from " + \
+                tableName + " where id = #{id}\";\r\n"
+            string += "    }\r\n\r\n"
+            string += "    public String insertOne(" + \
+                className + " " + instanceName + ") {\r\n\r\n"
+            string += insert_string
+            string += "        key = key.substring(0,key.length()-1);\r\n"
+            string += "        value = value.substring(0,value.length()-1);\r\n\r\n"
+            string += "        return \"insert into " + tableName + \
+                " (\" + key + \") values (\" + value + \")\";\r\n"
+            string += "    }\r\n\r\n"
+            string += "    public String updateOne(" + \
+                className + " " + instanceName + ") {\r\n\r\n"
+            string += update_string
+            string += "        sql = sql.substring(0,sql.length()-1);\r\n\r\n"
+            string += "        return \"update " + tableName + \
+                " set \" + sql + \" where id = #{id}\";\r\n"
+            string += "    }\r\n"
+            string += "    //### 自动生成 ###\r\n"
+            string += "}\r\n"
+
+            filepath = self.package_path + "provider/" + className + "Provider.java"
+            Log.success("Provider", "生成："+filepath)
+            f = open(filepath, mode='w+')
+            f.write(string)
+            f.close()
 
     def create_empty_repository(self, tableInfo):
         # 表名称
@@ -632,16 +861,16 @@ class JavaCreator:
         # 对应的类名称
         className = CreateUtil.camelize(tableName)
 
-        dirName = "Repository"
+        dirName = "repository"
         fileName = className + "Repository.java"
         filePath = self.package_path + dirName + "/" + fileName
         if FileUtil.path_exists(filePath) == False:
-            string = "package " + self.package_name + ".Repository;\r\n\r\n"
+            string = "package " + self.package_name + ".repository;\r\n\r\n"
             string += "\r\n"
             string += "import org.springframework.data.jpa.repository.JpaRepository;\r\n"
             string += "import org.springframework.stereotype.Repository;\r\n"
             string += "\r\n"
-            string += "import " + self.package_name + f".DAO.{className};\r\n"
+            string += "import " + self.package_name + f".dao.{className};\r\n"
             string += "\r\n"
             string += "@Repository\r\n"
             string += f"public interface {className}Repository extends JpaRepository<{className}, Long>"+"{\r\n"
@@ -663,27 +892,24 @@ class JavaCreator:
         # 对应的类名称
         instanceName = CreateUtil.instance_name(tableName)
 
-        dirName = "Controller"
+        dirName = "controller"
         fileName = className + "Controller.java"
         filePath = self.package_path + dirName + "/" + fileName
         if FileUtil.path_exists(filePath) == False:
-            string = f"package {self.package_name}.Controller;\r\n\r\n"
+            string = f"package {self.package_name}.controller;\r\n\r\n"
             string += "import java.util.*;\r\n"
             string += "\r\n"
             string += 'import org.springframework.beans.BeanUtils;\r\n'
             string += 'import org.springframework.data.domain.Page;\r\n'
-            string += 'import com.qlzw.smartwc.Exception.CustomException;\r\n'
+            string += f'import {self.package_name}.exception.CustomException;\r\n'
             string += 'import org.springframework.data.domain.Pageable;\r\n'
             string += 'import org.springframework.web.bind.annotation.*;\r\n'
             string += 'import org.springframework.validation.annotation.Validated;\r\n'
             string += 'import org.springframework.beans.factory.annotation.Autowired;\r\n'
             string += '\r\n'
-            string += f'import {self.package_name}.DAO.{className};\r\n'
-            string += f'import {self.package_name}.Service.UserCommonService;\r\n'
-            string += f'import {self.package_name}.Repository.{className}Repository;\r\n'
-            string += f'import {self.package_name}.Utils.PageUtil;\r\n'
-            string += f'import {self.package_name}.Utils.ResponseService;\r\n'
-            string += f'import {self.package_name}.Utils.ObjectSerializeUtil;\r\n'
+            string += f'import {self.package_name}.dao.{className};\r\n'
+            string += f'import {self.package_name}.repository.{className}Repository;\r\n'
+            string += f'import com.common.utils.*;\r\n'
             string += "\r\n"
             string += "@RequestMapping(\"/" + instanceName + "\")\r\n"
             string += "@RestController\r\n"
@@ -785,12 +1011,12 @@ class JavaCreator:
                 string += "}\r\n"
 
             elif file_path.find("ResponseService.java") > 0:
-                string = "package " + self.package_name + ".Service;\r\n\r\n"
+                string = "package " + self.package_name + ".service;\r\n\r\n"
                 string += "\r\n"
                 string += "import java.util.HashMap;\r\n"
                 string += "import org.springframework.stereotype.Service;\r\n"
                 string += "\r\n"
-                string += "import " + self.package_name + ".Utils.ResponseStatus;\r\n"
+                string += "import com.common.utils.*;\r\n"
                 string += "\r\n"
                 string += "@Service\r\n"
                 string += "public class ResponseService {\r\n"
@@ -834,7 +1060,7 @@ class JavaCreator:
                 string += "}\r\n"
 
             elif file_path.find("LoginService.java") > 0:
-                string = "package " + self.package_name + ".Service;\r\n\r\n"
+                string = "package " + self.package_name + ".service;\r\n\r\n"
                 string += "\r\n"
                 string += "import java.sql.Timestamp;\r\n"
                 string += "import java.util.Calendar;\r\n"
@@ -851,7 +1077,7 @@ class JavaCreator:
                 string += "import com.blog.zz.mapper.AdminUserMapper;\r\n"
                 string += "import com.blog.zz.mapper.LoginMapper;\r\n"
                 string += "import com.blog.zz.model.AdminUser;\r\n"
-                string += "import com.blog.zz.utils.ResponseStatus;\r\n"
+                string += "import com.blog.zz.utils.*;\r\n"
                 string += "\r\n"
                 string += "import io.jsonwebtoken.Claims;\r\n"
                 string += "import io.jsonwebtoken.Jws;\r\n"
@@ -1009,13 +1235,13 @@ class JavaCreator:
                 string += "\r\n"
 
             elif file_path.find("LoginMapper.java") > 0:
-                string = "package " + self.package_name + ".Service;\r\n\r\n"
+                string = "package " + self.package_name + ".service;\r\n\r\n"
                 string += "\r\n"
                 string += "import org.apache.ibatis.annotations.*;\r\n"
                 string += "\r\n"
                 string += "import java.util.HashMap;\r\n"
                 string += "import org.springframework.stereotype.Component;\r\n"
-                string += "import " + self.package_name + ".Service.LoginService;\r\n"
+                string += "import " + self.package_name + ".service.LoginService;\r\n"
                 string += "\r\n"
                 string += "@Component(value = \"LoginMapper\")\r\n"
                 string += "@Mapper\r\n"
