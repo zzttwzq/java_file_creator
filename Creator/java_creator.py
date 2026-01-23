@@ -33,7 +33,7 @@ class JavaCreator:
         
         p = javaCreator.package_name.split(".")
         p = "/".join(p)
-        javaCreator.package_path = javaCreator.javaPath + "/src/main/java/" + p + "/"
+        javaCreator.package_path = javaCreator.javaPath + "src/main/java/" + p + "/"
         
         Log.info("admin", "源目录：" + javaCreator.package_path)
 
@@ -60,12 +60,19 @@ class JavaCreator:
         elif mode == "-d":
             javaCreator.clearDir()
         elif mode == "-all":
-            javaCreator.create_model(tableList)
-            javaCreator.create_dto(tableList, info["db"]["dto"])
-            javaCreator.create_repository(tableList)
-            javaCreator.create_controller(tableList)
+            # javaCreator.create_model(tableList)
+            # javaCreator.create_dto(tableList, info["db"]["dto"])
+            # javaCreator.create_repository(tableList)
+            # javaCreator.create_controller(tableList)
             # javaCreator.create_mapper(tableList)
             # javaCreator.create_provider(tableList)
+            javaCreator.create_model(tableList)
+            javaCreator.create_mapper(tableList)
+            javaCreator.create_service(tableList)
+            javaCreator.create_controller(tableList)
+            javaCreator.create_dao(tableList)
+            javaCreator.create_vo(tableList)
+
         elif mode == "-util":
             javaCreator.CreateUtil()
         else:
@@ -257,173 +264,6 @@ class JavaCreator:
             # 生成文件
             self._generate_file_with_dir(string, "dto", className + "DTO.java", force=True)
 
-    def create_model(self, table_info_list):
-        """
-        @summary: 创建model实体类
-        @param tableInfos: 表信息
-        """
-        
-        Log.blank()
-        Log.info("java", "================ 创建model实体类 ================")
-
-        parseMap = {
-            "REAL": "Long.valueOf",
-            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
-            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
-            "INT": "Integer.valueOf",
-            "TINYINT": "Integer.valueOf",
-            "SMALLINT": "Integer.valueOf",
-            "MEDIUMINT": "Long.valueOf",
-            "BIGINT": "Long.valueOf",
-            "FLOAT": "Float.valueOf",
-            "DOUBLE": "Double.valueOf",
-            "CHAR": "",
-            "VARCHAR": "",
-            "TINYTEXT": "",
-            "TEXT": "",
-            "MEDIUMTEXT": "",
-            "LONGTEXT": "",
-            "BOOL": "Boolean.valueOf",
-            "BOOLEAN": "Boolean.valueOf",
-            "DATETIME": "Timestamp.valueOf",
-            "DATE": "Timestamp.valueOf",
-            "TIME": "Timestamp.valueOf",
-            "TIMESTAMP": "Timestamp.valueOf",
-        }
-
-        coulumTypeTemp = {
-            "REAL": "Long",
-            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
-            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long",
-            "INT": "Integer",
-            "TINYINT": "Integer",
-            "SMALLINT": "Integer",
-            "MEDIUMINT": "Long",
-            "BIGINT": "Long",
-            "CHAR": "String",
-            "VARCHAR": "String",
-            "TINYTEXT": "String",
-            "TEXT": "String",
-            "MEDIUMTEXT": "String",
-            "LONGTEXT": "String",
-            "FLOAT": "Float",
-            "DOUBLE": "Double",
-            "BOOLEAN": "Boolean",
-            "BOOL": "Boolean",
-            "DATETIME": "Timestamp",
-            "DATE": "Timestamp",
-            "TIME": "Timestamp",
-            "TIMESTAMP": "Timestamp",
-        }
-
-        for tableInfo in table_info_list:
-            # 表名称
-            tableName = tableInfo["name"]
-
-            if (tableName in self.modelIgnore) == True:
-                Log.warn(f"!!! table_name: {tableName} modelIgnore 中，所以忽略")
-                continue
-            
-            # 产生的类名称
-            className = CreateUtil.camelize(tableName)
-            
-            # 字段属性列表
-            columns = copy.deepcopy(tableInfo["columns"])
-            
-            # 文件信息
-            string = self.split_string+ "\r\n"
-            string += "package " + self.package_name + ".dao;\r\n\r\n"
-            string += 'import java.util.Map;\r\n'
-            string += 'import java.sql.Timestamp;\r\n'
-            string += '\r\n'
-            string += 'import jakarta.persistence.Column;\r\n'
-            string += 'import jakarta.persistence.Entity;\r\n'
-            string += 'import jakarta.persistence.GeneratedValue;\r\n'
-            string += 'import jakarta.persistence.GenerationType;\r\n'
-            string += 'import jakarta.persistence.EntityListeners;\r\n'
-            string += 'import jakarta.persistence.Id;\r\n'
-            string += 'import jakarta.persistence.Table;\r\n'
-            string += '\r\n'
-            string += 'import org.springframework.data.annotation.CreatedDate;\r\n'
-            string += 'import org.springframework.data.annotation.LastModifiedDate;\r\n'
-            string += 'import org.springframework.data.jpa.domain.support.AuditingEntityListener;\r\n'
-            string += '\r\n'
-            string += 'import lombok.Data;\r\n'
-            string += 'import lombok.NoArgsConstructor;\r\n'
-            string += 'import lombok.ToString;\r\n'
-            string += 'import lombok.AllArgsConstructor;\r\n'
-            string += '\r\n'
-            string += '@Data\r\n'
-            string += '@Entity\r\n'
-            string += '@Table(name = "{}")\r\n'.format(tableName)
-            string += '\r\n'
-            string += '@ToString\r\n'
-            string += '@NoArgsConstructor\r\n'
-            string += '@AllArgsConstructor\r\n'
-            string += '@EntityListeners(AuditingEntityListener.class) // 监听实体变更\r\n'
-            string += "public class " + className + " {\r\n\r\n"
-            
-            prop_string = ""
-            json_string = "    public void fromMap(Map<String, Object> map) {\r\n"
-
-            for columnInfo in columns:
-
-                # 字段名称
-                propertyName = columnInfo["name"]
-
-                # 字段描述
-                des = columnInfo["des"]
-
-                # 字段类型
-                columType = columnInfo["columnProperty"].split('(')[0]
-                columType = columType.split(' ')[0]
-                columType = columType.strip()
-                columType = columType.upper()
-                dataType = coulumTypeTemp[columType]
-                instPropertyName = CreateUtil.instance_name(propertyName)
-                if propertyName == "id":
-                    dataType = "Long"
-                    prop_string += "    @Id\r\n"
-
-                    if (tableName in self.modelIgnoreAutoId) == False:
-                        prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
-
-                if propertyName == "create_at":
-                    prop_string += '\r\n    @CreatedDate\r\n'
-                    prop_string += '    @Column(name="create_at", updatable=false)\r\n'
-
-                if propertyName == "update_at":
-                    prop_string += '\r\n    @LastModifiedDate\r\n'
-                    prop_string += '    @Column(name="update_at")\r\n'
-
-                if dataType == "":
-                    prop_string += '@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")'
-
-                prop_string += "    private {0} {1}; //{2} \r\n".format(
-                    dataType, instPropertyName, des)
-
-                json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
-                if propertyName == "id":
-                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
-                else:
-                    if columType in "CHAR,VARCHAR,TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT":
-                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "map.get(\"" + instPropertyName + "\").toString();\r\n"
-                    else:
-                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
-                json_string += "        }\r\n\r\n"
-
-            prop_string +="\r\n"
-
-            json_string = json_string[0:len(json_string)-2]
-            json_string += "    }\r\n"
-
-            string += prop_string + json_string
-            string += "}\r\n"
-            string += self.split_string + "\r\n"
-
-            # 生成文件
-            self._generate_file_with_dir(string, "dao", className + ".java", force=True)
-
     def create_repository(self, table_info_list):
         """
         @summary: 创建Repository
@@ -436,7 +276,7 @@ class JavaCreator:
         for tableInfo in table_info_list:
             self.create_empty_repository(tableInfo)
 
-    def create_controller(self, table_info_list):
+    def create_controller1(self, table_info_list):
         """
         @summary: 创建Controller
         @param tableInfos: 表信息
@@ -662,62 +502,6 @@ class JavaCreator:
             
             self._generate_file_with_dir(contentString, "controller", fileName, force=False)
 
-    def create_mapper(self, tableInfo):
-
-        for tableInfo in tableInfo:
-            # 表名称
-            tableName = tableInfo["name"]
-
-            # 产生的类名称
-            className = CreateUtil.camelize(tableName)
-
-            # 对应的实例名称
-            instanceName = CreateUtil.instance_name(tableName)
-
-            filepath = self.package_path + "mapper/" + className + "Mapper.java"
-
-            # if file_manager.checkFilePath(filepath):
-
-            string = "package " + self.package_name + ".mapper;\r\n"
-            string += "import org.apache.ibatis.annotations.*;\r\n\r\n"
-            string += "import java.util.List;\r\n"
-            string += "import com.qlzw.smartwc.dao." + className + ";\r\n\r\n"
-            string += "import com.qlzw.smartwc.Mapper." + className + "Mapper;\r\n"
-            string += "import com.qlzw.smartwc.Provider." + className + "Provider;\r\n"
-
-            string += "import org.springframework.stereotype.Component;\r\n\r\n"
-            string += "@Component(value = \"" + className + "Mapper\")\r\n"
-            string += "@Mapper\r\n"
-            string += "public interface " + className + "Mapper {\r\n\r\n"
-            string += "    //### 自动生成 ###\r\n"
-            string += "    @SelectProvider(type = " + className + \
-                "Provider.class, method = \"selectAll\")\r\n"
-            string += "    public List<" + className + \
-                "> list(@Param(\"page\") Integer page, @Param(\"size\") Integer size);\r\n\r\n"
-            string += "    @SelectProvider(type = " + className + \
-                "Provider.class, method = \"selectOne\")\r\n"
-            string += "    public " + className + \
-                " show(@Param(\"id\") Long id);\r\n\r\n"
-            string += "    @InsertProvider(type = " + className + \
-                "Provider.class, method = \"insertOne\")\r\n"
-            string += "    @Options(useGeneratedKeys = true, keyProperty = \"id\", keyColumn = \"id\")//加入该注解可以保持对象后，查看对象插入id\r\n"
-            string += "    public Boolean insert(" + \
-                className + " " + instanceName + ");\r\n\r\n"
-            string += "    @DeleteProvider(type = " + className + \
-                "Provider.class, method = \"deleteOne\")\r\n"
-            string += "    public Boolean delete(@Param(\"id\") Long id);\r\n\r\n"
-            string += "    @UpdateProvider(type = " + className + \
-                "Provider.class, method = \"updateOne\")\r\n"
-            string += "    public Boolean update(" + \
-                className + " " + instanceName + ");\r\n\r\n"
-            string += "    //### 自动生成 ###\r\n"
-            string += "}"
-
-            Log.success("Mapper", "生成："+filepath)
-            f = open(filepath, mode='w+')
-            f.write(string)
-            f.close()
-
     def create_provider(self, tableInfo):
 
         for tableInfo in tableInfo:
@@ -927,16 +711,727 @@ class JavaCreator:
 
             self._generate_file_with_dir(string, dirName, fileName, force=True)
 
-    def create_empty_service():
+
+    def create_mapper(self, tableInfo):
+
+        for tableInfo in tableInfo:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + className + "Mapper.java"
+
+            if FileUtil.path_exists(filePath):
+                print("文件存在！")
+            else:
+                print("文件不存在！")
+                self.create_empty_mapper(tableInfo)
+
+    def create_empty_mapper(self, tableInfo):
+        
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        context = ""
+        dirName = instanceName
+        fileName = className + "Mapper.java"
+
+        context += f'package {self.package_name}.{className};\n'
+        context += '\n'
+        context += 'import com.baomidou.mybatisplus.core.mapper.BaseMapper;\n'
+        context += '\n'
+        context += f'public interface {className}Mapper extends BaseMapper<{className}> {{\n'
+        context += '\n'
+        context += '}\n'
+        context += '\n'
+
+        self._generate_file_with_dir(context, dirName, fileName, force=True)
+
+    def create_model(self, table_info_list):
+        """
+        @summary: 创建model实体类
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建model实体类 ================")
+
+        parseMap = {
+            "REAL": "Long.valueOf",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
+            "INT": "Integer.valueOf",
+            "TINYINT": "Integer.valueOf",
+            "SMALLINT": "Integer.valueOf",
+            "MEDIUMINT": "Long.valueOf",
+            "BIGINT": "Long.valueOf",
+            "FLOAT": "Float.valueOf",
+            "DOUBLE": "Double.valueOf",
+            "CHAR": "",
+            "VARCHAR": "",
+            "TINYTEXT": "",
+            "TEXT": "",
+            "MEDIUMTEXT": "",
+            "LONGTEXT": "",
+            "BOOL": "Boolean.valueOf",
+            "BOOLEAN": "Boolean.valueOf",
+            "DATETIME": "Timestamp.valueOf",
+            "DATE": "Timestamp.valueOf",
+            "TIME": "Timestamp.valueOf",
+            "TIMESTAMP": "Timestamp.valueOf",
+        }
+
+        coulumTypeTemp = {
+            "REAL": "Long",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long",
+            "INT": "Integer",
+            "TINYINT": "Integer",
+            "SMALLINT": "Integer",
+            "MEDIUMINT": "Long",
+            "BIGINT": "Long",
+            "CHAR": "String",
+            "VARCHAR": "String",
+            "TINYTEXT": "String",
+            "TEXT": "String",
+            "MEDIUMTEXT": "String",
+            "LONGTEXT": "String",
+            "FLOAT": "Float",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "BOOL": "Boolean",
+            "DATETIME": "Timestamp",
+            "DATE": "Timestamp",
+            "TIME": "Timestamp",
+            "TIMESTAMP": "Timestamp",
+        }
+
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            if (tableName in self.modelIgnore) == True:
+                Log.warn(f"!!! table_name: {tableName} modelIgnore 中，所以忽略")
+                continue
+            
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+            
+            # 字段属性列表
+            columns = copy.deepcopy(tableInfo["columns"])
+            
+            # 文件信息
+            string = self.split_string+ "\r\n"
+            string += f"package {self.package_name}.{className};\r\n\r\n"
+            string += 'import java.util.Map;\r\n'
+            string += 'import java.sql.Timestamp;\r\n'
+            string += '\r\n'
+            string += 'import lombok.*;\r\n'
+            string += '\r\n'
+            string += '@Getter\r\n'
+            string += '@Setter\r\n'
+            string += '@ToString\r\n'
+            string += '@NoArgsConstructor\r\n'
+            string += '@AllArgsConstructor\r\n'
+            string += "public class " + className + " {\r\n\r\n"
+            
+            prop_string = ""
+            json_string = "    public void fromMap(Map<String, Object> map) {\r\n"
+
+            for columnInfo in columns:
+
+                # 字段名称
+                propertyName = columnInfo["name"]
+
+                # 字段描述
+                des = columnInfo["des"]
+
+                # 字段类型
+                columType = columnInfo["columnProperty"].split('(')[0]
+                columType = columType.split(' ')[0]
+                columType = columType.strip()
+                columType = columType.upper()
+                dataType = coulumTypeTemp[columType]
+                instPropertyName = CreateUtil.instance_name(propertyName)
+                if propertyName == "id":
+                    dataType = "Long"
+
+                    # if (tableName in self.modelIgnoreAutoId) == False:
+                        # prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
+
+                # if propertyName == "create_at":
+                #     prop_string += '\r\n    @CreatedDate\r\n'
+                #     prop_string += '    @Column(name="create_at", updatable=false)\r\n'
+
+                # if propertyName == "update_at":
+                #     prop_string += '\r\n    @LastModifiedDate\r\n'
+                #     prop_string += '    @Column(name="update_at")\r\n'
+
+                if dataType == "":
+                    prop_string += '@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")'
+
+                prop_string += "    private {0} {1}; //{2} \r\n".format(
+                    dataType, instPropertyName, des)
+
+                json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
+                if propertyName == "id":
+                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                else:
+                    if columType in "CHAR,VARCHAR,TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT":
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "map.get(\"" + instPropertyName + "\").toString();\r\n"
+                    else:
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                json_string += "        }\r\n\r\n"
+
+            prop_string +="\r\n"
+
+            json_string = json_string[0:len(json_string)-2]
+            json_string += "    }\r\n"
+
+            string += prop_string + json_string
+            string += "}\r\n"
+            string += self.split_string + "\r\n"
+
+            # 生成文件
+            self._generate_file_with_dir(string, className, className + ".java", force=True)
+
+    def create_service(self, table_info_list):
+        
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + className + "Service.java"
+
+            if FileUtil.path_exists(filePath):
+                print("文件存在！")
+            else:
+                print("文件不存在！")
+                self.create_empty_service(tableInfo)
+
+    def create_empty_service(self, tableInfo):
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        content = ""
+        dirName = instanceName
+        fileName = className + "Service.java"
+
+        content += f"package {self.package_name}.{className};\n"
+        content += "\n"
+        content += "import com.qlzw.smartwc.Base.BaseService;\n"
+        content += "import org.springframework.stereotype.Service;\n"
+        content += "\n"
+        content += "@Service\n"
+        content += f"public class {className}Service extends BaseService<{className}Dao, {className}VO> {{\n"
+        content += "    // 可以在这里添加特定的业务逻辑\n"
+        content += "}\n"
+        content += "\n"
+
+        self._generate_file_with_dir(content, dirName, fileName, force=True)
+
+    def create_controller(self, table_info_list):
+        
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + className + "Controller.java"
+
+            if FileUtil.path_exists(filePath):
+                print("文件存在！")
+            else:
+                print("文件不存在！")
+                self.create_empty_control(tableInfo)
+
+    def create_empty_control(self, tableInfo):
+        
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        content = ""
+        dirName = instanceName
+        fileName = className + "Controller.java"
+
+        content += f"package {self.package_name}.{className};\n"
+        content += "\n"
+        content += "import org.springframework.web.bind.annotation.RequestMapping;\n"
+        content += "import org.springframework.web.bind.annotation.RestController;\n"
+        content += "\n"
+        content += "import com.qlzw.smartwc.Base.BaseController;\n"
+        content += "\n"
+        content += f'@RequestMapping("/{instanceName}")\n'
+        content += "@RestController\n"
+        content += f"public class {className}Controller extends BaseController<{className}Service, {className}VO> {{\n"
+        content += "\n"
+        content += "}\n"
+        content += "\n"
+
+        self._generate_file_with_dir(content, dirName, fileName, force=True)
+
+    def create_dao(self, table_info_list):
+        
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + className + "Dao.java"
+
+            if FileUtil.path_exists(filePath):
+                print("文件存在！")
+            else:
+                print("文件不存在！")
+                self.create_empty_dao(tableInfo)
+
+    def create_empty_dao(self, tableInfo):
+        
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        context = ""
+        dirName = instanceName
+        fileName = className + "Dao.java"
+
+        context += f'package {self.package_name}.{className};\n'
+        context += '\n'
+        context += 'import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;\n'
+        context += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
+        context += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
+        context += 'import org.springframework.stereotype.Component;\n'
+        context += '\n'
+        context += 'import com.qlzw.smartwc.Base.BaseDAO;\n'
+        context += f'import com.qlzw.smartwc.{className}.{className};\n'
+        context += '\n'
+        context += '@Component\n'
+        context += f'public class {className}Dao extends BaseDAO<{className}Mapper, {className}> {{\n'
+        context += '\n'
+        context += f'    public IPage<{className}> getByPageByCreate(int page, int size) {{\n'
+        context += f'        Page<{className}> pages = new Page<>(page, size);\n'
+        context += f'        return baseMapper.selectPage(pages, new LambdaQueryWrapper<{className}>()\n'
+        context += f'                .orderByDesc({className}::getCreateAt));\n'
+        context += '    }\n'
+        context += '}\n'
+        context += '\n'
+
+        self._generate_file_with_dir(context, dirName, fileName, force=True)
+
+    def create_vo(self, table_info_list):
+        """
+        @summary: 创建model实体类
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建model实体类 ================")
+
+        parseMap = {
+            "REAL": "Long.valueOf",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
+            "INT": "Integer.valueOf",
+            "TINYINT": "Integer.valueOf",
+            "SMALLINT": "Integer.valueOf",
+            "MEDIUMINT": "Long.valueOf",
+            "BIGINT": "Long.valueOf",
+            "FLOAT": "Float.valueOf",
+            "DOUBLE": "Double.valueOf",
+            "CHAR": "",
+            "VARCHAR": "",
+            "TINYTEXT": "",
+            "TEXT": "",
+            "MEDIUMTEXT": "",
+            "LONGTEXT": "",
+            "BOOL": "Boolean.valueOf",
+            "BOOLEAN": "Boolean.valueOf",
+            "DATETIME": "Timestamp.valueOf",
+            "DATE": "Timestamp.valueOf",
+            "TIME": "Timestamp.valueOf",
+            "TIMESTAMP": "Timestamp.valueOf",
+        }
+
+        coulumTypeTemp = {
+            "REAL": "Long",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long",
+            "INT": "Integer",
+            "TINYINT": "Integer",
+            "SMALLINT": "Integer",
+            "MEDIUMINT": "Long",
+            "BIGINT": "Long",
+            "CHAR": "String",
+            "VARCHAR": "String",
+            "TINYTEXT": "String",
+            "TEXT": "String",
+            "MEDIUMTEXT": "String",
+            "LONGTEXT": "String",
+            "FLOAT": "Float",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "BOOL": "Boolean",
+            "DATETIME": "Timestamp",
+            "DATE": "Timestamp",
+            "TIME": "Timestamp",
+            "TIMESTAMP": "Timestamp",
+        }
+
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            if (tableName in self.modelIgnore) == True:
+                Log.warn(f"!!! table_name: {tableName} modelIgnore 中，所以忽略")
+                continue
+            
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+            
+            # 字段属性列表
+            columns = copy.deepcopy(tableInfo["columns"])
+            
+            # 文件信息
+            string = self.split_string+ "\r\n"
+            string += f"package {self.package_name}.{className};\r\n\r\n"
+            string += 'import java.util.Map;\r\n'
+            string += 'import java.sql.Timestamp;\r\n'
+            string += '\r\n'
+            string += 'import lombok.*;\r\n'
+            string += '\r\n'
+            string += '@Getter\r\n'
+            string += '@Setter\r\n'
+            string += '@ToString\r\n'
+            string += '@NoArgsConstructor\r\n'
+            string += '@AllArgsConstructor\r\n'
+            string += "public class " + className + "VO {\r\n\r\n"
+            
+            prop_string = ""
+            json_string = "    public void fromMap(Map<String, Object> map) {\r\n"
+
+            for columnInfo in columns:
+
+                # 字段名称
+                propertyName = columnInfo["name"]
+
+                # 字段描述
+                des = columnInfo["des"]
+
+                # 字段类型
+                columType = columnInfo["columnProperty"].split('(')[0]
+                columType = columType.split(' ')[0]
+                columType = columType.strip()
+                columType = columType.upper()
+                dataType = coulumTypeTemp[columType]
+                instPropertyName = CreateUtil.instance_name(propertyName)
+                if propertyName == "id":
+                    dataType = "Long"
+
+                    # if (tableName in self.modelIgnoreAutoId) == False:
+                        # prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
+
+                # if propertyName == "create_at":
+                #     prop_string += '\r\n    @CreatedDate\r\n'
+                #     prop_string += '    @Column(name="create_at", updatable=false)\r\n'
+
+                # if propertyName == "update_at":
+                #     prop_string += '\r\n    @LastModifiedDate\r\n'
+                #     prop_string += '    @Column(name="update_at")\r\n'
+
+                if dataType == "":
+                    prop_string += '@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")'
+
+                prop_string += "    private {0} {1}; //{2} \r\n".format(
+                    dataType, instPropertyName, des)
+
+                json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
+                if propertyName == "id":
+                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                else:
+                    if columType in "CHAR,VARCHAR,TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT":
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "map.get(\"" + instPropertyName + "\").toString();\r\n"
+                    else:
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                json_string += "        }\r\n\r\n"
+
+            prop_string +="\r\n"
+
+            json_string = json_string[0:len(json_string)-2]
+            json_string += "    }\r\n"
+
+            string += prop_string + json_string
+            string += "}\r\n"
+            string += self.split_string + "\r\n"
+
+            # 生成文件
+            self._generate_file_with_dir(string, className, className + "VO.java", force=True)
+
+    def create_empty_vo(self, tableInfo):
         pass
-    def create_empty_control():
-        pass
-    def create_empty_dao():
-        pass
-    def create_empty_vo():
-        pass
-    def create_empty_entity():
-        pass
+
+
+    def create_mapper1(self, tableInfo):
+
+        for tableInfo in tableInfo:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的实例名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            filepath = self.package_path + "mapper/" + className + "Mapper.java"
+
+            # if file_manager.checkFilePath(filepath):
+
+            string = "package " + self.package_name + ".mapper;\r\n"
+            string += "import org.apache.ibatis.annotations.*;\r\n\r\n"
+            string += "import java.util.List;\r\n"
+            string += "import com.qlzw.smartwc.dao." + className + ";\r\n\r\n"
+            string += "import com.qlzw.smartwc.Mapper." + className + "Mapper;\r\n"
+            string += "import com.qlzw.smartwc.Provider." + className + "Provider;\r\n"
+
+            string += "import org.springframework.stereotype.Component;\r\n\r\n"
+            string += "@Component(value = \"" + className + "Mapper\")\r\n"
+            string += "@Mapper\r\n"
+            string += "public interface " + className + "Mapper {\r\n\r\n"
+            string += "    //### 自动生成 ###\r\n"
+            string += "    @SelectProvider(type = " + className + \
+                "Provider.class, method = \"selectAll\")\r\n"
+            string += "    public List<" + className + \
+                "> list(@Param(\"page\") Integer page, @Param(\"size\") Integer size);\r\n\r\n"
+            string += "    @SelectProvider(type = " + className + \
+                "Provider.class, method = \"selectOne\")\r\n"
+            string += "    public " + className + \
+                " show(@Param(\"id\") Long id);\r\n\r\n"
+            string += "    @InsertProvider(type = " + className + \
+                "Provider.class, method = \"insertOne\")\r\n"
+            string += "    @Options(useGeneratedKeys = true, keyProperty = \"id\", keyColumn = \"id\")//加入该注解可以保持对象后，查看对象插入id\r\n"
+            string += "    public Boolean insert(" + \
+                className + " " + instanceName + ");\r\n\r\n"
+            string += "    @DeleteProvider(type = " + className + \
+                "Provider.class, method = \"deleteOne\")\r\n"
+            string += "    public Boolean delete(@Param(\"id\") Long id);\r\n\r\n"
+            string += "    @UpdateProvider(type = " + className + \
+                "Provider.class, method = \"updateOne\")\r\n"
+            string += "    public Boolean update(" + \
+                className + " " + instanceName + ");\r\n\r\n"
+            string += "    //### 自动生成 ###\r\n"
+            string += "}"
+
+            Log.success("Mapper", "生成："+filepath)
+            f = open(filepath, mode='w+')
+            f.write(string)
+            f.close()
+
+    def create_model1(self, table_info_list):
+        """
+        @summary: 创建model实体类
+        @param tableInfos: 表信息
+        """
+        
+        Log.blank()
+        Log.info("java", "================ 创建model实体类 ================")
+
+        parseMap = {
+            "REAL": "Long.valueOf",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer.valueOf",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long.valueOf",
+            "INT": "Integer.valueOf",
+            "TINYINT": "Integer.valueOf",
+            "SMALLINT": "Integer.valueOf",
+            "MEDIUMINT": "Long.valueOf",
+            "BIGINT": "Long.valueOf",
+            "FLOAT": "Float.valueOf",
+            "DOUBLE": "Double.valueOf",
+            "CHAR": "",
+            "VARCHAR": "",
+            "TINYTEXT": "",
+            "TEXT": "",
+            "MEDIUMTEXT": "",
+            "LONGTEXT": "",
+            "BOOL": "Boolean.valueOf",
+            "BOOLEAN": "Boolean.valueOf",
+            "DATETIME": "Timestamp.valueOf",
+            "DATE": "Timestamp.valueOf",
+            "TIME": "Timestamp.valueOf",
+            "TIMESTAMP": "Timestamp.valueOf",
+        }
+
+        coulumTypeTemp = {
+            "REAL": "Long",
+            'INT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Integer",
+            'BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY': "Long",
+            "INT": "Integer",
+            "TINYINT": "Integer",
+            "SMALLINT": "Integer",
+            "MEDIUMINT": "Long",
+            "BIGINT": "Long",
+            "CHAR": "String",
+            "VARCHAR": "String",
+            "TINYTEXT": "String",
+            "TEXT": "String",
+            "MEDIUMTEXT": "String",
+            "LONGTEXT": "String",
+            "FLOAT": "Float",
+            "DOUBLE": "Double",
+            "BOOLEAN": "Boolean",
+            "BOOL": "Boolean",
+            "DATETIME": "Timestamp",
+            "DATE": "Timestamp",
+            "TIME": "Timestamp",
+            "TIMESTAMP": "Timestamp",
+        }
+
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            if (tableName in self.modelIgnore) == True:
+                Log.warn(f"!!! table_name: {tableName} modelIgnore 中，所以忽略")
+                continue
+            
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+            
+            # 字段属性列表
+            columns = copy.deepcopy(tableInfo["columns"])
+            
+            # 文件信息
+            string = self.split_string+ "\r\n"
+            string += "package " + self.package_name + ".dao;\r\n\r\n"
+            string += 'import java.util.Map;\r\n'
+            string += 'import java.sql.Timestamp;\r\n'
+            string += '\r\n'
+            string += 'import jakarta.persistence.Column;\r\n'
+            string += 'import jakarta.persistence.Entity;\r\n'
+            string += 'import jakarta.persistence.GeneratedValue;\r\n'
+            string += 'import jakarta.persistence.GenerationType;\r\n'
+            string += 'import jakarta.persistence.EntityListeners;\r\n'
+            string += 'import jakarta.persistence.Id;\r\n'
+            string += 'import jakarta.persistence.Table;\r\n'
+            string += '\r\n'
+            string += 'import org.springframework.data.annotation.CreatedDate;\r\n'
+            string += 'import org.springframework.data.annotation.LastModifiedDate;\r\n'
+            string += 'import org.springframework.data.jpa.domain.support.AuditingEntityListener;\r\n'
+            string += '\r\n'
+            string += 'import lombok.Data;\r\n'
+            string += 'import lombok.NoArgsConstructor;\r\n'
+            string += 'import lombok.ToString;\r\n'
+            string += 'import lombok.AllArgsConstructor;\r\n'
+            string += '\r\n'
+            string += '@Data\r\n'
+            string += '@Entity\r\n'
+            string += '@Table(name = "{}")\r\n'.format(tableName)
+            string += '\r\n'
+            string += '@ToString\r\n'
+            string += '@NoArgsConstructor\r\n'
+            string += '@AllArgsConstructor\r\n'
+            string += '@EntityListeners(AuditingEntityListener.class) // 监听实体变更\r\n'
+            string += "public class " + className + " {\r\n\r\n"
+            
+            prop_string = ""
+            json_string = "    public void fromMap(Map<String, Object> map) {\r\n"
+
+            for columnInfo in columns:
+
+                # 字段名称
+                propertyName = columnInfo["name"]
+
+                # 字段描述
+                des = columnInfo["des"]
+
+                # 字段类型
+                columType = columnInfo["columnProperty"].split('(')[0]
+                columType = columType.split(' ')[0]
+                columType = columType.strip()
+                columType = columType.upper()
+                dataType = coulumTypeTemp[columType]
+                instPropertyName = CreateUtil.instance_name(propertyName)
+                if propertyName == "id":
+                    dataType = "Long"
+                    prop_string += "    @Id\r\n"
+
+                    if (tableName in self.modelIgnoreAutoId) == False:
+                        prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
+
+                if propertyName == "create_at":
+                    prop_string += '\r\n    @CreatedDate\r\n'
+                    prop_string += '    @Column(name="create_at", updatable=false)\r\n'
+
+                if propertyName == "update_at":
+                    prop_string += '\r\n    @LastModifiedDate\r\n'
+                    prop_string += '    @Column(name="update_at")\r\n'
+
+                if dataType == "":
+                    prop_string += '@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")'
+
+                prop_string += "    private {0} {1}; //{2} \r\n".format(
+                    dataType, instPropertyName, des)
+
+                json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
+                if propertyName == "id":
+                    json_string += "            " + instPropertyName + " = " +     parseMap["REAL"] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                else:
+                    if columType in "CHAR,VARCHAR,TINYTEXT,TEXT,MEDIUMTEXT,LONGTEXT":
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "map.get(\"" + instPropertyName + "\").toString();\r\n"
+                    else:
+                        json_string += "            " + instPropertyName + " = " +     parseMap[columType] +     "(map.get(\"" + instPropertyName + "\").toString());\r\n"
+                json_string += "        }\r\n\r\n"
+
+            prop_string +="\r\n"
+
+            json_string = json_string[0:len(json_string)-2]
+            json_string += "    }\r\n"
+
+            string += prop_string + json_string
+            string += "}\r\n"
+            string += self.split_string + "\r\n"
+
+            # 生成文件
+            self._generate_file_with_dir(string, "dao", className + ".java", force=True)
 
     # 生成文件或替换文件内容
     def _generate_file_with_dir(self, changeContent, dirName, fileName="", force=False):
