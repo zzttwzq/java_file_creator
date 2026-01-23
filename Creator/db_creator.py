@@ -25,7 +25,7 @@ class DBCreator:
         # 数据库
         m = CreateUtil.get_work_config()
         # isLocal = m["dbSource"] == "local"
-        Log.warn("db", f"<<<<<<<<<<<<<<<< 数据库是否为本地：{m['dbSource']} >>>>>>>>>>>>>>>>")
+        Log.warn("db", f"<<<<<<<<<<<<<<<< 数据库环境：{m['dbSource']} >>>>>>>>>>>>>>>>")
 
         mysqlConfig=CreateUtil.get_mysql_config(info, m["dbSource"])
         dbCreator.sqlConnection = MySqlUtil(mysqlConfig)
@@ -78,11 +78,6 @@ class DBCreator:
         for key in liKeys:
             tableProps = schemas[key]
             tableTitle = key.split(":")
-
-            arr = tableTitle[0].split("{m<")
-            tableTitle[0] = arr[0]
-            text = arr[1]
-            menu_id = text.split(">m}")[0]
             
             if tableTitle[0][0:1] == "*":
                 Log.info("schema", "自动跳过：{0}".format(tableTitle))
@@ -331,9 +326,10 @@ class DBCreator:
             # Log.info("create_table_struct", sql)
             sql1 += sql; 
 
-        Log.info(self.logPath + "table.txt")
-        # Log.info(sql1)
-        FileUtil.write_file(sql1, self.logPath + "table.txt");
+        projectPath = info["path"]
+        p = f"{projectPath}_Temp/table.txt"
+        Log.info(p)
+        FileUtil.write_file(sql1, p);
     
     def create_seed(self, info, names):
         log_tag = "create_seed"

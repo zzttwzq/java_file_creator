@@ -29,7 +29,7 @@ class JavaCreator:
         javaCreator.modelIgnoreAutoId = info["java"]["modelIgnoreAutoId"]
         javaCreator.modelDtoIgnore = info["java"]["modelDtoIgnore"]
         javaCreator.modelIgnore = info["java"]["modelIgnore"]
-        javaCreator.javaPath = info["path"] + info["java"]["javaPath"]
+        javaCreator.javaPath = info["path"] + info["java"]["path"]
         
         p = javaCreator.package_name.split(".")
         p = "/".join(p)
@@ -449,7 +449,9 @@ class JavaCreator:
             # 表名称
             tableName = tableInfo["name"]
 
-            if self.visible_controllers != None and self.visible_controllers.count() > 0:
+            print(f">>>>>>>> {self.visible_controllers}")
+
+            if self.visible_controllers is not None and len(self.visible_controllers) > 0:
                 if (tableName in self.visible_controllers) == False:
                     Log.warn(f"!!! table_name: {tableName} 存在在visible_controllers 中，所以忽略")
                     continue
@@ -924,6 +926,17 @@ class JavaCreator:
             string += '}\r\n'
 
             self._generate_file_with_dir(string, dirName, fileName, force=True)
+
+    def create_empty_service():
+        pass
+    def create_empty_control():
+        pass
+    def create_empty_dao():
+        pass
+    def create_empty_vo():
+        pass
+    def create_empty_entity():
+        pass
 
     # 生成文件或替换文件内容
     def _generate_file_with_dir(self, changeContent, dirName, fileName="", force=False):

@@ -1,3 +1,5 @@
+# python3 -m venv ~/Documents/.venv
+# source ~/Documents/.venv/bin/activate
 source .venv/bin/activate
 
 python3 _cmd.py schema
@@ -12,4 +14,4 @@ python3 _cmd.py admin -all
 # python3 _cmd.py uni page -all
 # python3 _cmd.py -all
 
-# python3 _cmd.py db -sql 
+# python3 _cmd.py db -sql

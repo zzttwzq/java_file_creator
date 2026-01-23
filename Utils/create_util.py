@@ -140,7 +140,7 @@ class CreateUtil:
         
         # 获取数据表列表
         tableListPath = projectInfo["path"] + "_Temp" + "/tableList.json"
-        Log.info(">>>tableListPath: ", tableListPath)
+        Log.info("tableListPath", tableListPath)
         tableList = FileUtil.read_file(tableListPath)
         tableList = json.loads(tableList)
 

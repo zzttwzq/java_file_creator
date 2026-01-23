@@ -20,10 +20,12 @@ class AdminCreator:
         adminCreator = AdminCreator()
 
         # ------------ 准备路径信息
-        adminCreator.routerPath = info["path"] + info["admin"]["routerPath"]
-        adminCreator.apiPath = info["path"] + info["admin"]["apiPath"]
-        adminCreator.pagePath = info["path"] + info["admin"]["pagePath"] + "AutoCreate/"
-        adminCreator.requestPath = info["path"] + info["admin"]["requestPath"]
+        pathDir = info["path"] + info["admin"]["path"]
+        adminCreator.routerPath = pathDir + info["admin"]["routerPath"]
+        adminCreator.apiPath = pathDir + info["admin"]["apiPath"]
+        adminCreator.pagePath = pathDir + info["admin"]["pagePath"] + "AutoCreate/"
+        adminCreator.requestPath = pathDir + info["admin"]["requestPath"]
+
         # 检查源目录文件夹是否可用,不可用则不创建，担心直接替换文件的风险
         Log.info("admin", "源目录：" + adminCreator.routerPath)
         if not FileUtil.path_exists(adminCreator.routerPath):
@@ -35,7 +37,7 @@ class AdminCreator:
             "admin", "================ 正在为`{0}`生成admin文件 ================".format(names))
 
         # 备份目录
-        FileUtil.pack_dir(info["path"] + info["admin"]["srcPath"], info["path"] + info["backUpPath"] + "/admin/")
+        FileUtil.pack_dir(pathDir + info["admin"]["srcPath"], info["path"] + info["backUpPath"] + "/admin/")
 
         # ------------ 执行操作
         tableList = CreateUtil.get_tableInfo_width_names(info, names)
@@ -154,7 +156,7 @@ class AdminCreator:
                     
                     columnDes = columnDes.split("#")[0]
                     columnInfo['formType'] = "select"
-                    columnInfo['options'] = []
+                    columnInfo['options'] = "[]"
 
                 propKeys = ""
                 if "sort" in keys:
