@@ -939,15 +939,64 @@ class JavaCreator:
         fileName = className + "Service.java"
 
         content += f"package {self.package_name}.{className};\n"
-        content += "\n"
-        content += "import com.qlzw.smartwc.Base.BaseService;\n"
-        content += "import org.springframework.stereotype.Service;\n"
-        content += "\n"
-        content += "@Service\n"
-        content += f"public class {className}Service extends BaseService<{className}Dao, {className}VO> {{\n"
-        content += "    // 可以在这里添加特定的业务逻辑\n"
-        content += "}\n"
-        content += "\n"
+        content += '\n'
+        content += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
+        content += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
+        content += 'import com.qlzw.smartwc.Base.BaseService;\n'
+        content += 'import org.springframework.stereotype.Service;\n'
+        content += '\n'
+        content += 'import java.util.ArrayList;\n'
+        content += 'import java.util.List;\n'
+        content += 'import java.util.Map;\n'
+        content += '\n'
+        content += '@Service\n'
+        content += f'public class {className}Service extends BaseService<{className}Dao, {className}> {{\n'
+        content += '\n'
+        content += f'    // 对外提供获取 {className}VO 列表的方法\n'
+        content += f'    public IPage<{className}VO> listVO(Map<String, Object> param) {{\n'
+        content += f'        // 获取 {className} 列表\n'
+        content += f'        IPage<{className}> {className}Page = list(param);\n'
+        content += f'        \n'
+        content += f'        // 创建新的 Page 对象用于存放 {className}VO\n'
+        content += f'        Page<{className}VO> {className}VOPage = new Page<>({className}Page.getCurrent(), {className}Page.getSize(), {className}Page.getTotal());\n'
+        content += '        \n'
+        content += '        // 转换列表数据\n'
+        content += f'        List<{className}VO> {className}VOList = new ArrayList<>();\n'
+        content += f'        for ({className} {className} : {className}Page.getRecords()) {{\n'
+        content += f'            {className}VOList.add(baseDAO.convertToVO({className}, {className}VO.class));\n'
+        content += '        }\n'
+        content += '        \n'
+        content += f'        {className}VOPage.setRecords({className}VOList);\n'
+        content += f'        return {className}VOPage;\n'
+        content += '    }\n'
+        content += '\n'
+        content += f'    // 对外提供获取 {className}VO 的方法\n'
+        content += f'    public {className}VO showVO(Long id) {{\n'
+        content += f'        {className} {className} = show(id);\n'
+        content += f'        return baseDAO.convertToVO({className}, {className}VO.class);\n'
+        content += '    }\n'
+        content += '\n'
+        content += f'    // 对外提供保存 {className}VO 的方法\n'
+        content += f'    public {className}VO storeVO({className}VO model) {{\n'
+        content += f'        // 将 {className}VO 转换为 {className}\n'
+        content += f'        {className} {className} = baseDAO.convertToVO(model, {className}.class);\n'
+        content += f'        // 保存 {className}\n'
+        content += f'        {className} saved = null;\n'
+        content += '\n'
+        content += '        if (model.getId() == null) {\n'
+        content += f'            saved = store({className});\n'
+        content += '        }\n'
+        content += '        else{\n'
+        content += f'            update({className});\n'
+        content += f'            saved = {className};\n'
+        content += '        }\n'
+        content += '\n'
+        content += f'        // 将保存后的 {className} 转换回 {className}VO\n'
+        content += f'        return baseDAO.convertToVO(saved, {className}VO.class);\n'
+        content += '    }\n'
+        content += '}\n'
+        content += '\n'
+
 
         self._generate_file_with_dir(content, dirName, fileName, force=True)
 
@@ -986,18 +1035,26 @@ class JavaCreator:
         fileName = className + "Controller.java"
 
         content += f"package {self.package_name}.{className};\n"
-        content += "\n"
-        content += "import org.springframework.web.bind.annotation.RequestMapping;\n"
-        content += "import org.springframework.web.bind.annotation.RestController;\n"
-        content += "\n"
-        content += "import com.qlzw.smartwc.Base.BaseController;\n"
-        content += "\n"
+        content += '\n'
+        content += 'import com.qlzw.smartwc.Base.BaseController;\n'
+        content += 'import org.springframework.web.bind.annotation.RequestMapping;\n'
+        content += 'import org.springframework.web.bind.annotation.RestController;\n'
+        content += '\n'
         content += f'@RequestMapping("/{instanceName}")\n'
-        content += "@RestController\n"
-        content += f"public class {className}Controller extends BaseController<{className}Service, {className}VO> {{\n"
-        content += "\n"
-        content += "}\n"
-        content += "\n"
+        content += '@RestController\n'
+        content += f'public class {className}Controller extends BaseController<{className}Service, {className}, {className}VO> {{\n'
+        content += '\n'
+        content += '    @Override\n'
+        content += f'    protected {className}VO convertToVO({className} model) {{\n'
+        content += f'        return baseService.baseDAO.convertToVO(model, {className}VO.class);\n'
+        content += '    }\n'
+        content += '\n'
+        content += '    @Override\n'
+        content += f'    protected {className} convertToModel({className}VO vo) {{\n'
+        content += f'        return baseService.baseDAO.convertToVO(vo, {className}.class);\n'
+        content += '    }\n'
+        content += '}\n'
+        content += '\n'
 
         self._generate_file_with_dir(content, dirName, fileName, force=True)
 
@@ -1031,32 +1088,31 @@ class JavaCreator:
         # 对应的类名称
         instanceName = CreateUtil.instance_name(tableName)
         
-        context = ""
+        content = ""
         dirName = instanceName
         fileName = className + "Dao.java"
 
-        context += f'package {self.package_name}.{className};\n'
-        context += '\n'
-        context += 'import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;\n'
-        context += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
-        context += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
-        context += 'import org.springframework.stereotype.Component;\n'
-        context += '\n'
-        context += 'import com.qlzw.smartwc.Base.BaseDAO;\n'
-        context += f'import com.qlzw.smartwc.{className}.{className};\n'
-        context += '\n'
-        context += '@Component\n'
-        context += f'public class {className}Dao extends BaseDAO<{className}Mapper, {className}> {{\n'
-        context += '\n'
-        context += f'    public IPage<{className}> getByPageByCreate(int page, int size) {{\n'
-        context += f'        Page<{className}> pages = new Page<>(page, size);\n'
-        context += f'        return baseMapper.selectPage(pages, new LambdaQueryWrapper<{className}>()\n'
-        context += f'                .orderByDesc({className}::getCreateAt));\n'
-        context += '    }\n'
-        context += '}\n'
-        context += '\n'
+        content += f'package {self.package_name}.{className};\n'
+        content += '\n'
+        content += 'import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;\n'
+        content += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
+        content += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
+        content += 'import org.springframework.stereotype.Component;\n'
+        content += '\n'
+        content += 'import com.qlzw.smartwc.Base.BaseDAO;\n'
+        content += '\n'
+        content += '@Component\n'
+        content += f'public class {className}Dao extends BaseDAO<{className}Mapper, {className}> {{\n'
+        content += '\n'
+        content += f'    public IPage<{className}> getByPageByCreate(int page, int size) {{\n'
+        content += f'        Page<{className}> pages = new Page<>(page, size);\n'
+        content += f'        return baseMapper.selectPage(pages, new QueryWrapper<{className}>()\n'
+        content += f'                .orderByDesc("create_at"));\n'
+        content += '    }\n'
+        content += '}\n'
+        content += '\n'
 
-        self._generate_file_with_dir(context, dirName, fileName, force=True)
+        self._generate_file_with_dir(content, dirName, fileName, force=True)
 
     def create_vo(self, table_info_list):
         """
