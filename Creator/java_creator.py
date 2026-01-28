@@ -712,51 +712,6 @@ class JavaCreator:
             self._generate_file_with_dir(string, dirName, fileName, force=True)
 
 
-    def create_mapper(self, tableInfo):
-
-        for tableInfo in tableInfo:
-            # 表名称
-            tableName = tableInfo["name"]
-
-            # 产生的类名称
-            className = CreateUtil.camelize(tableName)
-
-            path = self.package_path + "/"
-            FileUtil.check_path(path)
-            filePath = path + className + "Mapper.java"
-
-            if FileUtil.path_exists(filePath):
-                print("文件存在！")
-            else:
-                print("文件不存在！")
-                self.create_empty_mapper(tableInfo)
-
-    def create_empty_mapper(self, tableInfo):
-        
-        # 表名称
-        tableName = tableInfo["name"]
-
-        # 对应的类名称
-        className = CreateUtil.camelize(tableName)
-
-        # 对应的类名称
-        instanceName = CreateUtil.instance_name(tableName)
-        
-        context = ""
-        dirName = instanceName
-        fileName = className + "Mapper.java"
-
-        context += f'package {self.package_name}.{className};\n'
-        context += '\n'
-        context += 'import com.baomidou.mybatisplus.core.mapper.BaseMapper;\n'
-        context += '\n'
-        context += f'public interface {className}Mapper extends BaseMapper<{className}> {{\n'
-        context += '\n'
-        context += '}\n'
-        context += '\n'
-
-        self._generate_file_with_dir(context, dirName, fileName, force=True)
-
     def create_model(self, table_info_list):
         """
         @summary: 创建model实体类
@@ -827,12 +782,15 @@ class JavaCreator:
             # 产生的类名称
             className = CreateUtil.camelize(tableName)
             
+            # dir名称
+            instanceName = CreateUtil.instance_name(tableName)
+            
             # 字段属性列表
             columns = copy.deepcopy(tableInfo["columns"])
             
             # 文件信息
             string = self.split_string+ "\r\n"
-            string += f"package {self.package_name}.{className};\r\n\r\n"
+            string += f"package {self.package_name}.{instanceName};\r\n\r\n"
             string += 'import java.util.Map;\r\n'
             string += 'import java.sql.Timestamp;\r\n'
             string += '\r\n'
@@ -903,216 +861,7 @@ class JavaCreator:
             string += self.split_string + "\r\n"
 
             # 生成文件
-            self._generate_file_with_dir(string, className, className + ".java", force=True)
-
-    def create_service(self, table_info_list):
-        
-        for tableInfo in table_info_list:
-            # 表名称
-            tableName = tableInfo["name"]
-
-            # 对应的类名称
-            className = CreateUtil.camelize(tableName)
-
-            path = self.package_path + "/"
-            FileUtil.check_path(path)
-            filePath = path + className + "Service.java"
-
-            if FileUtil.path_exists(filePath):
-                print("文件存在！")
-            else:
-                print("文件不存在！")
-                self.create_empty_service(tableInfo)
-
-    def create_empty_service(self, tableInfo):
-        # 表名称
-        tableName = tableInfo["name"]
-
-        # 对应的类名称
-        className = CreateUtil.camelize(tableName)
-
-        # 对应的类名称
-        instanceName = CreateUtil.instance_name(tableName)
-        
-        content = ""
-        dirName = instanceName
-        fileName = className + "Service.java"
-
-        content += f"package {self.package_name}.{className};\n"
-        content += '\n'
-        content += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
-        content += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
-        content += 'import com.qlzw.smartwc.Base.BaseService;\n'
-        content += 'import org.springframework.stereotype.Service;\n'
-        content += '\n'
-        content += 'import java.util.ArrayList;\n'
-        content += 'import java.util.List;\n'
-        content += 'import java.util.Map;\n'
-        content += '\n'
-        content += '@Service\n'
-        content += f'public class {className}Service extends BaseService<{className}Dao, {className}> {{\n'
-        content += '\n'
-        content += f'    // 对外提供获取 {className}VO 列表的方法\n'
-        content += f'    public IPage<{className}VO> listVO(Map<String, Object> param) {{\n'
-        content += f'        // 获取 {className} 列表\n'
-        content += f'        IPage<{className}> {className}Page = list(param);\n'
-        content += f'        \n'
-        content += f'        // 创建新的 Page 对象用于存放 {className}VO\n'
-        content += f'        Page<{className}VO> {className}VOPage = new Page<>({className}Page.getCurrent(), {className}Page.getSize(), {className}Page.getTotal());\n'
-        content += '        \n'
-        content += '        // 转换列表数据\n'
-        content += f'        List<{className}VO> {className}VOList = new ArrayList<>();\n'
-        content += f'        for ({className} {className} : {className}Page.getRecords()) {{\n'
-        content += f'            {className}VOList.add(baseDAO.convertToVO({className}, {className}VO.class));\n'
-        content += '        }\n'
-        content += '        \n'
-        content += f'        {className}VOPage.setRecords({className}VOList);\n'
-        content += f'        return {className}VOPage;\n'
-        content += '    }\n'
-        content += '\n'
-        content += f'    // 对外提供获取 {className}VO 的方法\n'
-        content += f'    public {className}VO showVO(Long id) {{\n'
-        content += f'        {className} {className} = show(id);\n'
-        content += f'        return baseDAO.convertToVO({className}, {className}VO.class);\n'
-        content += '    }\n'
-        content += '\n'
-        content += f'    // 对外提供保存 {className}VO 的方法\n'
-        content += f'    public {className}VO storeVO({className}VO model) {{\n'
-        content += f'        // 将 {className}VO 转换为 {className}\n'
-        content += f'        {className} {className} = baseDAO.convertToVO(model, {className}.class);\n'
-        content += f'        // 保存 {className}\n'
-        content += f'        {className} saved = null;\n'
-        content += '\n'
-        content += '        if (model.getId() == null) {\n'
-        content += f'            saved = store({className});\n'
-        content += '        }\n'
-        content += '        else{\n'
-        content += f'            update({className});\n'
-        content += f'            saved = {className};\n'
-        content += '        }\n'
-        content += '\n'
-        content += f'        // 将保存后的 {className} 转换回 {className}VO\n'
-        content += f'        return baseDAO.convertToVO(saved, {className}VO.class);\n'
-        content += '    }\n'
-        content += '}\n'
-        content += '\n'
-
-
-        self._generate_file_with_dir(content, dirName, fileName, force=True)
-
-    def create_controller(self, table_info_list):
-        
-        for tableInfo in table_info_list:
-            # 表名称
-            tableName = tableInfo["name"]
-
-            # 对应的类名称
-            className = CreateUtil.camelize(tableName)
-
-            path = self.package_path + "/"
-            FileUtil.check_path(path)
-            filePath = path + className + "Controller.java"
-
-            if FileUtil.path_exists(filePath):
-                print("文件存在！")
-            else:
-                print("文件不存在！")
-                self.create_empty_control(tableInfo)
-
-    def create_empty_control(self, tableInfo):
-        
-        # 表名称
-        tableName = tableInfo["name"]
-
-        # 对应的类名称
-        className = CreateUtil.camelize(tableName)
-
-        # 对应的类名称
-        instanceName = CreateUtil.instance_name(tableName)
-        
-        content = ""
-        dirName = instanceName
-        fileName = className + "Controller.java"
-
-        content += f"package {self.package_name}.{className};\n"
-        content += '\n'
-        content += 'import com.qlzw.smartwc.Base.BaseController;\n'
-        content += 'import org.springframework.web.bind.annotation.RequestMapping;\n'
-        content += 'import org.springframework.web.bind.annotation.RestController;\n'
-        content += '\n'
-        content += f'@RequestMapping("/{instanceName}")\n'
-        content += '@RestController\n'
-        content += f'public class {className}Controller extends BaseController<{className}Service, {className}, {className}VO> {{\n'
-        content += '\n'
-        content += '    @Override\n'
-        content += f'    protected {className}VO convertToVO({className} model) {{\n'
-        content += f'        return baseService.baseDAO.convertToVO(model, {className}VO.class);\n'
-        content += '    }\n'
-        content += '\n'
-        content += '    @Override\n'
-        content += f'    protected {className} convertToModel({className}VO vo) {{\n'
-        content += f'        return baseService.baseDAO.convertToVO(vo, {className}.class);\n'
-        content += '    }\n'
-        content += '}\n'
-        content += '\n'
-
-        self._generate_file_with_dir(content, dirName, fileName, force=True)
-
-    def create_dao(self, table_info_list):
-        
-        for tableInfo in table_info_list:
-            # 表名称
-            tableName = tableInfo["name"]
-
-            # 对应的类名称
-            className = CreateUtil.camelize(tableName)
-
-            path = self.package_path + "/"
-            FileUtil.check_path(path)
-            filePath = path + className + "Dao.java"
-
-            if FileUtil.path_exists(filePath):
-                print("文件存在！")
-            else:
-                print("文件不存在！")
-                self.create_empty_dao(tableInfo)
-
-    def create_empty_dao(self, tableInfo):
-        
-        # 表名称
-        tableName = tableInfo["name"]
-
-        # 对应的类名称
-        className = CreateUtil.camelize(tableName)
-
-        # 对应的类名称
-        instanceName = CreateUtil.instance_name(tableName)
-        
-        content = ""
-        dirName = instanceName
-        fileName = className + "Dao.java"
-
-        content += f'package {self.package_name}.{className};\n'
-        content += '\n'
-        content += 'import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;\n'
-        content += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
-        content += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
-        content += 'import org.springframework.stereotype.Component;\n'
-        content += '\n'
-        content += 'import com.qlzw.smartwc.Base.BaseDAO;\n'
-        content += '\n'
-        content += '@Component\n'
-        content += f'public class {className}Dao extends BaseDAO<{className}Mapper, {className}> {{\n'
-        content += '\n'
-        content += f'    public IPage<{className}> getByPageByCreate(int page, int size) {{\n'
-        content += f'        Page<{className}> pages = new Page<>(page, size);\n'
-        content += f'        return baseMapper.selectPage(pages, new QueryWrapper<{className}>()\n'
-        content += f'                .orderByDesc("create_at"));\n'
-        content += '    }\n'
-        content += '}\n'
-        content += '\n'
-
-        self._generate_file_with_dir(content, dirName, fileName, force=True)
+            self._generate_file_with_dir(string, instanceName, className + ".java", force=True)
 
     def create_vo(self, table_info_list):
         """
@@ -1184,12 +933,15 @@ class JavaCreator:
             # 产生的类名称
             className = CreateUtil.camelize(tableName)
             
+            # dir名称
+            instanceName = CreateUtil.instance_name(tableName)
+            
             # 字段属性列表
             columns = copy.deepcopy(tableInfo["columns"])
             
             # 文件信息
             string = self.split_string+ "\r\n"
-            string += f"package {self.package_name}.{className};\r\n\r\n"
+            string += f"package {self.package_name}.{instanceName};\r\n\r\n"
             string += 'import java.util.Map;\r\n'
             string += 'import java.sql.Timestamp;\r\n'
             string += '\r\n'
@@ -1260,7 +1012,267 @@ class JavaCreator:
             string += self.split_string + "\r\n"
 
             # 生成文件
-            self._generate_file_with_dir(string, className, className + "VO.java", force=True)
+            self._generate_file_with_dir(string, instanceName, className + "VO.java", force=True)
+
+    def create_mapper(self, tableInfo):
+
+        for tableInfo in tableInfo:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 产生的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的类名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + instanceName + "/" + className + "Mapper.java"
+
+            print(f">>>> {filePath}")
+
+            if FileUtil.path_exists(filePath):
+                Log.info("文件已存在！")
+            else:
+                self.create_empty_mapper(tableInfo)
+
+    def create_empty_mapper(self, tableInfo):
+        
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        context = ""
+        fileName = className + "Mapper.java"
+
+        context += f'package {self.package_name}.{instanceName};\n'
+        context += '\n'
+        context += 'import com.baomidou.mybatisplus.core.mapper.BaseMapper;\n'
+        context += '\n'
+        context += f'public interface {className}Mapper extends BaseMapper<{className}> {{\n'
+        context += '\n'
+        context += '}\n'
+        context += '\n'
+
+        self._generate_file_with_dir(context, instanceName, fileName, force=True)
+
+    def create_service(self, table_info_list):
+        
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的类名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + instanceName + "/" + className + "Service.java"
+
+            if FileUtil.path_exists(filePath):
+                Log.info("文件已存在！")
+            else:
+                self.create_empty_service(tableInfo)
+
+    def create_empty_service(self, tableInfo):
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        content = ""
+        fileName = className + "Service.java"
+
+        content += f"package {self.package_name}.{instanceName};\n"
+        content += '\n'
+        content += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
+        content += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
+        content += 'import com.common.base.BaseService;\n'
+        content += 'import org.springframework.stereotype.Service;\n'
+        content += '\n'
+        content += 'import java.util.ArrayList;\n'
+        content += 'import java.util.List;\n'
+        content += 'import java.util.Map;\n'
+        content += '\n'
+        content += '@Service\n'
+        content += f'public class {className}Service extends BaseService<{className}Dao, {className}> {{\n'
+        content += '\n'
+        content += f'    // 对外提供获取 {className}VO 列表的方法\n'
+        content += f'    public IPage<{className}VO> listVO(Map<String, Object> param) {{\n'
+        content += f'        // 获取 {className} 列表\n'
+        content += f'        IPage<{className}> {className}Page = list(param);\n'
+        content += f'        \n'
+        content += f'        // 创建新的 Page 对象用于存放 {className}VO\n'
+        content += f'        Page<{className}VO> {className}VOPage = new Page<>({className}Page.getCurrent(), {className}Page.getSize(), {className}Page.getTotal());\n'
+        content += '        \n'
+        content += '        // 转换列表数据\n'
+        content += f'        List<{className}VO> {className}VOList = new ArrayList<>();\n'
+        content += f'        for ({className} {className} : {className}Page.getRecords()) {{\n'
+        content += f'            {className}VOList.add(baseDAO.convertToVO({className}, {className}VO.class));\n'
+        content += '        }\n'
+        content += '        \n'
+        content += f'        {className}VOPage.setRecords({className}VOList);\n'
+        content += f'        return {className}VOPage;\n'
+        content += '    }\n'
+        content += '\n'
+        content += f'    // 对外提供获取 {className}VO 的方法\n'
+        content += f'    public {className}VO showVO(Long id) {{\n'
+        content += f'        {className} {className} = show(id);\n'
+        content += f'        return baseDAO.convertToVO({className}, {className}VO.class);\n'
+        content += '    }\n'
+        content += '\n'
+        content += f'    // 对外提供保存 {className}VO 的方法\n'
+        content += f'    public {className}VO storeVO({className}VO model) {{\n'
+        content += f'        // 将 {className}VO 转换为 {className}\n'
+        content += f'        {className} {className} = baseDAO.convertToVO(model, {className}.class);\n'
+        content += f'        // 保存 {className}\n'
+        content += f'        {className} saved = null;\n'
+        content += '\n'
+        content += '        if (model.getId() == null) {\n'
+        content += f'            saved = store({className});\n'
+        content += '        }\n'
+        content += '        else{\n'
+        content += f'            update({className});\n'
+        content += f'            saved = {className};\n'
+        content += '        }\n'
+        content += '\n'
+        content += f'        // 将保存后的 {className} 转换回 {className}VO\n'
+        content += f'        return baseDAO.convertToVO(saved, {className}VO.class);\n'
+        content += '    }\n'
+        content += '}\n'
+        content += '\n'
+
+
+        self._generate_file_with_dir(content, instanceName, fileName, force=True)
+
+    def create_controller(self, table_info_list):
+        
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的类名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + instanceName + "/" + className + "Controller.java"
+
+            if FileUtil.path_exists(filePath):
+                Log.info("文件已存在！")
+            else:
+                self.create_empty_control(tableInfo)
+
+    def create_empty_control(self, tableInfo):
+        
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        content = ""
+        fileName = className + "Controller.java"
+
+        content += f"package {self.package_name}.{instanceName};\n"
+        content += '\n'
+        content += 'import com.common.base.BaseController;\n'
+        content += 'import org.springframework.web.bind.annotation.RequestMapping;\n'
+        content += 'import org.springframework.web.bind.annotation.RestController;\n'
+        content += '\n'
+        content += f'@RequestMapping("/{instanceName}")\n'
+        content += '@RestController\n'
+        content += f'public class {className}Controller extends BaseController<{className}Service, {className}, {className}VO> {{\n'
+        content += '\n'
+        content += '    @Override\n'
+        content += f'    protected {className}VO convertToVO({className} model) {{\n'
+        content += f'        return baseService.baseDAO.convertToVO(model, {className}VO.class);\n'
+        content += '    }\n'
+        content += '\n'
+        content += '    @Override\n'
+        content += f'    protected {className} convertToModel({className}VO vo) {{\n'
+        content += f'        return baseService.baseDAO.convertToVO(vo, {className}.class);\n'
+        content += '    }\n'
+        content += '}\n'
+        content += '\n'
+
+        self._generate_file_with_dir(content, instanceName, fileName, force=True)
+
+    def create_dao(self, table_info_list):
+        
+        for tableInfo in table_info_list:
+            # 表名称
+            tableName = tableInfo["name"]
+
+            # 对应的类名称
+            className = CreateUtil.camelize(tableName)
+
+            # 对应的类名称
+            instanceName = CreateUtil.instance_name(tableName)
+
+            path = self.package_path + "/"
+            FileUtil.check_path(path)
+            filePath = path + instanceName + "/" +className + "Dao.java"
+
+            if FileUtil.path_exists(filePath):
+                Log.info("文件已存在！")
+            else:
+                self.create_empty_dao(tableInfo)
+
+    def create_empty_dao(self, tableInfo):
+        
+        # 表名称
+        tableName = tableInfo["name"]
+
+        # 对应的类名称
+        className = CreateUtil.camelize(tableName)
+
+        # 对应的类名称
+        instanceName = CreateUtil.instance_name(tableName)
+        
+        content = ""
+        fileName = className + "Dao.java"
+
+        content += f'package {self.package_name}.{instanceName};\n'
+        content += '\n'
+        content += 'import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;\n'
+        content += 'import com.baomidou.mybatisplus.core.metadata.IPage;\n'
+        content += 'import com.baomidou.mybatisplus.extension.plugins.pagination.Page;\n'
+        content += 'import org.springframework.stereotype.Component;\n'
+        content += '\n'
+        content += 'import com.common.base.BaseDAO;\n'
+        content += '\n'
+        content += '@Component\n'
+        content += f'public class {className}Dao extends BaseDAO<{className}Mapper, {className}> {{\n'
+        content += '\n'
+        content += f'    public IPage<{className}> getByPageByCreate(int page, int size) {{\n'
+        content += f'        Page<{className}> pages = new Page<>(page, size);\n'
+        content += f'        return baseMapper.selectPage(pages, new QueryWrapper<{className}>()\n'
+        content += f'                .orderByDesc("create_at"));\n'
+        content += '    }\n'
+        content += '}\n'
+        content += '\n'
+
+        self._generate_file_with_dir(content, instanceName, fileName, force=True)
 
     def create_empty_vo(self, tableInfo):
         pass
