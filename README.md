@@ -294,6 +294,7 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 
 #### 1.2.7
 1. java_creator 改成用mybatisplus方式生成，并采用base类
+2. java_creator 结构为 controller -> service -> mapper
 
 #### 1.2.6
 1. db_creator 生成table_struce 在log下

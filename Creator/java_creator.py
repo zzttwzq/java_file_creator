@@ -70,7 +70,7 @@ class JavaCreator:
             javaCreator.create_mapper(tableList)
             javaCreator.create_service(tableList)
             javaCreator.create_controller(tableList)
-            javaCreator.create_dao(tableList)
+            # javaCreator.create_dao(tableList)
             javaCreator.create_vo(tableList)
 
         elif mode == "-util":
@@ -1108,7 +1108,7 @@ class JavaCreator:
         content += 'import java.util.Map;\n'
         content += '\n'
         content += '@Service\n'
-        content += f'public class {className}Service extends BaseService<{className}Dao, {className}> {{\n'
+        content += f'public class {className}Service extends BaseService<{className}Mapper, {className}> {{\n'
         content += '\n'
         content += f'    // 对外提供获取 {className}VO 列表的方法\n'
         content += f'    public IPage<{className}VO> listVO(Map<String, Object> param) {{\n'
@@ -1121,7 +1121,7 @@ class JavaCreator:
         content += '        // 转换列表数据\n'
         content += f'        List<{className}VO> {className}VOList = new ArrayList<>();\n'
         content += f'        for ({className} {className} : {className}Page.getRecords()) {{\n'
-        content += f'            {className}VOList.add(baseDAO.convertToVO({className}, {className}VO.class));\n'
+        content += f'            {className}VOList.add(convertToVO({className}, {className}VO.class));\n'
         content += '        }\n'
         content += '        \n'
         content += f'        {className}VOPage.setRecords({className}VOList);\n'
@@ -1131,13 +1131,13 @@ class JavaCreator:
         content += f'    // 对外提供获取 {className}VO 的方法\n'
         content += f'    public {className}VO showVO(Long id) {{\n'
         content += f'        {className} {className} = show(id);\n'
-        content += f'        return baseDAO.convertToVO({className}, {className}VO.class);\n'
+        content += f'        return convertToVO({className}, {className}VO.class);\n'
         content += '    }\n'
         content += '\n'
         content += f'    // 对外提供保存 {className}VO 的方法\n'
         content += f'    public {className}VO storeVO({className}VO model) {{\n'
         content += f'        // 将 {className}VO 转换为 {className}\n'
-        content += f'        {className} {className} = baseDAO.convertToVO(model, {className}.class);\n'
+        content += f'        {className} {className} = convertToVO(model, {className}.class);\n'
         content += f'        // 保存 {className}\n'
         content += f'        {className} saved = null;\n'
         content += '\n'
@@ -1150,11 +1150,10 @@ class JavaCreator:
         content += '        }\n'
         content += '\n'
         content += f'        // 将保存后的 {className} 转换回 {className}VO\n'
-        content += f'        return baseDAO.convertToVO(saved, {className}VO.class);\n'
+        content += f'        return convertToVO(saved, {className}VO.class);\n'
         content += '    }\n'
         content += '}\n'
         content += '\n'
-
 
         self._generate_file_with_dir(content, instanceName, fileName, force=True)
 
@@ -1205,12 +1204,12 @@ class JavaCreator:
         content += '\n'
         content += '    @Override\n'
         content += f'    protected {className}VO convertToVO({className} model) {{\n'
-        content += f'        return baseService.baseDAO.convertToVO(model, {className}VO.class);\n'
+        content += f'        return baseService.convertToVO(model, {className}VO.class);\n'
         content += '    }\n'
         content += '\n'
         content += '    @Override\n'
         content += f'    protected {className} convertToModel({className}VO vo) {{\n'
-        content += f'        return baseService.baseDAO.convertToVO(vo, {className}.class);\n'
+        content += f'        return baseService.convertToVO(vo, {className}.class);\n'
         content += '    }\n'
         content += '}\n'
         content += '\n'
@@ -1276,7 +1275,6 @@ class JavaCreator:
 
     def create_empty_vo(self, tableInfo):
         pass
-
 
     def create_mapper1(self, tableInfo):
 
