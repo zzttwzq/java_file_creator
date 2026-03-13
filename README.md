@@ -291,6 +291,8 @@ VUE_APP_API_BASE_URL=xxx # 修改成对应的地址即可
 #### 
 
 ## 更新内容
+#### 1.2.8
+1. java_creator 修改model生成规则改成基类，数据增删改添加时间
 
 #### 1.2.7
 1. java_creator 改成用mybatisplus方式生成，并采用base类

@@ -796,12 +796,13 @@ class JavaCreator:
             string += '\r\n'
             string += 'import lombok.*;\r\n'
             string += '\r\n'
-            string += '@Getter\r\n'
-            string += '@Setter\r\n'
+            string += 'import com.common.base.BaseModel;\r\n'
+            string += '\r\n'
+            string += '@Data\r\n'
             string += '@ToString\r\n'
             string += '@NoArgsConstructor\r\n'
             string += '@AllArgsConstructor\r\n'
-            string += "public class " + className + " {\r\n\r\n"
+            string += "public class " + className + " extends BaseModel {\r\n\r\n"
             
             prop_string = ""
             json_string = "    public void fromMap(Map<String, Object> map) {\r\n"
@@ -821,25 +822,16 @@ class JavaCreator:
                 columType = columType.upper()
                 dataType = coulumTypeTemp[columType]
                 instPropertyName = CreateUtil.instance_name(propertyName)
-                if propertyName == "id":
-                    dataType = "Long"
-
-                    # if (tableName in self.modelIgnoreAutoId) == False:
-                        # prop_string += "    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n"
-
-                # if propertyName == "create_at":
-                #     prop_string += '\r\n    @CreatedDate\r\n'
-                #     prop_string += '    @Column(name="create_at", updatable=false)\r\n'
-
-                # if propertyName == "update_at":
-                #     prop_string += '\r\n    @LastModifiedDate\r\n'
-                #     prop_string += '    @Column(name="update_at")\r\n'
 
                 if dataType == "":
                     prop_string += '@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")'
 
-                prop_string += "    private {0} {1}; //{2} \r\n".format(
-                    dataType, instPropertyName, des)
+                if propertyName == "id":
+                    dataType = "Long"
+                elif propertyName == "create_at" or propertyName == "update_at" or propertyName == "delete_at":
+                    pass
+                else:
+                    prop_string += "    private {0} {1}; //{2} \r\n".format(dataType, instPropertyName, des)
 
                 json_string += "        if (map.get(\"" +     instPropertyName + "\") != null) {\r\n"
                 if propertyName == "id":
@@ -947,8 +939,7 @@ class JavaCreator:
             string += '\r\n'
             string += 'import lombok.*;\r\n'
             string += '\r\n'
-            string += '@Getter\r\n'
-            string += '@Setter\r\n'
+            string += '@Data\r\n'
             string += '@ToString\r\n'
             string += '@NoArgsConstructor\r\n'
             string += '@AllArgsConstructor\r\n'
@@ -1029,8 +1020,6 @@ class JavaCreator:
             path = self.package_path + "/"
             FileUtil.check_path(path)
             filePath = path + instanceName + "/" + className + "Mapper.java"
-
-            print(f">>>> {filePath}")
 
             if FileUtil.path_exists(filePath):
                 Log.info("文件已存在！")
@@ -1113,40 +1102,40 @@ class JavaCreator:
         content += f'    // 对外提供获取 {className}VO 列表的方法\n'
         content += f'    public IPage<{className}VO> listVO(Map<String, Object> param) {{\n'
         content += f'        // 获取 {className} 列表\n'
-        content += f'        IPage<{className}> {className}Page = list(param);\n'
+        content += f'        IPage<{className}> {instanceName}Page = list(param);\n'
         content += f'        \n'
         content += f'        // 创建新的 Page 对象用于存放 {className}VO\n'
-        content += f'        Page<{className}VO> {className}VOPage = new Page<>({className}Page.getCurrent(), {className}Page.getSize(), {className}Page.getTotal());\n'
+        content += f'        Page<{className}VO> {instanceName}VOPage = new Page<>({instanceName}Page.getCurrent(), {instanceName}Page.getSize(), {instanceName}Page.getTotal());\n'
         content += '        \n'
         content += '        // 转换列表数据\n'
-        content += f'        List<{className}VO> {className}VOList = new ArrayList<>();\n'
-        content += f'        for ({className} {className} : {className}Page.getRecords()) {{\n'
-        content += f'            {className}VOList.add(convertToVO({className}, {className}VO.class));\n'
+        content += f'        List<{className}VO> {instanceName}VOList = new ArrayList<>();\n'
+        content += f'        for ({className} {instanceName} : {instanceName}Page.getRecords()) {{\n'
+        content += f'            {instanceName}VOList.add(convertToVO({instanceName}, {className}VO.class));\n'
         content += '        }\n'
         content += '        \n'
-        content += f'        {className}VOPage.setRecords({className}VOList);\n'
-        content += f'        return {className}VOPage;\n'
+        content += f'        {instanceName}VOPage.setRecords({instanceName}VOList);\n'
+        content += f'        return {instanceName}VOPage;\n'
         content += '    }\n'
         content += '\n'
         content += f'    // 对外提供获取 {className}VO 的方法\n'
         content += f'    public {className}VO showVO(Long id) {{\n'
-        content += f'        {className} {className} = show(id);\n'
-        content += f'        return convertToVO({className}, {className}VO.class);\n'
+        content += f'        {className} {instanceName} = show(id);\n'
+        content += f'        return convertToVO({instanceName}, {className}VO.class);\n'
         content += '    }\n'
         content += '\n'
         content += f'    // 对外提供保存 {className}VO 的方法\n'
         content += f'    public {className}VO storeVO({className}VO model) {{\n'
         content += f'        // 将 {className}VO 转换为 {className}\n'
-        content += f'        {className} {className} = convertToVO(model, {className}.class);\n'
+        content += f'        {className} {instanceName} = convertToVO(model, {className}.class);\n'
         content += f'        // 保存 {className}\n'
         content += f'        {className} saved = null;\n'
         content += '\n'
         content += '        if (model.getId() == null) {\n'
-        content += f'            saved = store({className});\n'
+        content += f'            saved = store({instanceName});\n'
         content += '        }\n'
         content += '        else{\n'
-        content += f'            update({className});\n'
-        content += f'            saved = {className};\n'
+        content += f'            update({instanceName});\n'
+        content += f'            saved = {instanceName};\n'
         content += '        }\n'
         content += '\n'
         content += f'        // 将保存后的 {className} 转换回 {className}VO\n'
